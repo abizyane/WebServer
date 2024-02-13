@@ -28,6 +28,14 @@ bool	ProcessRequest::good(){
 	return _good;
 }
 
+e_parseState	ProcessRequest::getParseState( void ){
+	return _state;
+}
+
+void	ProcessRequest::setParseState(e_parseState state){
+	_state = state;
+}
+
 static std::string	getToken(std::string line) {
 		std::string		token;
 		size_t			index = line.find_first_of(' ');
@@ -126,13 +134,13 @@ void	ProcessRequest::_parseRequestLine(std::string &requestLine){
 		_status = static_cast<e_statusCode>(checkMethod(method));
 		switch (checkMethod(method)){
 			case 0:
-				_request = new GetRequest(method, uri, version);
+				_request = new GetRequest(method, uri, version, *this);
 				break;
 			case 1:
-				_request = new PostRequest(method, uri, version);
+				_request = new PostRequest(method, uri, version, *this);
 				break;
 			case 2:
-				_request = new DeleteRequest(method, uri, version);
+				_request = new DeleteRequest(method, uri, version, *this);
 				break;
 			default:
 				_state = Error;
