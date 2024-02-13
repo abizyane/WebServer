@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:04:42 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/12 23:38:15 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/13 13:10:49 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,17 +17,17 @@ DeleteRequest::DeleteRequest(std::string &method, std::string &uri, std::string 
 
 }
 
-e_statuscode	DeleteRequest::parseRequest(std::__1::string &request){
+e_statusCode	DeleteRequest::parseRequest(std::string &request){
     (void)request;
     return (HTTP_OK);
 }
 
-bool	DeleteRequest::parseHeader(std::__1::string &line){
+bool	DeleteRequest::_parseHeader(std::string &line){
     (void)line;
     return (true);
 }
 
-bool	DeleteRequest::parseBody(std::__1::string &line){
+bool	DeleteRequest::_parseBody(std::string &line){
     (void)line;
     return (true);
 }

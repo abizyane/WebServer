@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 16:04:49 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/12 23:41:02 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/13 13:17:44 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,15 +24,38 @@
 #include "PostRequest.hpp"
 #include "DeleteRequest.hpp"
 
-class ParseRequest {
-    private:
-        ParseRequest();
-        static std::string  _method;
-        static std::string  _uri;
-        static std::string  _version;
+typedef enum {
+	RequestLine,
+	Headers,
+	Body,
+	Done,
+	Error
+} e_parseState;
 
-    public:
-        static IRequest*    parseRequestLine(std::string		requestLine); 
+class ParseRequest {
+	private:
+		std::string 	_requestBuffer;
+		e_parseState	_state;
+		std::string 	_method;
+		std::string 	_uri;
+		std::string 	_version;
+		e_statusCode	_status;
+		IRequest*		_request;
+
+	public:
+		ParseRequest();
+
+		class ErrorException : public std::exception {
+			public:
+				virtual const char* what() const throw() {
+					return "Error: Invalid request";
+				}
+		};
+
+		void		parseLine(std::string	request);
+		IRequest*	parseRequestLine(std::string&	requestLine); 
+		
+		~ParseRequest(){};
 };
 
 /*
@@ -45,9 +68,9 @@ class   RequestFactory:
 parseFirstLine();
 
 class   IRequest:
-    void    parse( void ) = 0;
+	void    parse( void ) = 0;
 
 class GETRequest extends IRequest:
-    void    parse( void ) = 0;
+	void    parse( void ) = 0;
 
 */

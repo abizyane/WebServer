@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 21:59:15 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/12 23:15:25 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/13 13:08:13 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,19 +15,19 @@
 #include "IRequest.hpp"
 
 class	GetRequest : public IRequest{
-	protected:
+	private:
 		std::string							_method;
 		std::string							_uri;
 		std::string							_version;
 		std::map<std::string, std::string>	_headers;
+		bool								_parseHeader(std::string &line);
+		bool								_parseBody(std::string &line);
 		// Response*							_response;
 
 	public:
 		GetRequest(std::string &method, std::string &uri, std::string &version);
 
-		e_statuscode	parseRequest(std::__1::string &request);
-		bool			parseHeader(std::__1::string &line);
-		bool			parseBody(std::__1::string &line);
+		e_statusCode	parseRequest(std::string &request);
 
 		~GetRequest( void );
 };
