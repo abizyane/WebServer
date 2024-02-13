@@ -150,4 +150,3 @@ void	ProcessRequest::_parseRequestLine(std::string &requestLine){
 	}
 	_state = Headers;
 }
-

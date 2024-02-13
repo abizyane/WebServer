@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 15:57:05 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/13 18:07:33 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/13 21:27:27 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,8 +37,8 @@ typedef enum{
 class IRequest {
 	public:
 		virtual e_statusCode	parseRequest(std::string&		request) = 0;
-		virtual bool         	_parseHeader(std::string&		line) = 0;
-		virtual bool         	_parseBody(std::string&			line) = 0;
+		virtual int         	_parseHeader(std::string&		line) = 0;
+		virtual int         	_parseBody(std::string&			line) = 0;
 
 		virtual ~IRequest(){};
 };
