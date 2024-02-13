@@ -6,15 +6,15 @@
 /*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/13 13:46:10 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/12 23:42:04 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/13 13:18:09 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ParseRequest.hpp"
 
-std::string ParseRequest::_method;
-std::string ParseRequest::_uri;
-std::string ParseRequest::_version;
+ParseRequest::ParseRequest() : _state(RequestLine), _status(HTTP_OK), _request(NULL){
+	
+}
 
 static std::string	getToken(std::string line) {
 		std::string		token;
@@ -60,15 +60,49 @@ static int	checkVersion(std::string& version){
 	return ((version == "HTTP/1.1")? 200 : 505);
 }
 
-IRequest *ParseRequest::parseRequestLine(std::__1::string requestLine){
+void	ParseRequest::parseLine(std::string request){
+	std::string		line;
+	
+	_requestBuffer += request;
+	while (_requestBuffer.find("\r\n") != std::string::npos || _requestBuffer.find("\n") != std::string::npos){
+		_requestBuffer.find("\r\n") != std::string::npos ?
+			line = _requestBuffer.substr(0, _requestBuffer.find("\r\n")) :
+				line = _requestBuffer.substr(0, _requestBuffer.find("\n"));
+		
+		_requestBuffer.find("\r\n") != std::string::npos ?
+			line.erase(line.find("\r\n")) : line.erase(line.find("\n"));
+
+		if (_state == Headers && line.empty())
+			_state = Body;
+
+		switch (_state){
+			case RequestLine:
+				_request = parseRequestLine(line);				
+				if (!_request)
+					throw ErrorException();
+				break;
+			default:
+				if (_request->parseRequest(line) != HTTP_OK)
+					throw ErrorException();
+				break;
+		}
+		_requestBuffer.erase(0, _requestBuffer.find("\n") + 1);
+		_requestBuffer.find("\r\n") != std::string::npos ?
+			line.erase(0, line.find("\r\n")) : line.erase(0, line.find("\n"));
+	}
+	if (_state == Error)
+		throw ErrorException();
+}
+
+IRequest *ParseRequest::parseRequestLine(std::string &requestLine){
 	IRequest		*Request = NULL;
 	try {
-		e_statuscode	status = static_cast<e_statuscode>(200);
 		_method = getToken(requestLine);	
 		_uri = getToken(requestLine);
 		_version = getToken(requestLine);
 
-		switch (static_cast<int>(status = static_cast<e_statuscode>(checkMethod(_method)))){
+		_status = static_cast<e_statusCode>(checkMethod(_method));
+		switch (checkMethod(_method)){
 			case 0:
 				Request = new GetRequest(_method, _uri, _version);
 				break;
@@ -79,40 +113,18 @@ IRequest *ParseRequest::parseRequestLine(std::__1::string requestLine){
 				Request = new DeleteRequest(_method, _uri, _version);
 				break;
 			default:
-				return NULL; //should return status
+				_state = Error;
+				return NULL;
 		}
-		 if ((status = static_cast<e_statuscode>(checkUri(_uri))) != 200 ||
-		 	(status = static_cast<e_statuscode>(checkVersion(_version))) != 200)
-			return NULL; //should return status
-    
+		if ((_status = static_cast<e_statusCode>(checkUri(_uri))) != 200 ||
+			(_status = static_cast<e_statusCode>(checkVersion(_version))) != 200){
+				_state = Error;
+				return NULL;
+		}
 	}catch(const std::out_of_range&){
-		return NULL;//should return status_code 400 BAD_REQUEST
+		_status = HTTP_BAD_REQUEST;		
+		_state = Error;
 	}
+	_state = Headers;
 	return Request;
 }
-
-// bool isValidUri(std::string& uri) {
-//     std::string reserved = ":/?#[]@!$&'()*+,;=";
-//     std::string unreserved = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
-
-//     for (size_t i = 0; i < uri.size(); ++i) {
-//         char c = uri[i];
-//         if (reserved.find(c) != std::string::npos || unreserved.find(c) != std::string::npos) {
-//             continue;
-//         }
-//         else if (c == '%' && i + 2 < uri.size() && isxdigit(uri[i + 1]) && isxdigit(uri[i + 2])) {
-//             i += 2; // Skip the next two characters
-//         }
-//         else {
-//             return false; // Invalid character
-//         }
-//     }
-
-//     // Normalize path
-//     uri.erase(std::unique(uri.begin(), uri.end(), [](char a, char b) { return a == '/' && b == '/'; }), uri.end());
-//     if (uri[uri.size() - 1] != '/') {
-//         uri += '/';
-//     }
-
-//     return true;
-// }

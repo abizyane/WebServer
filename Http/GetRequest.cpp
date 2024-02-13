@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 21:58:16 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/12 23:38:32 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/13 13:11:10 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,17 +18,17 @@ GetRequest::GetRequest(std::string &method, std::string &uri, std::string &versi
 
 }
 
-e_statuscode	GetRequest::parseRequest(std::__1::string &request){
+e_statusCode	GetRequest::parseRequest(std::string &request){
       (void)request;
     return (HTTP_OK);
 }
 
-bool	GetRequest::parseHeader(std::__1::string &line){
+bool	GetRequest::_parseHeader(std::string &line){
    (void)line;
     return (true);
 }
 
-bool	GetRequest::parseBody(std::__1::string &line){
+bool	GetRequest::_parseBody(std::string &line){
    (void)line;
     return (true);
 }

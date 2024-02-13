@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 15:57:05 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/12 23:33:55 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/13 13:12:47 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,13 +32,13 @@ typedef enum{
 	HTTP_NOT_IMPLEMENTED = 501,
 	HTTP_SERVICE_UNAVAILABLE = 503,
 	HTTP_VERSION_NOT_SUPPORTED = 505
-} e_statuscode;
+} e_statusCode;
 
 class IRequest {
 	public:
-		virtual e_statuscode	parseRequest(std::string&		request) = 0;
-		virtual bool         	parseHeader(std::string&		line) = 0;
-		virtual bool         	parseBody(std::string&			line) = 0;
+		virtual e_statusCode	parseRequest(std::string&		request) = 0;
+		virtual bool         	_parseHeader(std::string&		line) = 0;
+		virtual bool         	_parseBody(std::string&			line) = 0;
 
 		virtual ~IRequest(){};
 };
