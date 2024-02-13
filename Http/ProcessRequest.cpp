@@ -1,19 +1,31 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ParseRequest.cpp                                   :+:      :+:    :+:   */
+/*   ProcessRequest.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/13 13:46:10 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/13 13:18:09 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/13 16:38:49 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ParseRequest.hpp"
+#include "ProcessRequest.hpp"
 
-ParseRequest::ParseRequest() : _state(RequestLine), _status(HTTP_OK), _request(NULL){
-	
+ProcessRequest::ProcessRequest() : _state(RequestLine), _status(HTTP_OK),
+	_request(NULL), _response(NULL), _good(false){
+}
+
+IRequest*	ProcessRequest::getRequest( void ){
+	return _request;
+}
+
+Response*	ProcessRequest::getResponse( void ){
+	return _response;
+}
+
+bool	ProcessRequest::good(){
+	return _good;
 }
 
 static std::string	getToken(std::string line) {
@@ -60,7 +72,15 @@ static int	checkVersion(std::string& version){
 	return ((version == "HTTP/1.1")? 200 : 505);
 }
 
-void	ParseRequest::parseLine(std::string request){
+void ProcessRequest::_generateResponse( void ){
+	// ...
+
+
+	if (_response->good())
+		_good = true;
+}
+
+void	ProcessRequest::parseLine(std::string	request){
 	std::string		line;
 	
 	_requestBuffer += request;
@@ -77,54 +97,57 @@ void	ParseRequest::parseLine(std::string request){
 
 		switch (_state){
 			case RequestLine:
-				_request = parseRequestLine(line);				
-				if (!_request)
-					throw ErrorException();
+				_parseRequestLine(line);
 				break;
 			default:
-				if (_request->parseRequest(line) != HTTP_OK)
-					throw ErrorException();
+				_status = _request->parseRequest(line);
 				break;
+			case Error:
+			case Done:
+				_generateResponse();
 		}
-		_requestBuffer.erase(0, _requestBuffer.find("\n") + 1);
+
 		_requestBuffer.find("\r\n") != std::string::npos ?
-			line.erase(0, line.find("\r\n")) : line.erase(0, line.find("\n"));
+			_requestBuffer.erase(0, _requestBuffer.find("\r\n")) :
+				_requestBuffer.erase(0, _requestBuffer.find("\n"));
 	}
-	if (_state == Error)
-		throw ErrorException();
 }
 
-IRequest *ParseRequest::parseRequestLine(std::string &requestLine){
-	IRequest		*Request = NULL;
+void	ProcessRequest::_parseRequestLine(std::string &requestLine){
+	std::string		method;
+	std::string		uri;
+	std::string		version;
+	
 	try {
-		_method = getToken(requestLine);	
-		_uri = getToken(requestLine);
-		_version = getToken(requestLine);
+		method = getToken(requestLine);	
+		uri = getToken(requestLine);
+		version = getToken(requestLine);
 
-		_status = static_cast<e_statusCode>(checkMethod(_method));
-		switch (checkMethod(_method)){
+		_status = static_cast<e_statusCode>(checkMethod(method));
+		switch (checkMethod(method)){
 			case 0:
-				Request = new GetRequest(_method, _uri, _version);
+				_request = new GetRequest(method, uri, version);
 				break;
 			case 1:
-				Request = new PostRequest(_method, _uri, _version);
+				_request = new PostRequest(method, uri, version);
 				break;
 			case 2:
-				Request = new DeleteRequest(_method, _uri, _version);
+				_request = new DeleteRequest(method, uri, version);
 				break;
 			default:
 				_state = Error;
-				return NULL;
+				return;
 		}
-		if ((_status = static_cast<e_statusCode>(checkUri(_uri))) != 200 ||
-			(_status = static_cast<e_statusCode>(checkVersion(_version))) != 200){
+		if ((_status = static_cast<e_statusCode>(checkUri(uri))) != 200 ||
+			(_status = static_cast<e_statusCode>(checkVersion(version))) != 200){
 				_state = Error;
-				return NULL;
+				return;
 		}
 	}catch(const std::out_of_range&){
 		_status = HTTP_BAD_REQUEST;		
 		_state = Error;
+		return;
 	}
 	_state = Headers;
-	return Request;
 }
+

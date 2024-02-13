@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ParseRequest.hpp                                   :+:      :+:    :+:   */
+/*   ProcessRequest.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 16:04:49 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/13 13:17:44 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/13 16:39:58 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 #include <algorithm>
 
 #include "IRequest.hpp"
+#include "Response.hpp"
 #include "GetRequest.hpp"
 #include "PostRequest.hpp"
 #include "DeleteRequest.hpp"
@@ -32,18 +33,19 @@ typedef enum {
 	Error
 } e_parseState;
 
-class ParseRequest {
+class ProcessRequest {
 	private:
 		std::string 	_requestBuffer;
 		e_parseState	_state;
-		std::string 	_method;
-		std::string 	_uri;
-		std::string 	_version;
 		e_statusCode	_status;
 		IRequest*		_request;
+		Response*		_response;
+		bool			_good;
+		void			_parseRequestLine(std::string&	requestLine);
+		void			_generateResponse( void );
 
 	public:
-		ParseRequest();
+		ProcessRequest();
 
 		class ErrorException : public std::exception {
 			public:
@@ -53,9 +55,12 @@ class ParseRequest {
 		};
 
 		void		parseLine(std::string	request);
-		IRequest*	parseRequestLine(std::string&	requestLine); 
+		bool		good( void );
+
+		IRequest*	getRequest( void );
+		Response*	getResponse( void );
 		
-		~ParseRequest(){};
+		~ProcessRequest(){};
 };
 
 /*
