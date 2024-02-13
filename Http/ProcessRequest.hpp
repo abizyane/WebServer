@@ -47,12 +47,12 @@ class ProcessRequest {
 	public:
 		ProcessRequest();
 
-		class ErrorException : public std::exception {
-			public:
-				virtual const char* what() const throw() {
-					return "Error: Invalid request";
-				}
-		};
+		// class ErrorException : public std::exception {
+		// 	public:
+		// 		virtual const char* what() const throw() {
+		// 			return "Error: Invalid request";
+		// 		}
+		// };
 
 		void		parseLine(std::string	request);
 		bool		good( void );

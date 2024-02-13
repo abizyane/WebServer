@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 21:59:15 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/13 17:40:44 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/13 21:27:06 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,8 +20,8 @@ class	GetRequest : public IRequest{
 		std::string							_uri;
 		std::string							_version;
 		std::map<std::string, std::string>	_headers;
-		bool								_parseHeader(std::string &line);
-		bool								_parseBody(std::string &line);
+		int									_parseHeader(std::string &line);
+		int									_parseBody(std::string &line);
 
 	public:
 		GetRequest(std::string &method, std::string &uri, std::string &version);

@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:03:23 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/13 13:08:55 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/13 21:59:48 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,8 +21,8 @@ class	PostRequest : public IRequest{
         std::string							_version;
 		std::map<std::string, std::string>	_headers;
 		std::string							_body;
-		bool								_parseHeader(std::string &line);
-		bool								_parseBody(std::string &line);
+		int									_parseHeader(std::string &line);
+		int									_parseBody(std::string &line);
 		// Response*							_response;
 
 	public:
