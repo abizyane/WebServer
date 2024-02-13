@@ -6,13 +6,17 @@
 /*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:03:23 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/13 21:59:48 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/13 23:51:27 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include "IRequest.hpp"
+
+
+class ProcessRequest;
+// #include "ProcessRequest.hpp"
 
 class	PostRequest : public IRequest{
 	protected:
@@ -23,12 +27,13 @@ class	PostRequest : public IRequest{
 		std::string							_body;
 		int									_parseHeader(std::string &line);
 		int									_parseBody(std::string &line);
-		// Response*							_response;
+		ProcessRequest&						_parse;
 
 	public:
-		PostRequest(std::string &method, std::string &uri, std::string &version);
+		PostRequest(std::string &method, std::string &uri, std::string &version, ProcessRequest& parse);
 
 		e_statusCode	parseRequest(std::string &request);
+		int				checkHeaders( void );
 
 		~PostRequest( void );
 };
