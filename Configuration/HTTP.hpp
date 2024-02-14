@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTP.hpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 11:35:28 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/14 10:28:08 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/02/14 14:31:19 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@
 
 class	HTTP
 {
-	private:
+	protected:
 		std::string					*_root;
 		std::map<int, std::string>	*_errorPage; // TODO: make the value as vector of strings
 		std::set<std::string>		*_allowed;
