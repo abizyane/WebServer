@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   LocationConf.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 11:35:24 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/13 09:54:52 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/02/14 14:23:04 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@ class	LocationConf : public HTTP
 
 		LocationConf&	operator=( const LocationConf& rhs );
 	public:
+		typedef std::vector<std::string>::iterator indexIter;
 		LocationConf( void );
 		~LocationConf( void );
 		LocationConf( LocationConf const& rhs );
@@ -36,7 +37,21 @@ class	LocationConf : public HTTP
 		void	addExtention( const std::string& extention );
 		void	addRedirectpage( int code, const std::string& page );
 		bool	hasRedirect( void ) const;
-		bool	cgiIsAllowed( void ) const;
+		bool	hasCgi( void ) const;
+
+
+		// to implement
+		bool				hasExtention( const std::string& extention );
+		std::string			getRoot( void ) const;
+		std::string			getUploadStore( void ) const;
+		std::string			getErrPage( int code, const std::string& defaultPage );
+		bool				methodIsAllowed( const std::string& method );
+		bool				dirListingEnabled( void ) const;
+		size_t				getClientBodySize( void ) const;
+
+		
+		indexIter	IndexBegin( void );
+		indexIter	IndexEnd( void );
 };
 
 #endif

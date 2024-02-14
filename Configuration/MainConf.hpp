@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   MainConf.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 12:25:47 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/13 06:18:56 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/02/14 14:08:56 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,8 @@ class	MainConf : public HTTP
 		static	MainConf*	getConf( void );
 		void	addServer( ServerConf* server );
 		// ServerConf*	getServerByHostPort(int	port, std::string host);
+
+		std::set<int>	getAllPorts( void ) const;
 };
 
 #endif
