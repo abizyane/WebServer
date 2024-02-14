@@ -6,7 +6,7 @@
 /*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 11:35:31 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/12 12:27:22 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/02/13 06:52:37 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,7 +106,18 @@ void	HTTP::addErrorPage( int code, const std::string& page )
 	(*_errorPage)[code] = page;
 }
 
-void	HTTP::setClientBody( size_t size ) 
+void	HTTP::setClientBody( size_t size )
 {
 	_clientMaxBody = size;
+	_setDirectives.insert("client_body_max_size");
+}
+
+void	HTTP::markDirective( const std::string& directiveName )
+{
+	_setDirectives.insert(directiveName);
+}
+
+bool	HTTP::hasDirective( const std::string& directiveName )
+{
+	return _setDirectives.find(directiveName) != _setDirectives.end();
 }

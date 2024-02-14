@@ -6,7 +6,7 @@
 /*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 12:40:01 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/12 14:59:22 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/02/13 06:38:53 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,14 +94,11 @@ bool	Token::operator!=(const Token& rhs) const
 
 std::ostream&	operator<<(std::ostream& os, const Token& rhs)
 {
-	if (rhs == Token::WORD) {
+	if (rhs == Token::WORD && !rhs.data().empty()) {
 		os << *rhs._data;
-		return os;
+	} else {
+		os << "'" << Token::_keys[rhs._type] << "'";
 	}
-	os << "'" << Token::_keys[rhs._type];
-	if (rhs.isKeyWord())
-		os << " keyword";
-	os << "'";
 	return os;
 }
 

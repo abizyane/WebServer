@@ -6,7 +6,7 @@
 /*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 13:07:21 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/12 14:57:33 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/02/14 10:39:33 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,7 @@ std::map<std::string, Token::token>	initKeywords( void ) {
 	return keywords;
 }
 
+std::map<std::string, Token::token>	Lexer::_keywords = initKeywords();
 
 Lexer::Lexer( const std::string& filePath ) : _line(1)
 {
@@ -59,8 +60,8 @@ void	Lexer::_advance( void )
 
 void	Lexer::_skipComment( void ) 
 {
-	while (_curr != '\n')
-		_advance();		
+	while (_curr != '\n' && _curr != '\0')
+		_advance();
 }
 
 Token	Lexer::_parseWord( void )
@@ -70,6 +71,7 @@ Token	Lexer::_parseWord( void )
 		result += _curr;
 		_advance();
 	}
+	
 	std::map<std::string, Token::token>::iterator res = _keywords.find(result);
 	if (res != _keywords.end())
 		return res->second;
@@ -92,4 +94,9 @@ Token	Lexer::getNextToken( void )
 		}
 	}
 	return Token::_EOF;
+}
+
+ssize_t Lexer::line( void ) const
+{
+	return _line;
 }

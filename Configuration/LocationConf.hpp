@@ -6,7 +6,7 @@
 /*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 11:35:24 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/12 11:58:32 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/02/13 09:54:52 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,11 +24,13 @@ class	LocationConf : public HTTP
 		std::set<std::string>					*_extentions;
 		std::pair<int, std::string>				*_redirect;
 
+
 		LocationConf&	operator=( const LocationConf& rhs );
 	public:
 		LocationConf( void );
 		~LocationConf( void );
 		LocationConf( LocationConf const& rhs );
+		LocationConf( HTTP const& rhs );
 
 		void	addLocation( const std::string& url, LocationConf* location );
 		void	addExtention( const std::string& extention );
