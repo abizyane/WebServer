@@ -6,7 +6,7 @@
 /*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 12:32:57 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/12 14:38:19 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/02/13 06:36:04 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ class	Lexer
 		std::string	_data;
 		char		_curr;
 		
-		std::map<std::string, Token::token>	_keywords;
+		static std::map<std::string, Token::token>	_keywords;
 
 
 		void	_advance( void );
@@ -38,7 +38,8 @@ class	Lexer
 	public:
 		Lexer( const std::string& filePath = CONF_PATH );
 		~Lexer( void );
-		Token	getNextToken( void );		
+		Token	getNextToken( void );
+		ssize_t	line( void ) const;
 };
 
 #endif
