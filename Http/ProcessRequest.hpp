@@ -18,19 +18,19 @@
 #include <utility>
 #include <sstream>
 #include <algorithm>
-
 #include "IRequest.hpp"
-#include "Response.hpp"
 #include "GetRequest.hpp"
 #include "PostRequest.hpp"
 #include "DeleteRequest.hpp"
+#include "Response.hpp"
+
 
 typedef enum {
+	Error,
 	RequestLine,
 	Headers,
 	Body,
-	Done,
-	Error
+	Done
 } e_parseState;
 
 class ProcessRequest {
@@ -47,8 +47,8 @@ class ProcessRequest {
 	public:
 		ProcessRequest();
 
-		void		parseLine(std::string	request);
-		bool		good( void );
+		void			parseLine(std::string	request);
+		bool			good( void );
 
 		IRequest*		getRequest( void );
 		Response*		getResponse( void );
