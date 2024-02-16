@@ -55,7 +55,7 @@ class ProcessRequest {
 		e_parseState	getParseState( void );
 		void			setParseState(e_parseState state);
 
-		~ProcessRequest(){};
+		~ProcessRequest();
 };
 
 /*

@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:05:34 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/16 12:59:01 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/16 18:46:25 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ class	DeleteRequest : public IRequest{
 		bool								_isChunked;
 		size_t								_contentLength;
 		ProcessRequest&						_parse;
+		std::string							_body;
 
 	public:
 		DeleteRequest(std::string &method, std::string &uri, std::string &version, ProcessRequest& parse);
