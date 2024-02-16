@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:04:42 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/16 13:03:55 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/16 18:46:50 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,9 +57,36 @@ e_statusCode	DeleteRequest::checkHeaders(void){
 	return HTTP_OK;
 }
 
-e_statusCode	DeleteRequest::parseBody(std::string &line){
-	(void)line;
-	return (HTTP_OK);
+e_statusCode	DeleteRequest::parseBody(std::string &line){ // TODO: i think that we don't need this function
+	std::stringstream ss(line);
+	std::string	str;
+
+	try{
+		if (!_isChunked){
+			str = ss.str();
+			size_t i = 0;
+			for (; i < _contentLength && i < str.size(); i++)
+				_body += str[i];
+			if(i == _contentLength)
+				_parse.setParseState(Done);
+		}
+		else{
+			std::getline(ss, str, '\n');
+			str.erase(str.find_last_not_of(" \t\n\r\f\v") + 1);
+			size_t	chunkLen = strtoll(str.c_str(), NULL, 16);
+			str.clear();
+			str = ss.str();
+			for (size_t i = 0; i < chunkLen && i < str.size(); i++)
+				_body += str[i];
+			if (chunkLen == 0)
+				_parse.setParseState(Done);
+		}
+	}catch(const std::exception &){
+		_parse.setParseState(Error);
+		return HTTP_BAD_REQUEST;
+	}
+	line.clear();
+    return HTTP_OK;
 }
 
 DeleteRequest::~DeleteRequest( void ){

@@ -16,6 +16,11 @@ ProcessRequest::ProcessRequest() : _state(RequestLine), _status(HTTP_OK),
 	_request(NULL), _response(NULL), _good(false){
 }
 
+ProcessRequest::~ProcessRequest(){
+	delete _request;
+	delete _response;
+}
+
 IRequest*	ProcessRequest::getRequest( void ){
 	return _request;
 }
@@ -69,8 +74,6 @@ static int	checkUri(std::string& uri){
 		return 400;
 	if (uri.size() > 2083) //replace this with the limit specified in the server_context
 		return 414;
-
-	// ...
 	return 200;
 }
 
@@ -94,10 +97,10 @@ void	ProcessRequest::parseLine(std::string	request){
 	_requestBuffer += request;
 	while (_state != Body && (_requestBuffer.find("\r\n") != std::string::npos ||
 			_requestBuffer.find("\n") != std::string::npos)){
+
 		_requestBuffer.find("\r\n") != std::string::npos ?
 			line = _requestBuffer.substr(0, _requestBuffer.find("\r\n")) :
 				line = _requestBuffer.substr(0, _requestBuffer.find("\n"));
-
 		_requestBuffer.find("\r\n") != std::string::npos ?
 			line.erase(line.find("\r\n")) : line.erase(line.find("\n"));
 
@@ -105,7 +108,6 @@ void	ProcessRequest::parseLine(std::string	request){
 			_request->checkHeaders();
 			_state = Body;
 		}
-
 		switch (_state){
 			case RequestLine:
 				_parseRequestLine(line);
