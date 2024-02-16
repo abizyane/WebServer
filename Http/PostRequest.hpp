@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:03:23 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/13 23:51:27 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/16 12:54:20 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,7 @@
 
 #include "IRequest.hpp"
 
-
 class ProcessRequest;
-// #include "ProcessRequest.hpp"
 
 class	PostRequest : public IRequest{
 	protected:
@@ -25,17 +23,19 @@ class	PostRequest : public IRequest{
         std::string							_version;
 		std::map<std::string, std::string>	_headers;
 		std::string							_body;
-		int									_parseHeader(std::string &line);
-		int									_parseBody(std::string &line);
+		bool								_isChunked;
+		size_t								_contentLength;
 		ProcessRequest&						_parse;
+
 
 	public:
 		PostRequest(std::string &method, std::string &uri, std::string &version, ProcessRequest& parse);
 
-		e_statusCode	parseRequest(std::string &request);
-		int				checkHeaders( void );
+		e_statusCode	checkHeaders( void );
+		e_statusCode	parseBody(std::string &line);
+		e_statusCode	parseHeader(std::string &line);
 
 		~PostRequest( void );
 };
 
-
+#include "ProcessRequest.hpp"

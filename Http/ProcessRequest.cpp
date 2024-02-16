@@ -90,42 +90,47 @@ void ProcessRequest::_generateResponse( void ){
 
 void	ProcessRequest::parseLine(std::string	request){
 	std::string		line;
-	
+
 	_requestBuffer += request;
-	while (_requestBuffer.find("\r\n") != std::string::npos || _requestBuffer.find("\n") != std::string::npos){
+	while (_state != Body && (_requestBuffer.find("\r\n") != std::string::npos ||
+			_requestBuffer.find("\n") != std::string::npos)){
 		_requestBuffer.find("\r\n") != std::string::npos ?
 			line = _requestBuffer.substr(0, _requestBuffer.find("\r\n")) :
 				line = _requestBuffer.substr(0, _requestBuffer.find("\n"));
-		
+
 		_requestBuffer.find("\r\n") != std::string::npos ?
 			line.erase(line.find("\r\n")) : line.erase(line.find("\n"));
 
-		if (_state == Headers && line.empty())
+		if (_state == Headers && line.empty()){
+			_request->checkHeaders();
 			_state = Body;
+		}
 
 		switch (_state){
 			case RequestLine:
 				_parseRequestLine(line);
 				break;
+			case Headers:
+				_status = _request->parseHeader(line);
 			default:
-				_status = _request->parseRequest(line);
 				break;
-			case Error:
-			case Done:
-				_generateResponse();
 		}
-
 		_requestBuffer.find("\r\n") != std::string::npos ?
 			_requestBuffer.erase(0, _requestBuffer.find("\r\n")) :
 				_requestBuffer.erase(0, _requestBuffer.find("\n"));
 	}
+	if (_state == Body)
+		_status = _request->parseBody(_requestBuffer);
+
+	if (_state == Error || _state == Done)
+		_generateResponse();
 }
 
 void	ProcessRequest::_parseRequestLine(std::string &requestLine){
 	std::string		method;
 	std::string		uri;
 	std::string		version;
-	
+
 	try {
 		method = getToken(requestLine);	
 		uri = getToken(requestLine);
