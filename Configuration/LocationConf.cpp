@@ -6,7 +6,7 @@
 /*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 11:36:53 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/14 16:06:00 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/02/15 10:09:28 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,4 +98,34 @@ std::string		LocationConf::getErrPage( int code, const std::string& defaultPag )
 		return (defaultPag);
 	std::map<int, std::string>::iterator it = _errorPage->find(code);
 	return ((it == _errorPage->end()) ? defaultPag : it->second);
+}
+
+bool	LocationConf::methodIsAllowed( const std::string& method) const
+{
+	if (_allowed == NULL)
+		return (true);	// still need to check if true or false in this case.
+	std::set<std::string>::iterator it = _allowed->find( method );
+	return (it != _allowed->end());
+}
+
+bool	LocationConf::dirListingEnabled() const
+{
+	return (_autoIndex);
+}
+
+size_t	LocationConf::getClientBodySize( void ) const
+{
+	return (_clientMaxBody);
+}
+
+// to review
+
+indexIter	LocationConf::IndexBegin( void )
+{
+	return (itbegin);
+}
+
+indexIter	LocationConf::IndexEnd( void )
+{
+	return (itend);
 }
