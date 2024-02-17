@@ -6,7 +6,7 @@
 /*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 11:36:53 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/12 12:06:37 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/02/13 09:21:34 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,11 @@
 
 
 LocationConf::LocationConf( void ) : HTTP(), _locations(NULL), _extentions(NULL)
+	, _redirect(NULL)
+{
+}
+
+LocationConf::LocationConf( HTTP const& rhs ) : HTTP(rhs), _locations(NULL), _extentions(NULL)
 	, _redirect(NULL)
 {
 }
@@ -69,3 +74,4 @@ bool	LocationConf::hasRedirect( void ) const
 {
 	return	_redirect != NULL; 	
 }
+
