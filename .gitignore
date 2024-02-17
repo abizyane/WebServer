@@ -31,3 +31,7 @@
 *.out
 *.app
 Makefile
+main.cpp
+.vscode
+brew-nginx.sh
+.DS_Store

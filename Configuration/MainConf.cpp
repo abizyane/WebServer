@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   MainConf.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 12:19:15 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/12 12:27:47 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/02/16 17:56:59 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,4 +42,20 @@ MainConf*	MainConf::getConf( void )
 void	MainConf::addServer( ServerConf* server )
 {
 	_servers.push_back(server);
+}
+
+std::set<unsigned int>	MainConf::getAllPorts( void ) const
+{
+	std::set<unsigned int> allports;
+	std::vector<ServerConf*>::const_iterator	it = _servers.begin();
+	for (; it != _servers.end(); it++)
+		(*it)->getPorts(allports);
+	return (allports);
+}
+
+//	Could be used later ... 
+
+const std::vector<ServerConf*>	&MainConf::getServersConf( void ) const
+{
+	return (_servers);
 }
