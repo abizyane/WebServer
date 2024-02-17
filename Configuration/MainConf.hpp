@@ -6,7 +6,7 @@
 /*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 12:25:47 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/12 15:04:03 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/02/13 06:18:56 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,17 +23,16 @@ class	MainConf : public HTTP
 {
 	private:
 		std::vector<ServerConf*>	_servers;
-		static	MainConf*	_instance;
+		static	MainConf*			_instance;
 
 		MainConf&	operator=( const MainConf& rhs );
 		MainConf( void );
+
+
 	public:
 		~MainConf( void );
-
 		static	MainConf*	getConf( void );
-		
 		void	addServer( ServerConf* server );
-	
 		// ServerConf*	getServerByHostPort(int	port, std::string host);
 };
 

@@ -6,14 +6,14 @@
 /*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 12:06:59 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/12 12:17:41 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/02/13 13:57:29 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ServerConf.hpp"
 
 
-ServerConf::ServerConf( void ) : HTTP(), _hostNames(NULL), _ports(NULL)
+ServerConf::ServerConf( void ) : HTTP(), _hostNames(NULL), _ports(NULL), _locations(NULL)
 {
 }
 
@@ -24,7 +24,7 @@ ServerConf::~ServerConf( void )
 	delete	_locations;
 }
 
-ServerConf::ServerConf( ServerConf const& rhs ) : HTTP(rhs), _hostNames(NULL), _ports(NULL) 
+ServerConf::ServerConf( ServerConf const& rhs ) : HTTP(rhs), _hostNames(NULL), _ports(NULL)
 	,_locations(NULL)
 {
 }
@@ -53,8 +53,9 @@ void	ServerConf::addPort( unsigned int port )
 
 void	ServerConf::addLocation( const std::string& url, LocationConf* location )
 {
-	if (_locations == NULL)
+	if (_locations == NULL) {
 		_locations = new std::map<std::string, LocationConf*>();
+	}
 	(*_locations)[url] = location;
 }
 
