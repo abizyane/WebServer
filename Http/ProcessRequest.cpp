@@ -41,6 +41,14 @@ void	ProcessRequest::setParseState(e_parseState state){
 	_state = state;
 }
 
+e_statusCode	ProcessRequest::getStatusCode( void ){
+	return _status;
+}
+
+std::string	ProcessRequest::getResponseBuffer( void ){
+	return _responseBuffer;
+}
+
 static std::string	getToken(std::string line) {
 		std::string		token;
 		size_t			index = line.find_first_of(' ');
@@ -84,9 +92,9 @@ static int	checkVersion(std::string& version){
 }
 
 void ProcessRequest::_generateResponse( void ){
-	// ...
-
-
+	_response = new Response(*_request);
+	
+	_responseBuffer = _response->GetResponse();
 	if (_response->good())
 		_good = true;
 }

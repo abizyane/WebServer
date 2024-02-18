@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 21:58:16 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/16 18:45:17 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/18 12:19:27 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,27 @@ GetRequest::GetRequest(std::string &method, std::string &uri, std::string &versi
 	_isChunked = false;
 	_contentLength = 0;
 	_hasBody = false;
+	_bodyIndex = 0;
+}
+
+std::string		GetRequest::getMethod( void ) const{
+	return _method;
+}
+
+std::string		GetRequest::getUri( void ) const{
+	return _uri;
+}
+
+std::map<std::string, std::string>	GetRequest::getHeaders( void ) const{
+	return _headers;
+}
+
+std::string		GetRequest::getBody( void ) const{
+	return _body;
+}
+
+ProcessRequest&	GetRequest::getParse( void ) const{
+	return _parse;
 }
 
 e_statusCode	GetRequest::checkHeaders(void){
@@ -64,9 +85,10 @@ e_statusCode	GetRequest::parseBody(std::string &line){ // TODO: i think that we 
 	try{
 		if (!_isChunked){
 			str = ss.str();
-			size_t i = 0;
+			size_t i = _bodyIndex;
 			for (; i < _contentLength && i < str.size(); i++)
 				_body += str[i];
+			_bodyIndex = i;
 			if(i == _contentLength)
 				_parse.setParseState(Done);
 		}
@@ -76,8 +98,10 @@ e_statusCode	GetRequest::parseBody(std::string &line){ // TODO: i think that we 
 			size_t	chunkLen = strtoll(str.c_str(), NULL, 16);
 			str.clear();
 			str = ss.str();
-			for (size_t i = 0; i < chunkLen && i < str.size(); i++)
+			size_t i = _bodyIndex;
+			for (; i < chunkLen && i < str.size(); i++)
 				_body += str[i];
+			_bodyIndex = i;
 			if (chunkLen == 0)
 				_parse.setParseState(Done);
 		}
