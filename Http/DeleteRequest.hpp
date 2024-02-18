@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:05:34 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/16 18:46:25 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/18 12:19:59 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@ class	DeleteRequest : public IRequest{
 		std::string							_version;
 		std::map<std::string, std::string>	_headers;
 		bool								_hasBody;
+		size_t								_bodyIndex;
 		bool								_isChunked;
 		size_t								_contentLength;
 		ProcessRequest&						_parse;
@@ -34,6 +35,12 @@ class	DeleteRequest : public IRequest{
 		e_statusCode	checkHeaders( void );
 		e_statusCode	parseBody(std::string &line);	
 		e_statusCode	parseHeader(std::string &line);
+
+		std::string			getMethod( void ) const;
+		std::string			getUri( void ) const;
+		std::map<std::string, std::string>	getHeaders( void ) const;
+		std::string			getBody( void ) const;
+		ProcessRequest&		getParse( void ) const;
 
 		~DeleteRequest( void );
 };

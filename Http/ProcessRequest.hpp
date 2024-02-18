@@ -22,8 +22,8 @@
 #include "GetRequest.hpp"
 #include "PostRequest.hpp"
 #include "DeleteRequest.hpp"
-#include "Response.hpp"
 
+class Response;
 
 typedef enum {
 	Error,
@@ -41,6 +41,7 @@ class ProcessRequest {
 		IRequest*		_request;
 		Response*		_response;
 		bool			_good;
+		std::string		_responseBuffer;
 		void			_parseRequestLine(std::string&	requestLine);
 		void			_generateResponse( void );
 
@@ -53,11 +54,15 @@ class ProcessRequest {
 		IRequest*		getRequest( void );
 		Response*		getResponse( void );
 		e_parseState	getParseState( void );
+		e_statusCode	getStatusCode( void );
+		std::string		getResponseBuffer( void );
+
 		void			setParseState(e_parseState state);
 
 		~ProcessRequest();
 };
 
+#include "Response.hpp"
 /*
 
 requestMethod = GET | POST | DELETE

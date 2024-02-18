@@ -6,33 +6,38 @@
 /*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:07:10 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/13 18:05:35 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/18 12:51:45 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 
 #pragma once
 
-#include "IRequest.hpp"
+#include "ProcessRequest.hpp"
+#include "../Configuration/MainConf.hpp"
 #include <iostream>
 
 class Response {
 	private :
-		const IRequest*						_request;
+		IRequest*							_request;
+		std::string							_requestMethod;
+		std::string							_requestUri;
+		std::map<std::string, std::string>	_requestHeaders;
+		std::string							_requestBody;
+		MainConf*							_mainConf;
 		e_statusCode						_status;
 		bool								_good;
 		std::string							_response;
-		std::string							_responsLine;
 		std::map<std::string, std::string>  _headers;
-		std::string 						_body;
+		std::vector<char>					_body;
 		void								_prepareResponse( void );
 	
 	public :
-		Response(const IRequest& request);
+		Response(IRequest& request);
 
-		bool	good( void );
-		void	processRequest( void );
+		bool			good( void );
 
+		std::string		GetResponse(void);
 		~Response();
 
 };

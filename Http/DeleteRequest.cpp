@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:04:42 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/16 18:46:50 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/18 12:20:32 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,25 @@ DeleteRequest::DeleteRequest(std::string &method, std::string &uri, std::string 
 	_contentLength = 0;
 }
 
+std::string		DeleteRequest::getMethod( void ) const{
+	return _method;
+}
+
+std::string		DeleteRequest::getUri( void ) const{
+	return _uri;
+}
+
+std::map<std::string, std::string>	DeleteRequest::getHeaders( void ) const{
+	return _headers;
+}
+
+std::string		DeleteRequest::getBody( void ) const{
+	return _body;
+}
+
+ProcessRequest&	DeleteRequest::getParse( void ) const{
+	return _parse;
+}
 
 e_statusCode	DeleteRequest::parseHeader(std::string &line){
 	try{
@@ -64,9 +83,10 @@ e_statusCode	DeleteRequest::parseBody(std::string &line){ // TODO: i think that 
 	try{
 		if (!_isChunked){
 			str = ss.str();
-			size_t i = 0;
+			size_t i = _bodyIndex;
 			for (; i < _contentLength && i < str.size(); i++)
 				_body += str[i];
+			_bodyIndex = i;
 			if(i == _contentLength)
 				_parse.setParseState(Done);
 		}
@@ -76,8 +96,10 @@ e_statusCode	DeleteRequest::parseBody(std::string &line){ // TODO: i think that 
 			size_t	chunkLen = strtoll(str.c_str(), NULL, 16);
 			str.clear();
 			str = ss.str();
-			for (size_t i = 0; i < chunkLen && i < str.size(); i++)
+			size_t i = _bodyIndex;
+			for (; i < chunkLen && i < str.size(); i++)
 				_body += str[i];
+			_bodyIndex = i;
 			if (chunkLen == 0)
 				_parse.setParseState(Done);
 		}
