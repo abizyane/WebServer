@@ -16,11 +16,6 @@ ProcessRequest::ProcessRequest() : _state(RequestLine), _status(HTTP_OK),
 	_request(NULL), _response(NULL), _good(false){
 }
 
-ProcessRequest::~ProcessRequest(){
-	delete _request;
-	delete _response;
-}
-
 IRequest*	ProcessRequest::getRequest( void ){
 	return _request;
 }
@@ -172,4 +167,9 @@ void	ProcessRequest::_parseRequestLine(std::string &requestLine){
 		return;
 	}
 	_state = Headers;
+}
+
+ProcessRequest::~ProcessRequest(){
+	delete _request;
+	delete _response;
 }

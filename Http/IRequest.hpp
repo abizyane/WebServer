@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 15:57:05 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/16 12:51:07 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/19 11:03:50 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,8 @@
 
 #include <iostream>
 #include <map>
+
+class ProcessRequest;
 
 typedef enum{
 	HTTP_OK = 200,
@@ -36,9 +38,16 @@ typedef enum{
 
 class IRequest {
 	public:
-		virtual e_statusCode	checkHeaders( void ) = 0;
-		virtual e_statusCode	parseHeader(std::string&	line) = 0;
-		virtual e_statusCode	parseBody(std::string&		line) = 0;
+		virtual e_statusCode						checkHeaders( void ) = 0;
+		virtual e_statusCode						parseHeader(std::string&	line) = 0;
+		virtual e_statusCode						parseBody(std::string&		line) = 0;
+		virtual std::string							getMethod( void ) const = 0;
+		virtual std::string							getUri( void ) const = 0;
+		virtual std::map<std::string, std::string>	getHeaders( void ) const = 0;
+		virtual std::string							getBody( void ) const = 0;
+		virtual ProcessRequest&						getParse( void ) const = 0;
 
 		virtual ~IRequest(){};
 };
+
+#include "ProcessRequest.hpp"
