@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConf.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 12:06:59 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/13 13:57:29 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/02/16 14:29:46 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,3 +59,29 @@ void	ServerConf::addLocation( const std::string& url, LocationConf* location )
 	(*_locations)[url] = location;
 }
 
+// newly implemented 
+
+bool	ServerConf::hasHostName( const std::string hostname ) const
+{
+	if (_hostNames == NULL)
+		return (false);
+	std::set<std::string>::iterator it = _hostNames->find(hostname);
+	return (it != _hostNames->end());
+}
+
+bool	ServerConf::hasPort( const int& port) const
+{
+	if ( _ports == NULL )
+		return (false);
+	std::set<unsigned int>::iterator it = _ports->find(port);
+	return (it != _ports->end());
+}
+
+void	ServerConf::getPorts( std::set<unsigned int>& ports )
+{
+	if (_ports == NULL)
+		return ;
+	std::set<unsigned int>::iterator it = _ports->begin();
+	for (; it != _ports->end(); it++)
+		ports.insert(*it);
+}

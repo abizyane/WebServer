@@ -212,7 +212,7 @@ ServerConf*	Parser::_parseServer( void ) // TODO:
 				break;
 			}
 			default:
-				error(5, str("unexpected token "), str(_currTok), str(" at: "), str(CONF_PATH), str(_lex.line()));
+				error(6, str("unexpected token "), str(_currTok), str(" at: "), str(CONF_PATH), str(":"), str(_lex.line()));
 		}
 	}
 	_advance(Token::CLOSE_CURLY);
@@ -276,7 +276,7 @@ std::pair<std::string, LocationConf*>	Parser::_parseLocation( void ) // TODO:
 				break;
 			}
 			default:
-				error(5, str("unexpected token "), str(_currTok), str(" at: "), str(CONF_PATH), str(_lex.line()));
+				error(6, str("unexpected token "), str(_currTok), str(" at: "), str(CONF_PATH), str(":"), str(_lex.line()));
 		}
 	}
 	ans.second = location;

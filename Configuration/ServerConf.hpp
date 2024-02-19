@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConf.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 12:00:37 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/12 12:14:58 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/02/15 10:21:03 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,11 @@ class	ServerConf : public HTTP
 		void	addHostName( const std::string& hostName );
 		void	addPort( unsigned int port );
 		void	addLocation( const std::string& url, LocationConf* location );
+
+		// to implement
+		bool	hasHostName( const std::string hostname ) const;
+		bool	hasPort( const int& port ) const;
+		void	getPorts( std::set<unsigned int>& ports );
 };
 
 #endif
