@@ -90,8 +90,7 @@ void ProcessRequest::_generateResponse( void ){
 	_response = new Response(*_request);
 	
 	_responseBuffer = _response->GetResponse();
-	if (_response->good())
-		_good = true;
+	_good = true;
 }
 
 void	ProcessRequest::parseLine(std::string	request){
