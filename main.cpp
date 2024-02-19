@@ -3,20 +3,32 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
+/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 15:40:10 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/17 13:58:23 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/18 15:14:58 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Parser/Parser.hpp"
+#include "Core/Server.hpp"
+#include "Configuration/MainConf.hpp"
+
+
+void	lk()
+{
+	system("leaks main");
+}
+
 
 int main()
 {
 	Parser	parser;
 	try {
 		parser.parse();
+		Server	*server = new Server();
+		
+		server->ServerCoreHandle();
 	} catch (std::exception & e) {
 		std::cerr << e.what() << '\n';
 	} catch (...) {
