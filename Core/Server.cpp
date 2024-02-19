@@ -6,13 +6,11 @@
 /*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/15 11:19:53 by nakebli           #+#    #+#             */
-/*   Updated: 2024/02/16 18:15:44 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/02/19 14:15:19 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
-#include "../utils/utils.hpp"
-
 
 Server::Server()
 {
@@ -46,28 +44,93 @@ Server::Server()
 		exit(0);
 }
 
+ClientIter	Server::findClient(int fd)
+{
+	if (_clients.empty()) return _clients.end();
+	ClientIter client = _clients.begin();
+	for (; client != _clients.end(); client++)
+	{
+		if (fd == (*client)->fd)
+			break ;
+	}
+	return (client);
+}
+
+SockIter	Server::findServerSock( int fd )
+{
+	std::vector<Socket>::iterator sock = _sockets.begin();
+	for (; sock != _sockets.end(); sock++)
+		if (sock->getFd() == fd)
+			break;
+	return sock;
+}
+
+void			Server::handleListner( int i )
+{
+	if (_pollfds[i].revents & POLLERR)
+		std::cerr << "POLLERR cought\n";
+	else if (_pollfds[i].revents & POLLHUP)
+		std::cerr << "POLLHUP cought\n";
+	else if (_pollfds[i].revents & POLLERR)
+		std::cerr << "POLLERR cought\n";
+	else if ((_pollfds[i].revents & POLLIN) == POLLIN)
+	{
+		ClientInfo *client = new ClientInfo(_pollfds[i].fd);
+		_pollfds.pushFd(client->fd);
+		_clients.push_back(client);
+	}
+}
+bool			Server::handleRequest( int i )
+{
+	ClientIter	client = findClient(_pollfds[i].fd);
+	char    buffer[4096] = {0};
+    int rcv = recv((*client)->fd, buffer, sizeof(buffer), 0);
+	if (rcv < 0)
+	{
+		std::cerr	<< "error recieving client request: "
+					<< strerror(errno) << std::endl;
+		return false;
+	}
+	else if (rcv == 0)
+	{
+		close ((*client)->fd);
+		_clients.erase(client);
+		_pollfds.erase((*client)->fd);
+		return false;
+	}
+	else
+	{
+		// ProcessRequest p = (*client)->prq;
+		// std::cout << buffer << std::endl;
+		// p.parseLine(buffer);
+		// std::cout << "hehehe\n";
+		// if (p.good())
+		// {
+		// 	std::string response = "HTTP/1.1 200 OK\r\nContent-Length: 12\r\n\r\n";
+		// 	response += "Hello World!";
+		// 	send ((*client)->fd, response.c_str(), response.size(), 0);
+		// }
+		return true;
+	}
+}
+
 //	TODO : IMPLEMET 
 
-void	Server::ServerCoreHandle()
+void	Server::ServerCoreHandle( void )
 {
 	while (true)
 	{
+		signal(SIGPIPE, SIG_IGN);
 		if (!_pollfds.poll())
 			continue ;
 		for (size_t i = 0; i < _pollfds.size(); i++)
 		{
-			if (_pollfds[i].events & _pollfds[i].revents)
+			if (findServerSock(_pollfds[i].fd) != _sockets.end()) // if the socket is a server (listner) socket 
+				handleListner(i);
+			else if (_pollfds[i].revents & POLLIN) // if it's a client socket
 			{
-				if (std::find(_sockets.begin(), _sockets.end(), _pollfds[i].fd) != _sockets.end())
-				{
-					if ( _pollfds[i].revents & POLLIN ) {
-						std::cout << "POLLIN came to me \n";
-                    }
-				}
-				else
-				{
-					std::cout << "Not a Server Sock \n";
-				}
+				if (!handleRequest(i))
+					continue;
 			}
 		}
 	}

@@ -6,7 +6,7 @@
 /*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 15:40:10 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/16 18:16:01 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/02/18 15:14:58 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,14 +15,19 @@
 #include "Configuration/MainConf.hpp"
 
 
+void	lk()
+{
+	system("leaks main");
+}
+
+
 int main()
 {
 	Parser	parser;
 	try {
 		parser.parse();
 		Server	*server = new Server();
-		server->printSockets();
-		server->printPollfds();
+		
 		server->ServerCoreHandle();
 	} catch (std::exception & e) {
 		std::cerr << e.what() << '\n';
