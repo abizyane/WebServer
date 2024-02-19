@@ -6,14 +6,14 @@
 /*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:04:42 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/18 12:20:32 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/19 16:34:59 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "DeleteRequest.hpp"
 
-DeleteRequest::DeleteRequest(std::string &method, std::string &uri, std::string &version, ProcessRequest& parse)
-	: _method(method), _uri(uri), _version(version), _parse(parse){
+DeleteRequest::DeleteRequest(std::string &method, std::string &uri, ProcessRequest& parse)
+	: _method(method), _uri(uri), _version("HTTP/1.1"), _parse(parse){
 	_hasBody = false;
 	_isChunked = false;
 	_contentLength = 0;

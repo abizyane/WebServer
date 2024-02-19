@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:05:34 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/19 11:01:59 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/19 16:34:20 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ class	DeleteRequest : public IRequest{
 		std::string							_body;
 
 	public:
-		DeleteRequest(std::string &method, std::string &uri, std::string &version, ProcessRequest& parse);
+		DeleteRequest(std::string &method, std::string &uri, ProcessRequest& parse);
 
 		e_statusCode						checkHeaders( void );
 		e_statusCode						parseBody(std::string &line);

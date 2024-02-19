@@ -87,7 +87,7 @@ static int	checkVersion(std::string& version){
 }
 
 void ProcessRequest::_generateResponse( void ){
-	_response = new Response(*_request);
+	_response = new Response(*_request, *this);
 	
 	_responseBuffer = _response->GetResponse();
 	_good = true;
@@ -103,8 +103,6 @@ void	ProcessRequest::parseLine(std::string	request){
 		_requestBuffer.find("\r\n") != std::string::npos ?
 			line = _requestBuffer.substr(0, _requestBuffer.find("\r\n")) :
 				line = _requestBuffer.substr(0, _requestBuffer.find("\n"));
-		_requestBuffer.find("\r\n") != std::string::npos ?
-			line.erase(line.find("\r\n")) : line.erase(line.find("\n"));
 
 		if (_state == Headers && line.empty()){
 			_request->checkHeaders();
@@ -120,8 +118,8 @@ void	ProcessRequest::parseLine(std::string	request){
 				break;
 		}
 		_requestBuffer.find("\r\n") != std::string::npos ?
-			_requestBuffer.erase(0, _requestBuffer.find("\r\n")) :
-				_requestBuffer.erase(0, _requestBuffer.find("\n"));
+			_requestBuffer.erase(0, _requestBuffer.find("\r\n") + 2) :
+				_requestBuffer.erase(0, _requestBuffer.find("\n") + 1);
 	}
 	if (_state == Body)
 		_status = _request->parseBody(_requestBuffer);
@@ -143,13 +141,13 @@ void	ProcessRequest::_parseRequestLine(std::string &requestLine){
 		_status = static_cast<e_statusCode>(checkMethod(method));
 		switch (checkMethod(method)){
 			case 0:
-				_request = new GetRequest(method, uri, version, *this);
+				_request = new GetRequest(method, uri, *this);
 				break;
 			case 1:
-				_request = new PostRequest(method, uri, version, *this);
+				_request = new PostRequest(method, uri, *this);
 				break;
 			case 2:
-				_request = new DeleteRequest(method, uri, version, *this);
+				_request = new DeleteRequest(method, uri, *this);
 				break;
 			default:
 				_state = Error;

@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:03:23 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/19 11:01:52 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/19 16:33:12 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ class	PostRequest : public IRequest{
 
 
 	public:
-		PostRequest(std::string &method, std::string &uri, std::string &version, ProcessRequest& parse);
+		PostRequest(std::string &method, std::string &uri, ProcessRequest& parse);
 
 		e_statusCode						checkHeaders( void );
 		e_statusCode						parseBody(std::string &line);

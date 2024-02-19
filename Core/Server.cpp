@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/15 11:19:53 by nakebli           #+#    #+#             */
-/*   Updated: 2024/02/19 14:31:23 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/19 16:59:29 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,13 +100,10 @@ bool			Server::handleRequest( int i )
 	}
 	else
 	{
-		ProcessRequest p = (*client)->prq;
-		std::cout << buffer << std::endl;
-		p.parseLine(buffer);
-		// std::cout << "hehehe\n";
-		if (p.good())
+		(*client)->prq.parseLine(buffer);
+		if ((*client)->prq.good())
 		{
-			std::string response = p.getResponse()->GetResponse();
+			std::string response = (*client)->prq.getResponseBuffer();
 			send ((*client)->fd, response.c_str(), response.size(), 0);
 		}
 		return true;

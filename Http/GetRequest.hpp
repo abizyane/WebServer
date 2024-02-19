@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 21:59:15 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/19 11:01:36 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/19 16:37:25 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ class	GetRequest : public IRequest{
 		ProcessRequest&						_parse;
 
 	public:
-		GetRequest(std::string &method, std::string &uri, std::string &version, ProcessRequest& parse);
+		GetRequest(std::string &method, std::string &uri, ProcessRequest& parse);
 
 		e_statusCode						checkHeaders( void );
 		e_statusCode						parseBody(std::string &line);
