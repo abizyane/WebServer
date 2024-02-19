@@ -6,15 +6,15 @@
 /*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 21:58:16 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/18 12:19:27 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/19 16:58:37 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "GetRequest.hpp"
 
 
-GetRequest::GetRequest(std::string &method, std::string &uri, std::string &version, ProcessRequest& parse)
-	: _method(method), _uri(uri), _version(version), _parse(parse){
+GetRequest::GetRequest(std::string &method, std::string &uri, ProcessRequest& parse)
+	: _method(method), _uri(uri), _version("HTTP/1.1"), _parse(parse){
 	_isChunked = false;
 	_contentLength = 0;
 	_hasBody = false;

@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:07:10 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/19 12:27:37 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/19 16:48:52 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 class Response {
 	private :
 		IRequest*							_request;
+		ProcessRequest*						_parse;
 		std::string							_requestMethod;
 		std::string							_requestUri;
 		std::map<std::string, std::string>	_requestHeaders;
@@ -38,7 +39,7 @@ class Response {
 		void								_prepareResponse( void );
 	
 	public :
-		Response(IRequest& request);
+		Response(IRequest& request, ProcessRequest& parse);
 
 		bool			good( void );
 

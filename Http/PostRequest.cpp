@@ -6,14 +6,14 @@
 /*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:03:16 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/18 12:20:46 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/19 16:34:42 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "PostRequest.hpp"
 
-PostRequest::PostRequest(std::string &method, std::string &uri, std::string &version, ProcessRequest& parse)
-    : _method(method), _uri(uri), _version(version), _parse(parse){
+PostRequest::PostRequest(std::string &method, std::string &uri, ProcessRequest& parse)
+    : _method(method), _uri(uri), _version("HTTP/1.1"), _parse(parse){
 	_contentLength = 0;
 	_isChunked = false;
 }

@@ -6,18 +6,22 @@
 /*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/19 12:32:26 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/19 16:54:39 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Response.hpp"
 
-Response::Response(IRequest &request): _request(&request), _good(false){
-	_requestMethod = _request->getMethod();
-	_requestUri = _request->getUri();
-	_requestHeaders = _request->getHeaders();
-	_requestBody = _request->getBody();
-	_status = _request->getParse().getStatusCode();
+Response::Response(IRequest &request, ProcessRequest& parse): _request(&request), _parse(&parse), _good(false){
+	if (_request != NULL){
+		_requestMethod = _request->getMethod();
+		_requestUri = _request->getUri();
+		_requestHeaders = _request->getHeaders();
+		_requestBody = _request->getBody();
+		_status = _request->getParse().getStatusCode();
+	}
+	else
+		_status = _parse->getStatusCode();
 	_mainConf = MainConf::getConf();
 	_prepareResponse();
 }
@@ -35,13 +39,13 @@ void	Response::_buildResponse(){
 		_response += "HTTP/1.1 404 Not Found\r\n";
 	_response += "Server: Nginx++/1.0.0 (Unix)\r\n";
 	_response += "Content-Type: text/html\r\n";
-	_response += "Content-Length: 0\r\n";
+	_response += "Content-Length: 45\r\n";
 	_response += "Connection: close\r\n";
 	_response += "\r\n";
 	// if (_status == HTTP_OK)
-	// 	response += "<html><body><h1>It works!</h1></body></html>";
+	_response += "<html><body><h1>It works!</h1></body></html>";
 	// else
-	// 	response += DefaultPages::getPage(HTTP_NOT_FOUND);
+	// 	_response += DefaultPages::getPage(HTTP_NOT_FOUND);
 }
 
 void	Response::_processGetResponse(){
@@ -65,8 +69,10 @@ void    Response::_prepareResponse(){
 					case 1:
 						_processPostResponse();
 						break;
-					default:
+					case 2:
 						_processDeleteResponse();
+					default:
+						break;
 				}
 	}
 	_buildResponse();
