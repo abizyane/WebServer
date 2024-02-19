@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/19 11:07:58 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/19 12:32:26 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,34 +19,63 @@ Response::Response(IRequest &request): _request(&request), _good(false){
 	_requestBody = _request->getBody();
 	_status = _request->getParse().getStatusCode();
 	_mainConf = MainConf::getConf();
+	_prepareResponse();
 }
 
 bool    Response::good(){
 	return _good;
 }
 
+void	Response::_buildResponse(){
+	// TODO: prapare the response based on the response data
+	// this function now is just for testing
+	if (_status == HTTP_OK)
+		_response += "HTTP/1.1 200 OK\r\n";
+	else
+		_response += "HTTP/1.1 404 Not Found\r\n";
+	_response += "Server: Nginx++/1.0.0 (Unix)\r\n";
+	_response += "Content-Type: text/html\r\n";
+	_response += "Content-Length: 0\r\n";
+	_response += "Connection: close\r\n";
+	_response += "\r\n";
+	// if (_status == HTTP_OK)
+	// 	response += "<html><body><h1>It works!</h1></body></html>";
+	// else
+	// 	response += DefaultPages::getPage(HTTP_NOT_FOUND);
+}
+
+void	Response::_processGetResponse(){
+}
+
+void	Response::_processPostResponse(){
+}
+
+void	Response::_processDeleteResponse(){
+}
+
 void    Response::_prepareResponse(){
-	// _response = ...
+	if (_status == HTTP_OK){
+		std::string  methods[3] = {"GET", "POST", "DELETE"};
+		for (int i = 0; i < 3; i++)
+			if (_requestMethod == methods[i])
+				switch (i){
+					case 0:
+						_processGetResponse();
+						break;
+					case 1:
+						_processPostResponse();
+						break;
+					default:
+						_processDeleteResponse();
+				}
+	}
+	_buildResponse();
 	_good = true;
 }
 
 std::string    Response::GetResponse(){
-	std::string  response;
-	// this is just for testing
-	// TODO: prapare the response based on the response data
-	if (_status == HTTP_OK)
-		response += "HTTP/1.1 200 OK\r\n";
-	else
-		response += "HTTP/1.1 404 Not Found\r\n";
-	response += "Server: Nginx++/1.0.0 (Unix)\r\n";
-	response += "Content-Type: text/html\r\n";
-	response += "Content-Length: 0\r\n";
-	response += "Connection: close\r\n";
-	response += "\r\n";
-	_good = true;
-	return response;
+	return _response;
 }
 
 Response::~Response(){
-
 }

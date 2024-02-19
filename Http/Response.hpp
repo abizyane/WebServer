@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:07:10 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/18 12:51:45 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/19 12:27:37 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 
 #include "ProcessRequest.hpp"
 #include "../Configuration/MainConf.hpp"
-#include <iostream>
+#include "DefaultPages.hpp"
 
 class Response {
 	private :
@@ -30,6 +30,11 @@ class Response {
 		std::string							_response;
 		std::map<std::string, std::string>  _headers;
 		std::vector<char>					_body;
+		
+		void								_buildResponse( void );
+		void								_processGetResponse( void );
+		void								_processPostResponse( void );
+		void								_processDeleteResponse( void );
 		void								_prepareResponse( void );
 	
 	public :
