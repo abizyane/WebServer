@@ -44,14 +44,13 @@ std::string	ProcessRequest::getResponseBuffer( void ){
 	return _responseBuffer;
 }
 
-static std::string	getToken(std::string line) {
+static std::string	getToken(std::string &line) {
 		std::string		token;
-		size_t			index = line.find_first_of(' ');
-		
+		size_t			index = line.find_first_of(" \t\n\r\f\v");
+
 		token = line.substr(0, index);
 		line.erase(0, index);
 		line.erase(0, line.find_first_not_of(" \t\n\r\f\v"));
-
 		return token;
 }
 
