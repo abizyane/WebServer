@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConf.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 12:06:59 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/16 14:29:46 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/02/20 11:13:22 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,7 @@ void	ServerConf::addLocation( const std::string& url, LocationConf* location )
 
 // newly implemented 
 
-bool	ServerConf::hasHostName( const std::string hostname ) const
+bool	ServerConf::hasHostName( const std::string& hostname ) const
 {
 	if (_hostNames == NULL)
 		return (false);
@@ -84,4 +84,41 @@ void	ServerConf::getPorts( std::set<unsigned int>& ports )
 	std::set<unsigned int>::iterator it = _ports->begin();
 	for (; it != _ports->end(); it++)
 		ports.insert(*it);
+}
+
+void	ServerConf::passDirectiveToRoutes( void )
+{
+	std::map<std::string, LocationConf*>::iterator first = _locations->begin();
+	std::map<std::string, LocationConf*>::iterator last = _locations->end();
+	for (; first != last; first++) {
+		if (this->hasDirective("root") && !first->second->hasDirective("root"))
+			first->second->setRoot(*this->_root);
+		if (this->_uploadStore != NULL && !first->second->hasDirective("upload_store"))
+			first->second->setUploadStore(*this->_uploadStore);
+		if (!first->second->hasDirective("autoindex"))
+			first->second->setAutoIndex(this->_autoIndex);
+		if (!first->second->hasDirective("clientBody"))
+			first->second->setClientBody(this->_clientMaxBody);
+		if (this->_errorPage != NULL) {
+			std::map<int, std::string>::iterator it = _errorPage->begin();
+			std::map<int, std::string>::iterator ite = _errorPage->end();
+			for (; it != ite; it++) {
+				if (!first->second->hasDirective("error_page:" + toString(it->first)))
+					first->second->addErrorPage(it->first, it->second);
+			}
+		}
+		if (this->_allowed != NULL) {
+			std::set<std::string>::iterator it = _allowed->begin();
+			std::set<std::string>::iterator ite = _allowed->end();
+			for (; it != ite; it++)
+				first->second->allowMethod(*it);
+		}
+		if (this->_index != NULL) {
+			std::vector<std::string>::iterator it = _index->begin();
+			std::vector<std::string>::iterator ite = _index->end();
+			for (; it != ite; it++)
+				first->second->addIndex(*it);
+		}
+		first->second->passDirectiveToRoutes();
+	}
 }
