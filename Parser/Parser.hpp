@@ -6,7 +6,7 @@
 /*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 12:33:00 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/13 13:04:23 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/02/20 10:30:58 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ class	Parser
 		// void	_parseLocation(LocationConf& location);
 		void	_parseHost(ServerConf& server);
 		void	_parsePort(ServerConf& location);
-		std::pair<std::string, LocationConf*>	_parseLocation( void );
+		std::pair<std::string, LocationConf*>	_parseLocation( ServerConf& parentServer, std::string parentUri = "" );
 		ServerConf*		_parseServer( void );
 		
 		void	_parseCgi( LocationConf& location );
