@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConf.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 12:00:37 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/15 10:21:03 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/02/20 10:47:16 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,9 +35,10 @@ class	ServerConf : public HTTP
 		void	addLocation( const std::string& url, LocationConf* location );
 
 		// to implement
-		bool	hasHostName( const std::string hostname ) const;
+		bool	hasHostName( const std::string& hostname ) const;
 		bool	hasPort( const int& port ) const;
 		void	getPorts( std::set<unsigned int>& ports );
+		void	passDirectiveToRoutes( void );
 };
 
 #endif
