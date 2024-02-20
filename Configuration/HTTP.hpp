@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTP.hpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 11:35:28 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/14 14:31:19 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/02/20 11:12:58 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 #include <set>
 #include <map>
 #include <vector>
+#include "../utils/utils.hpp"
 
 class	HTTP
 {
