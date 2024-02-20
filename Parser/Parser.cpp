@@ -1,6 +1,5 @@
 #include "Parser.hpp"
 
-
 Parser::Parser( void )
 {
 	conf = MainConf::getConf();
@@ -182,9 +181,9 @@ void	Parser::_parseClientBody(HTTP& httpConf)
 	unsigned int code;
 	if (!(ss >> code) || !ss.eof())
 		error(6, str("invalid client_body_max_size number "), str(_currTok), str(" at: "), str(CONF_PATH), str(":"), str(_lex.line()));
-	if (httpConf.hasDirective("client_body_max_size"))
-		_duplicateError("client_body_max_size");
-	httpConf.markDirective("client_body_max_size");
+	if (httpConf.hasDirective("clientBody"))
+		_duplicateError("clientBody");
+	httpConf.markDirective("clientBody");
 	httpConf.setClientBody(code);
 	_advance(Token::SEMICOLEN);
 }
@@ -207,7 +206,7 @@ ServerConf*	Parser::_parseServer( void ) // TODO:
 			case Token::HOST:		_parseHost(*server); break;
 			case Token::PORT:		_parsePort(*server); break;
 			case Token::LOCATION: {
-				std::pair<std::string, LocationConf*>	loc = _parseLocation();
+				std::pair<std::string, LocationConf*>	loc = _parseLocation( *server );
 				server->addLocation(loc.first, loc.second);
 				break;
 			}
@@ -250,11 +249,11 @@ void	Parser::_parsePort(ServerConf& server)
 	_advance(Token::SEMICOLEN);
 }
 
-std::pair<std::string, LocationConf*>	Parser::_parseLocation( void ) // TODO: 
+std::pair<std::string, LocationConf*>	Parser::_parseLocation( ServerConf& parentServer, std::string parentUri ) // TODO: 
 {
 	_advance(Token::LOCATION);
 	std::pair<std::string, LocationConf*> ans;
-	ans.first = _currTok.data(); // TODO: check route is valid and norm it
+	ans.first =  normPath(parentUri + _currTok.data()); // TODO: check route is valid and norm it
 	_advance(Token::WORD);
 	_advance(Token::OPEN_CURLY);
 	LocationConf*	location = new LocationConf();
@@ -271,7 +270,7 @@ std::pair<std::string, LocationConf*>	Parser::_parseLocation( void ) // TODO:
 			case Token::CGI:		_parseCgi(*location);	break;
 			case Token::RETURN:		_parseRedirect(*location);	break;
 			case Token::LOCATION: {
-				std::pair<std::string, LocationConf*>	res = _parseLocation();
+				std::pair<std::string, LocationConf*>	res = _parseLocation( parentServer, ans.first );
 				location->addLocation(res.first, res.second);
 				break;
 			}

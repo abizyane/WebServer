@@ -6,7 +6,7 @@
 /*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 15:40:10 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/18 15:14:58 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/02/20 11:45:17 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,11 +27,13 @@ int main()
 	try {
 		parser.parse();
 		Server	*server = new Server();
-		
+		server->printSockets();
+		server->printPollfds();
 		server->ServerCoreHandle();
 	} catch (std::exception & e) {
 		std::cerr << e.what() << '\n';
 	} catch (...) {
 		std::cerr << "..." << '\n';
 	}
+	delete MainConf::getConf();
 }
