@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   poller.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/15 14:33:15 by nakebli           #+#    #+#             */
-/*   Updated: 2024/02/15 14:35:45 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/02/17 10:19:18 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,9 +19,9 @@ Poller::Poller( void ) {
 Poller::~Poller( void ) {
 }
 
-void	Poller::pushFd( int fd, short events ) {
-	
-struct pollfd	newFd;
+void	Poller::pushFd( int fd, short events ) 
+{
+	struct pollfd	newFd;
 	newFd.fd = fd;
 	newFd.revents = 0;
 	newFd.events = events;
