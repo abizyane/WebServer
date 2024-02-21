@@ -35,5 +35,4 @@ main.cpp
 .vscode
 brew-nginx.sh
 .DS_Store
-
-
+.vscode
