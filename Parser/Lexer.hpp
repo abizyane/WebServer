@@ -6,7 +6,7 @@
 /*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 12:32:57 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/13 06:36:04 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/02/21 20:47:10 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,8 +17,8 @@
 #include "Token.hpp"
 #include <fstream>
 #include <exception>
+#include "../includes/Constants.hpp"
 
-#define CONF_PATH "./Configuration/servIO.conf"
 
 class	Lexer
 {
@@ -28,6 +28,8 @@ class	Lexer
 		std::string	_data;
 		char		_curr;
 		
+		bool	isOpen;
+
 		static std::map<std::string, Token::token>	_keywords;
 
 
@@ -40,6 +42,8 @@ class	Lexer
 		~Lexer( void );
 		Token	getNextToken( void );
 		ssize_t	line( void ) const;
+		
+		bool	is_open( void ) const;
 };
 
 #endif

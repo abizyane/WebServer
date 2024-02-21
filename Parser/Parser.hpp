@@ -6,7 +6,7 @@
 /*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 12:33:00 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/20 10:30:58 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/02/21 20:47:23 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 #include "Token.hpp"
 #include "Lexer.hpp"
 #include "../Configuration/MainConf.hpp"
+#include "../includes/Constants.hpp"
 #include "../utils/utils.hpp"
 #include <sstream>
 #include <exception>
