@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   LocationConf.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 11:35:24 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/21 19:06:20 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/02/21 20:22:12 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@
 class	LocationConf : public HTTP
 {
 	private:
-		// std::map<std::string, LocationConf*>	*_locations;
+		std::map<std::string, LocationConf*>	*_locations;
 		std::set<std::string>					*_extentions;
 		std::pair<int, std::string>				*_redirect;
 		
@@ -37,13 +37,12 @@ class	LocationConf : public HTTP
 		LocationConf( LocationConf const& rhs );
 		LocationConf( HTTP const& rhs );
 
-		// void	addLocation( const std::string& url, LocationConf* location );
+		void	addLocation( const std::string& url, LocationConf* location );
 		void	addExtention( const std::string& extention );
 		void	addRedirectpage( int code, const std::string& page );
 		bool	hasRedirect( void ) const;
 		bool	hasCgi( void ) const;
 
-		// to implement
 		bool				hasExtention( const std::string& extention );
 		std::string			getRoot( void ) const;
 		std::string			getUploadStore( void ) const;
@@ -52,10 +51,8 @@ class	LocationConf : public HTTP
 		bool				dirListingEnabled( void ) const;
 		size_t				getClientBodySize( void ) const;
 
-
-		// void	passDirectiveToRoutes( void );
-		// indexIter	IndexBegin( void );
-		// indexIter	IndexEnd( void );
+		void	passDirectiveToRoutes( void );
+		LocationConf*	getUri( std::string uri ) const;
 };
 
 #endif

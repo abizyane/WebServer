@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   LocationConf.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 11:36:53 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/21 19:08:49 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/02/21 20:37:50 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,23 +14,24 @@
 #include "../utils/utils.hpp"
 
 
-LocationConf::LocationConf( void ) : HTTP(), _extentions(NULL)
+LocationConf::LocationConf( void ) : HTTP(), _locations(NULL), _extentions(NULL)
 	, _redirect(NULL)
 {
 }
 
-LocationConf::LocationConf( HTTP const& rhs ) : HTTP(rhs), _extentions(NULL)
+LocationConf::LocationConf( HTTP const& rhs ) : HTTP(rhs), _locations(NULL), _extentions(NULL)
 	, _redirect(NULL)
 {
 }
 
 LocationConf::~LocationConf( void )
 {
+	delete	_locations;
 	delete	_extentions;
 	delete 	_redirect;
 }
 
-LocationConf::LocationConf( LocationConf const& rhs ) : HTTP(rhs), _extentions(NULL)
+LocationConf::LocationConf( LocationConf const& rhs ) : HTTP(rhs), _locations(NULL), _extentions(NULL)
 	, _redirect(NULL)
 {
 }
@@ -43,12 +44,12 @@ LocationConf&	LocationConf::operator=( const LocationConf& rhs )
 	return (*this);
 }
 
-// void	LocationConf::addLocation( const std::string& url, LocationConf* location )
-// {
-// 	if (_locations == NULL)
-// 		_locations = new std::map<std::string, LocationConf*>();
-// 	(*_locations)[url] = location;
-// }
+void	LocationConf::addLocation( const std::string& url, LocationConf* location )
+{
+	if (_locations == NULL)
+		_locations = new std::map<std::string, LocationConf*>();
+	(*_locations)[url] = location;
+}
 
 void	LocationConf::addExtention( const std::string& extention )
 {
@@ -118,45 +119,83 @@ size_t	LocationConf::getClientBodySize( void ) const
 	return (_clientMaxBody);
 }
 
-// void	LocationConf::passDirectiveToRoutes( void )
-// {
-// 	std::map<std::string, LocationConf*>::iterator first = _locations->begin();
-// 	std::map<std::string, LocationConf*>::iterator last = _locations->end();
-// 	for (; first != last; first++) {
-// 		if (this->hasDirective("root") && !first->second->hasDirective("root"))
-// 			first->second->setRoot(*this->_root);
-// 		if (this->_uploadStore != NULL && !first->second->hasDirective("upload_store"))
-// 			first->second->setUploadStore(*this->_uploadStore);
-// 		if (!first->second->hasDirective("autoindex"))
-// 			first->second->setAutoIndex(this->_autoIndex);
-// 		if (!first->second->hasDirective("clientBody"))
-// 			first->second->setClientBody(this->_clientMaxBody);
-// 		if (this->_errorPage != NULL) {
-// 			std::map<int, std::string>::iterator it = _errorPage->begin();
-// 			std::map<int, std::string>::iterator ite = _errorPage->end();
-// 			for (; it != ite; it++) {
-// 				if (!first->second->hasDirective("error_page:" + toString(it->first)))
-// 					first->second->addErrorPage(it->first, it->second);
-// 			}
-// 		}
-// 		if (this->_allowed != NULL) {
-// 			std::set<std::string>::iterator it = _allowed->begin();
-// 			std::set<std::string>::iterator ite = _allowed->end();
-// 			for (; it != ite; it++)
-// 				first->second->allowMethod(*it);
-// 		}
-// 		if (this->_index != NULL) {
-// 			std::vector<std::string>::iterator it = _index->begin();
-// 			std::vector<std::string>::iterator ite = _index->end();
-// 			for (; it != ite; it++)
-// 				first->second->addIndex(*it);
-// 		}
-// 		if (_locations != NULL) {
-// 			std::set<std::string>::iterator it = _extentions->begin();
-// 			std::set<std::string>::iterator ite = _extentions->end();
-// 			for (; it != ite; it++)
-// 				first->second->addExtention(*it);
-// 		}
-// 		first->second->passDirectiveToRoutes();
-// 	}
-// }
+void	LocationConf::passDirectiveToRoutes( void )
+{
+	if (_locations == NULL)
+		return ;
+	std::map<std::string, LocationConf*>::iterator first = _locations->begin();
+	std::map<std::string, LocationConf*>::iterator last = _locations->end();
+	for (; first != last; first++) {
+		if (this->hasDirective("root") && !first->second->hasDirective("root")) {
+			first->second->setRoot(*this->_root);
+			first->second->markDirective("root");
+		}
+		if (this->_uploadStore != NULL && !first->second->hasDirective("upload_store")) {
+			first->second->setUploadStore(*this->_uploadStore);
+			first->second->markDirective("upload_store");
+		}
+		if (!first->second->hasDirective("autoindex")) {
+			first->second->setAutoIndex(this->_autoIndex);
+			first->second->markDirective("autoindex");
+		}
+		if (!first->second->hasDirective("clientBody")) {
+			first->second->setClientBody(this->_clientMaxBody);
+			first->second->markDirective("clientBody");
+		}
+		if (this->_errorPage != NULL) {
+			std::map<int, std::string>::iterator it = _errorPage->begin();
+			std::map<int, std::string>::iterator ite = _errorPage->end();
+			for (; it != ite; it++) {
+				if (!first->second->hasDirective("error_page:" + toString(it->first))) {
+					first->second->addErrorPage(it->first, it->second);
+					first->second->markDirective("error_page:" + toString(it->first));
+				}
+			}
+		}
+		if (this->_allowed != NULL) {
+			std::set<std::string>::iterator it = _allowed->begin();
+			std::set<std::string>::iterator ite = _allowed->end();
+			for (; it != ite; it++)
+				first->second->allowMethod(*it);
+		}
+		if (this->_index != NULL) {
+			std::vector<std::string>::iterator it = _index->begin();
+			std::vector<std::string>::iterator ite = _index->end();
+			for (; it != ite; it++)
+				first->second->addIndex(*it);
+		}
+		if (_locations != NULL) {
+			std::set<std::string>::iterator it = _extentions->begin();
+			std::set<std::string>::iterator ite = _extentions->end();
+			for (; it != ite; it++)
+				first->second->addExtention(*it);
+		}
+		first->second->passDirectiveToRoutes();
+	}
+}
+
+
+LocationConf*	LocationConf::getUri( std::string uri ) const
+{
+    uri = normPath(uri);
+	if (_locations == NULL)
+		return NULL;
+    while (uri != "") {
+		if (_locations->find(uri) != _locations->end())
+			return (*_locations)[uri];
+
+		std::map<std::string, LocationConf*>::iterator it = _locations->begin();
+		std::map<std::string, LocationConf*>::iterator ite = _locations->end();
+
+		for (; it != ite; it++) {
+			LocationConf*	ans = it->second->getUri(uri);
+			if (ans != NULL) return ans;
+		}
+
+        std::size_t pos = uri.find_last_of('/');
+        if (pos != std::string::npos) {
+            uri = uri.substr(0, pos + (pos == 0));
+        }
+    }
+    return NULL;
+}

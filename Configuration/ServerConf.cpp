@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConf.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 12:06:59 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/21 19:13:16 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/02/21 20:38:19 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,14 +86,13 @@ void	ServerConf::getPorts( std::set<unsigned int>& ports )
 		ports.insert(*it);
 }
 
-// to check 
 
-bool	ServerConf::hasLocation( std::string path )
-{
-	if (!_locations)
-		return false;
-	return ( _locations->find(path) != _locations->end() );
-}
+// bool	ServerConf::hasLocation( std::string path )
+// {
+// 	if (!_locations)
+// 		return false;
+// 	return ( _locations->find(path) != _locations->end() );
+// }
 
 void	ServerConf::passDirectiveToRoutes( void )
 {
@@ -102,20 +101,30 @@ void	ServerConf::passDirectiveToRoutes( void )
 	std::map<std::string, LocationConf*>::iterator first = _locations->begin();
 	std::map<std::string, LocationConf*>::iterator last = _locations->end();
 	for (; first != last; first++) {
-		if (this->hasDirective("root") && !first->second->hasDirective("root"))
+		if (this->hasDirective("root") && !first->second->hasDirective("root")) {
 			first->second->setRoot(*this->_root);
-		if (this->_uploadStore != NULL && !first->second->hasDirective("upload_store"))
+			first->second->markDirective("root");
+		}
+		if (this->_uploadStore != NULL && !first->second->hasDirective("upload_store")) {
 			first->second->setUploadStore(*this->_uploadStore);
-		if (!first->second->hasDirective("autoindex"))
+			first->second->markDirective("upload_store");
+		}
+		if (!first->second->hasDirective("autoindex")) {
 			first->second->setAutoIndex(this->_autoIndex);
-		if (!first->second->hasDirective("clientBody"))
+			first->second->markDirective("autoindex");
+		}
+		if (!first->second->hasDirective("clientBody")) {
 			first->second->setClientBody(this->_clientMaxBody);
+			first->second->markDirective("clientBody");
+		}
 		if (this->_errorPage != NULL) {
 			std::map<int, std::string>::iterator it = _errorPage->begin();
 			std::map<int, std::string>::iterator ite = _errorPage->end();
 			for (; it != ite; it++) {
-				if (!first->second->hasDirective("error_page:" + toString(it->first)))
+				if (!first->second->hasDirective("error_page:" + toString(it->first))) {
 					first->second->addErrorPage(it->first, it->second);
+					first->second->markDirective("error_page:" + toString(it->first));
+				}
 			}
 		}
 		if (this->_allowed != NULL) {
@@ -130,6 +139,7 @@ void	ServerConf::passDirectiveToRoutes( void )
 			for (; it != ite; it++)
 				first->second->addIndex(*it);
 		}
+		first->second->passDirectiveToRoutes();
 	}
 }
 
@@ -138,31 +148,22 @@ LocationConf*	ServerConf::getUri( std::string uri ) const
     uri = normPath(uri);
 	if (_locations == NULL)
 		return NULL;
-    while (uri != "/" && uri != "") {
-        std::map<std::string, LocationConf*>::iterator it = _locations->find(uri);
-        if (it != _locations->end()) {
-            return it->second;
-        }
+    while (uri != "") {
+		if (_locations->find(uri) != _locations->end())
+			return (*_locations)[uri];
+
+		std::map<std::string, LocationConf*>::iterator it = _locations->begin();
+		std::map<std::string, LocationConf*>::iterator ite = _locations->end();
+
+		for (; it != ite; it++) {
+			LocationConf*	ans = it->second->getUri(uri);
+			if (ans != NULL) return ans;
+		}
 
         std::size_t pos = uri.find_last_of('/');
         if (pos != std::string::npos) {
-            uri = uri.substr(0, pos);
+            uri = uri.substr(0, pos + (pos == 0));
         }
-    }
-
-    std::map<std::string, LocationConf*>::iterator it = _locations->find("/");
-    if (it != _locations->end()) {
-        return it->second;
     }
     return NULL;
 }
-
-/*
-
-	/ {
-		/home {
-			/home/blog
-		}
-	}
-
-*/

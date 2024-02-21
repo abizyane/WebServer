@@ -6,7 +6,7 @@
 /*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 15:02:32 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/21 16:07:11 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/02/21 21:13:34 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,20 +14,7 @@
 #include <sstream>
 #include <string>
 #include <fstream>
-
-#define DEFAULT_ACCESS_LOG "./logs/access"
-#define DEFAULT_ERROR_LOG  "./logs/error"
-
-
-#define RESET   "\033[0m"
-#define BLACK   "\033[0;30m"
-#define RED     "\033[0;31m"
-#define GREEN   "\033[0;32m"
-#define YELLOW  "\033[0;33m"
-#define BLUE    "\033[0;34m"
-#define MAGENTA "\033[0;35m"
-#define CYAN    "\033[0;36m"
-#define WHITE   "\033[0;37m"
+#include "../includes/Constants.hpp"
 
 class	Logger {
 	private:
