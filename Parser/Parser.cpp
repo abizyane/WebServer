@@ -1,7 +1,10 @@
 #include "Parser.hpp"
 
-Parser::Parser( void )
+Parser::Parser( void ) 
 {
+	if (!_lex.is_open()) {
+		throw std::runtime_error((std::string(CONF_PATH) + " could not be opened").c_str());
+	}
 	conf = MainConf::getConf();
 	_currTok = _lex.getNextToken();
 }
@@ -59,10 +62,7 @@ void	Parser::parse( void )
 	}
 	_advance(Token::CLOSE_CURLY);
 	_advance(Token::_EOF);
-
-
 	conf->passDirectiveToServers();
-	
 }
 
 
@@ -259,8 +259,9 @@ std::pair<std::string, LocationConf*>	Parser::_parseLocation( ServerConf& parent
 	std::pair<std::string, LocationConf*> ans;
 	//	check a zakaria wash haka 
 	ans.first =  normPath(parentUri + _currTok.data()); // TODO: norm route it™
-	if (parentServer.hasLocation(ans.first))
+	if (parentServer.hasDirective(ans.first))
 		_duplicateError(ans.first);
+	parentServer.markDirective(ans.first);
 	_advance(Token::WORD);
 	_advance(Token::OPEN_CURLY);
 	LocationConf*	location = new LocationConf();
@@ -288,7 +289,7 @@ std::pair<std::string, LocationConf*>	Parser::_parseLocation( ServerConf& parent
 	ans.second = location;
 	_advance(Token::CLOSE_CURLY);
 	// added the location to the sever
-	parentServer.addLocation(ans.first, ans.second);
+	// parentServer.addLocation(ans.first, ans.second);
 	return (ans);
 }
 
