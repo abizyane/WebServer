@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   MainConf.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 12:25:47 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/20 09:21:26 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/02/21 18:57:18 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,3 +41,6 @@ class	MainConf : public HTTP
 };
 
 #endif
+
+// <std::__1::vector<ServerConf *, std::__1::allocator<ServerConf *> >::const_pointer>
+// <std::__1::vector<ServerConf *, std::__1::allocator<ServerConf *> >::pointer>

@@ -6,7 +6,7 @@
 /*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/15 11:19:53 by nakebli           #+#    #+#             */
-/*   Updated: 2024/02/20 11:37:24 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/02/21 13:09:23 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,6 @@ Server::Server()
 
 	std::set<unsigned int>::iterator	first = ports.begin();
 	std::set<unsigned int>::iterator	last = ports.end();
-
 	for ( ; first != last; first++ ) {
 		Socket	sock;
 		sockaddr_in	addr;
@@ -65,24 +64,25 @@ SockIter	Server::findServerSock( int fd )
 	return sock;
 }
 
-void			Server::handleListner( int i )
+void			Server::handleListner( pollfd structpoll )
 {
-	if (_pollfds[i].revents & POLLERR)
+	if (structpoll.revents & POLLERR)
 		std::cerr << "POLLERR cought\n";
-	else if (_pollfds[i].revents & POLLHUP)
+	else if (structpoll.revents & POLLHUP)
 		std::cerr << "POLLHUP cought\n";
-	else if (_pollfds[i].revents & POLLERR)
+	else if (structpoll.revents & POLLERR)
 		std::cerr << "POLLERR cought\n";
-	else if ((_pollfds[i].revents & POLLIN) == POLLIN)
+	else if ((structpoll.revents & POLLIN) == POLLIN)
 	{
-		ClientInfo *client = new ClientInfo(_pollfds[i].fd);
+		ClientInfo *client = new ClientInfo(structpoll.fd);
 		_pollfds.pushFd(client->fd);
 		_clients.push_back(client);
 	}
 }
-bool			Server::handleRequest( int i )
+
+bool			Server::handleRequest( pollfd structpoll )
 {
-	ClientIter	client = findClient(_pollfds[i].fd);
+	ClientIter	client = findClient( structpoll.fd );
 	char    buffer[4096] = {0};
     int rcv = recv((*client)->fd, buffer, sizeof(buffer), 0);
 	if (rcv < 0)
@@ -100,16 +100,15 @@ bool			Server::handleRequest( int i )
 	}
 	else
 	{
-		// ProcessRequest p = (*client)->prq;
-		// std::cout << buffer << std::endl;
-		// p.parseLine(buffer);
-		// std::cout << "hehehe\n";
-		// if (p.good())
-		// {
-		// 	std::string response = "HTTP/1.1 200 OK\r\nContent-Length: 12\r\n\r\n";
-		// 	response += "Hello World!";
-		// 	send ((*client)->fd, response.c_str(), response.size(), 0);
-		// }
+		(*client)->parserequest(buffer);
+		if ((*client)->readyToResponse(structpoll))
+		{
+			if (!(*client)->sendResponse())
+			{
+				std::cout << "nothing sent \n";
+				return false;
+			}
+		}
 		return true;
 	}
 }
@@ -125,18 +124,16 @@ void	Server::ServerCoreHandle( void )
 			continue ;
 		for (size_t i = 0; i < _pollfds.size(); i++)
 		{
-			if (findServerSock(_pollfds[i].fd) != _sockets.end()) // if the socket is a server (listner) socket 
-				handleListner(i);
+			if (i < _sockets.size() /* findServerSock(_pollfds[i].fd) */) // if the socket is a server (listner) socket 
+				handleListner(_pollfds[i]);
 			else if (_pollfds[i].revents & POLLIN) // if it's a client socket
 			{
-				if (!handleRequest(i))
-					continue;
+				if (!handleRequest(_pollfds[i]))
+					continue ;
 			}
 		}
 	}
 }
-
-// print 
 
 bool	Server::isGood()
 {

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   LocationConf.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 11:35:24 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/20 10:52:24 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/02/21 19:06:20 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@
 class	LocationConf : public HTTP
 {
 	private:
-		std::map<std::string, LocationConf*>	*_locations;
+		// std::map<std::string, LocationConf*>	*_locations;
 		std::set<std::string>					*_extentions;
 		std::pair<int, std::string>				*_redirect;
 		
@@ -37,7 +37,7 @@ class	LocationConf : public HTTP
 		LocationConf( LocationConf const& rhs );
 		LocationConf( HTTP const& rhs );
 
-		void	addLocation( const std::string& url, LocationConf* location );
+		// void	addLocation( const std::string& url, LocationConf* location );
 		void	addExtention( const std::string& extention );
 		void	addRedirectpage( int code, const std::string& page );
 		bool	hasRedirect( void ) const;
@@ -53,7 +53,7 @@ class	LocationConf : public HTTP
 		size_t				getClientBodySize( void ) const;
 
 
-		void	passDirectiveToRoutes( void );
+		// void	passDirectiveToRoutes( void );
 		// indexIter	IndexBegin( void );
 		// indexIter	IndexEnd( void );
 };
