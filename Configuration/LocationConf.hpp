@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   LocationConf.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 11:35:24 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/15 10:09:14 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/02/21 20:22:12 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,6 @@
 #include <utility>
 #include "HTTP.hpp"
 
-typedef std::vector<std::string>::iterator indexIter;
 
 class	LocationConf : public HTTP
 {
@@ -27,11 +26,12 @@ class	LocationConf : public HTTP
 		std::pair<int, std::string>				*_redirect;
 		
 		
-		indexIter								itbegin;
-		indexIter								itend;
+		// indexIter								itbegin;
+		// indexIter								itend;
 
 		LocationConf&	operator=( const LocationConf& rhs );
 	public:
+		typedef std::vector<std::string>::iterator indexIter;
 		LocationConf( void );
 		~LocationConf( void );
 		LocationConf( LocationConf const& rhs );
@@ -43,7 +43,6 @@ class	LocationConf : public HTTP
 		bool	hasRedirect( void ) const;
 		bool	hasCgi( void ) const;
 
-		// to implement
 		bool				hasExtention( const std::string& extention );
 		std::string			getRoot( void ) const;
 		std::string			getUploadStore( void ) const;
@@ -52,8 +51,8 @@ class	LocationConf : public HTTP
 		bool				dirListingEnabled( void ) const;
 		size_t				getClientBodySize( void ) const;
 
-		indexIter	IndexBegin( void );
-		indexIter	IndexEnd( void );
+		void	passDirectiveToRoutes( void );
+		LocationConf*	getUri( std::string uri ) const;
 };
 
 #endif

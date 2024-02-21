@@ -6,7 +6,7 @@
 /*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 11:39:35 by nakebli           #+#    #+#             */
-/*   Updated: 2024/02/17 20:38:26 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/02/21 18:07:13 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,3 +39,25 @@ ClientInfo::ClientInfo( int sockfd ) {
 ClientInfo::~ClientInfo( void ) {
     close(fd);
 }
+
+void      ClientInfo::parserequest( std::string  request )
+{
+	processRequest.parseLine(request);
+}
+
+bool     ClientInfo::sendResponse( void )
+{
+	std::string	response =  processRequest.getResponse()->GetResponse();
+	std::cout << "----->" <<response << std::endl;
+	int		bytessent = send(fd, response.c_str(), response.size(), 0);
+	return (bytessent > 0);
+}
+
+bool      ClientInfo::readyToResponse( pollfd structpoll )
+{
+	(void)structpoll;
+	return (processRequest.good() /*&& (structpoll.revents & POLLOUT)*/);
+}
+// GET /echo HTTP/1.1
+// Host: reqbin.com
+// Accept: */*
