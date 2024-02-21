@@ -103,16 +103,17 @@ void	ProcessRequest::parseLine(std::string	request){
 			line = _requestBuffer.substr(0, _requestBuffer.find("\r\n")) :
 				line = _requestBuffer.substr(0, _requestBuffer.find("\n"));
 
-		if (_state == Headers && line.empty()){
+		if (_state == Headers && line.empty())
 			_request->checkHeaders();
-			_state = Body;
-		}
+
 		switch (_state){
 			case RequestLine:
 				_parseRequestLine(line);
 				break;
 			case Headers:
 				_status = _request->parseHeader(line);
+				if (_status != HTTP_OK)
+					_state = Error;
 			default:
 				break;
 		}

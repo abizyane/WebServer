@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:03:16 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/19 16:34:42 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/21 12:11:32 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,9 +43,8 @@ e_statusCode	PostRequest::parseHeader(std::string &line){
 		if (line.find(":") == std::string::npos)
 			return HTTP_BAD_REQUEST;
 		std::string key = line.substr(0, line.find(":"));
-		key.erase(key.find(":"));
 		line.erase(0, line.find(":") + 1);
-		if (line.find_first_of(" \t\n\r\f\v") == 0)
+		if (line.find_first_of(" \t\n\r\f\v") == 1)
 			return HTTP_BAD_REQUEST; //value cannot start with a whitespace
 		line.erase(line.find_last_not_of(" \t\n\r\f\v") + 1);
 		std::string value = line;
@@ -62,27 +61,28 @@ e_statusCode	PostRequest::parseHeader(std::string &line){
 }
 
 e_statusCode	PostRequest::checkHeaders(void){
-	if (_headers.find("Host") == _headers.end() || _headers.find("Content-Type") == _headers.end())
+	if (_headers.find("Host") == _headers.end())//|| _headers.find("Content-Type") == _headers.end())
 		return (HTTP_BAD_REQUEST);
 	if (_headers.find("Content-Length") == _headers.end() && _headers.find("Transfer-Encoding") == _headers.end())
 		return (HTTP_BAD_REQUEST);
 	(_headers.find("Transfer-Encoding") != _headers.end()) ? _isChunked = true : _isChunked = false;
 	(_isChunked) ? _contentLength = 0 : _contentLength = strtoll(_headers["Content-Length"].c_str(), NULL, 10);
+	_parse.setParseState(Body);
 	return HTTP_OK;
 }
 
 e_statusCode	PostRequest::parseBody(std::string &line){
 	std::stringstream ss(line);
 	std::string	str;
-
+	size_t	i = 0;
 	try{
 		if (!_isChunked){
 			str = ss.str();
-			size_t i = _bodyIndex;
-			for (; i < _contentLength && i < str.size(); i++)
+			str.erase(str.find_last_not_of(" \t\n\r\f\v") + 1);
+			for (; _bodyIndex + i < _contentLength && i < str.size(); i++)
 				_body += str[i];
-			_bodyIndex = i;
-			if(i == _contentLength)
+			_bodyIndex += i;
+			if(_bodyIndex == _contentLength)
 				_parse.setParseState(Done);
 		}
 		else{
@@ -91,12 +91,13 @@ e_statusCode	PostRequest::parseBody(std::string &line){
 			size_t	chunkLen = strtoll(str.c_str(), NULL, 16);
 			str.clear();
 			str = ss.str();
-			size_t i = _bodyIndex;
-			for (; i < chunkLen && i < str.size(); i++)
+			for (; _bodyIndex + i < chunkLen && i < str.size(); i++)
 				_body += str[i];
-			_bodyIndex = i;
+			_bodyIndex += i;
 			if (chunkLen == 0)
 				_parse.setParseState(Done);
+			else if (_bodyIndex == chunkLen)
+				_bodyIndex = 0;
 		}
 	}catch(const std::exception &){
 		_parse.setParseState(Error);

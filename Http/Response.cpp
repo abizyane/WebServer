@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/19 16:54:39 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/20 13:58:10 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,8 +35,20 @@ void	Response::_buildResponse(){
 	// this function now is just for testing
 	if (_status == HTTP_OK)
 		_response += "HTTP/1.1 200 OK\r\n";
-	else
+	else if (_status == HTTP_BAD_REQUEST)
+		_response += "HTTP/1.1 400 Bad Request\r\n";
+	else if (_status == HTTP_NOT_FOUND)
 		_response += "HTTP/1.1 404 Not Found\r\n";
+	else if (_status == HTTP_METHOD_NOT_ALLOWED)
+		_response += "HTTP/1.1 405 Method Not Allowed\r\n";
+	else if (_status == HTTP_INTERNAL_SERVER_ERROR)
+		_response += "HTTP/1.1 500 Internal Server Error\r\n";
+	else if (_status == HTTP_NOT_IMPLEMENTED)
+		_response += "HTTP/1.1 501 Not Implemented\r\n";
+	else if (_status == HTTP_SERVICE_UNAVAILABLE)
+		_response += "HTTP/1.1 503 Service Unavailable\r\n";
+	else if (_status == HTTP_VERSION_NOT_SUPPORTED)
+		_response += "HTTP/1.1 505 HTTP Version Not Supported\r\n";
 	_response += "Server: Nginx++/1.0.0 (Unix)\r\n";
 	_response += "Content-Type: text/html\r\n";
 	_response += "Content-Length: 45\r\n";
