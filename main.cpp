@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 15:40:10 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/18 15:14:58 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/02/21 20:50:58 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,15 +23,19 @@ void	lk()
 
 int main()
 {
-	Parser	parser;
 	try {
+		Parser	parser;
 		parser.parse();
-		Server	*server = new Server();
-		
-		server->ServerCoreHandle();
+		MainConf *main = MainConf::getConf();
+		const std::vector<ServerConf*> servers = main->getServersConf();
+		for (size_t i = 0; i < servers.size(); i++) {
+			LocationConf* loc = servers[i]->getUri("/blog/home");
+			if (loc != NULL) {
+				std::cout << "root: " << loc->getRoot() << '\n';
+			}
+		}
 	} catch (std::exception & e) {
 		std::cerr << e.what() << '\n';
-	} catch (...) {
-		std::cerr << "..." << '\n';
 	}
+	delete MainConf::getConf();
 }

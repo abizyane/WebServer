@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Poller.cpp                                         :+:      :+:    :+:   */
+/*   poller.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/15 14:33:15 by nakebli           #+#    #+#             */
-/*   Updated: 2024/02/17 18:51:34 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/02/20 16:43:20 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,9 +19,9 @@ Poller::Poller( void ) {
 Poller::~Poller( void ) {
 }
 
-void	Poller::pushFd( int fd, short events ) {
-	
-struct pollfd	newFd;
+void	Poller::pushFd( int fd, short events ) 
+{
+	struct pollfd	newFd;
 	newFd.fd = fd;
 	newFd.revents = 0;
 	newFd.events = events;
@@ -37,7 +37,6 @@ struct FdEquals {
 };
 
 void Poller::erase(int fd) {
-    
     __pollfds.erase(std::remove_if(__pollfds.begin(), __pollfds.end(),
 		FdEquals(fd)), __pollfds.end());
 }
@@ -58,13 +57,3 @@ struct pollfd& Poller::operator[]( const int& idx ) {
 size_t Poller::size( void ) const {
 	return __pollfds.size();
 };
-
-// struct pollfd*	Poller::getFds()
-// {
-// 	return (__pollfds.data());
-// }
-
-// size_t			Poller::getFdsSize()
-// {
-// 	return(__pollfds.size());
-// }

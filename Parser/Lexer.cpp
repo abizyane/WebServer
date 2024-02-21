@@ -6,7 +6,7 @@
 /*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 13:07:21 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/14 10:39:33 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/02/21 20:52:45 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ std::map<std::string, Token::token>	initKeywords( void ) {
 	};
 
 	std::string		keys[] = {
-		"http", "server", "location", "host", "port", "root", "allow", "deny",
+		"http", "server", "location", "server_name", "listen", "root", "allow", "deny",
 		"index", "autoindex", "error_page", "client_body_max_size", "upload_store",
 		"cgi", "return",
 	};
@@ -36,13 +36,14 @@ std::map<std::string, Token::token>	initKeywords( void ) {
 
 std::map<std::string, Token::token>	Lexer::_keywords = initKeywords();
 
-Lexer::Lexer( const std::string& filePath ) : _line(1)
+Lexer::Lexer( const std::string& filePath ) : _line(1), isOpen(false)
 {
 	std::ifstream	file(filePath.c_str());
 	if (!file.is_open())
-		throw std::runtime_error((filePath + " can't be opened").c_str());
-	if (!std::getline(file, _data, '\0'))
-		throw std::runtime_error((filePath + " is empty").c_str());
+		return ;
+	_data = "";
+	std::getline(file, _data, '\0');
+	isOpen = true;
 	_curr = _data[(_pos = 0)];
 }
 
@@ -99,4 +100,9 @@ Token	Lexer::getNextToken( void )
 ssize_t Lexer::line( void ) const
 {
 	return _line;
+}
+
+bool	Lexer::is_open( void ) const 
+{
+	return isOpen;
 }

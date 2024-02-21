@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/13 09:51:28 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/13 10:16:51 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/02/20 13:51:04 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,8 +26,22 @@ void    error(int n, ...) {
     throw std::runtime_error(ss.str().c_str());
 }
 
+std::string    normPath( std::string path )
+{
+    std::string result;
+    bool previousSlash = false;
+    std::string::iterator   it = path.begin();
 
-
-
-
-
+    for (; it != path.end(); it++) {
+        if (*it == '/') {
+            if (!previousSlash) {
+                result += *it;
+            }
+            previousSlash = true;
+            continue ;
+        }
+        result += *it;
+        previousSlash = false;
+    }
+    return result;
+}

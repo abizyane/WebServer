@@ -3,14 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   DefaultPages.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
+/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/19 11:28:56 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/19 12:38:50 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/20 20:57:57 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "DefaultPages.hpp"
+
 
 std::string DefaultPages::getPage(e_statusCode code){
     switch (code){
