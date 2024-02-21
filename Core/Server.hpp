@@ -6,7 +6,7 @@
 /*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/15 10:48:57 by nakebli           #+#    #+#             */
-/*   Updated: 2024/02/19 14:15:35 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/02/20 17:44:31 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,9 +35,9 @@ class   Server {
 		Server();
 		ClientIter		findClient( int	fd );
 		void			ServerCoreHandle( void );
-		void			handleListner( int fd );
-		bool			handleRequest( int i );
-		SockIter		findServerSock( int i );
+		void			handleListner( pollfd structpoll );
+		bool			handleRequest( pollfd structpoll );
+		SockIter		findServerSock( int fd );
 		bool			isGood();
 		~Server() {};
 

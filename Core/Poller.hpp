@@ -6,7 +6,7 @@
 /*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/15 14:32:32 by nakebli           #+#    #+#             */
-/*   Updated: 2024/02/17 18:51:39 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/02/20 16:43:11 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,8 +29,6 @@ class	Poller {
 		struct pollfd& operator[]( const int& idx );
 		size_t size( void ) const;
 
-		// pollfd*			getFds();
-		// size_t			getFdsSize();
 		// print
 
 		void	printFds() {

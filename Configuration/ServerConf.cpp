@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConf.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 12:06:59 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/20 11:13:22 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/02/21 19:13:16 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,8 +86,19 @@ void	ServerConf::getPorts( std::set<unsigned int>& ports )
 		ports.insert(*it);
 }
 
+// to check 
+
+bool	ServerConf::hasLocation( std::string path )
+{
+	if (!_locations)
+		return false;
+	return ( _locations->find(path) != _locations->end() );
+}
+
 void	ServerConf::passDirectiveToRoutes( void )
 {
+	if (_locations == NULL)
+		return;
 	std::map<std::string, LocationConf*>::iterator first = _locations->begin();
 	std::map<std::string, LocationConf*>::iterator last = _locations->end();
 	for (; first != last; first++) {
@@ -119,6 +130,39 @@ void	ServerConf::passDirectiveToRoutes( void )
 			for (; it != ite; it++)
 				first->second->addIndex(*it);
 		}
-		first->second->passDirectiveToRoutes();
 	}
 }
+
+LocationConf*	ServerConf::getUri( std::string uri ) const
+{
+    uri = normPath(uri);
+	if (_locations == NULL)
+		return NULL;
+    while (uri != "/" && uri != "") {
+        std::map<std::string, LocationConf*>::iterator it = _locations->find(uri);
+        if (it != _locations->end()) {
+            return it->second;
+        }
+
+        std::size_t pos = uri.find_last_of('/');
+        if (pos != std::string::npos) {
+            uri = uri.substr(0, pos);
+        }
+    }
+
+    std::map<std::string, LocationConf*>::iterator it = _locations->find("/");
+    if (it != _locations->end()) {
+        return it->second;
+    }
+    return NULL;
+}
+
+/*
+
+	/ {
+		/home {
+			/home/blog
+		}
+	}
+
+*/

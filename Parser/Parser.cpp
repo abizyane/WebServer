@@ -59,6 +59,10 @@ void	Parser::parse( void )
 	}
 	_advance(Token::CLOSE_CURLY);
 	_advance(Token::_EOF);
+
+
+	conf->passDirectiveToServers();
+	
 }
 
 
@@ -253,7 +257,10 @@ std::pair<std::string, LocationConf*>	Parser::_parseLocation( ServerConf& parent
 {
 	_advance(Token::LOCATION);
 	std::pair<std::string, LocationConf*> ans;
-	ans.first =  normPath(parentUri + _currTok.data()); // TODO: check route is valid and norm it
+	//	check a zakaria wash haka 
+	ans.first =  normPath(parentUri + _currTok.data()); // TODO: norm route it™
+	if (parentServer.hasLocation(ans.first))
+		_duplicateError(ans.first);
 	_advance(Token::WORD);
 	_advance(Token::OPEN_CURLY);
 	LocationConf*	location = new LocationConf();
@@ -271,7 +278,7 @@ std::pair<std::string, LocationConf*>	Parser::_parseLocation( ServerConf& parent
 			case Token::RETURN:		_parseRedirect(*location);	break;
 			case Token::LOCATION: {
 				std::pair<std::string, LocationConf*>	res = _parseLocation( parentServer, ans.first );
-				location->addLocation(res.first, res.second);
+				// location->addLocation(res.first, res.second);
 				break;
 			}
 			default:
@@ -280,6 +287,8 @@ std::pair<std::string, LocationConf*>	Parser::_parseLocation( ServerConf& parent
 	}
 	ans.second = location;
 	_advance(Token::CLOSE_CURLY);
+	// added the location to the sever
+	parentServer.addLocation(ans.first, ans.second);
 	return (ans);
 }
 

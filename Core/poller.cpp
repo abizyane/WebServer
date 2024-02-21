@@ -6,7 +6,7 @@
 /*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/15 14:33:15 by nakebli           #+#    #+#             */
-/*   Updated: 2024/02/20 13:43:45 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/02/20 16:43:20 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,13 +57,3 @@ struct pollfd& Poller::operator[]( const int& idx ) {
 size_t Poller::size( void ) const {
 	return __pollfds.size();
 };
-
-// struct pollfd*	Poller::getFds()
-// {
-// 	return (__pollfds.data());
-// }
-
-// size_t			Poller::getFdsSize()
-// {
-// 	return(__pollfds.size());
-// }
