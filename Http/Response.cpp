@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/20 11:40:15 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/02/23 16:15:42 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@ Response::Response(IRequest &request, ProcessRequest& parse): _request(&request)
 	else
 		_status = _parse->getStatusCode();
 	_mainConf = MainConf::getConf();
+	// _serverConf = _mainConf->getServerByHostPort(80, _requestHeaders["Host"]);
 	_prepareResponse();
 }
 
@@ -57,10 +58,11 @@ void	Response::_buildResponse(){
 	// if (_status == HTTP_OK)
 	_response += "<html><body><h1>It works!</h1></body></html>";
 	// else
-	// 	_response += DefaultPages::getPage(HTTP_NOT_FOUND);
+		// _response += DefaultPages::getPage(HTTP_NOT_FOUND);
 }
 
 void	Response::_processGetResponse(){
+	
 }
 
 void	Response::_processPostResponse(){

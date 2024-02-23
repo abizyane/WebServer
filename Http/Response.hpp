@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:07:10 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/20 11:40:26 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/02/23 16:16:02 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,11 +26,12 @@ class Response {
 		std::map<std::string, std::string>	_requestHeaders;
 		std::string							_requestBody;
 		MainConf*							_mainConf;
+		// ServerConf*							_serverConf;
 		e_statusCode						_status;
 		bool								_good;
 		std::string							_response;
 		std::map<std::string, std::string>  _headers;
-		std::vector<char>					_body;
+		// std::vector<char>					_body;
 		
 		void								_buildResponse( void );
 		void								_processGetResponse( void );
