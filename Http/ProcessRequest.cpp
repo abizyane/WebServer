@@ -74,7 +74,7 @@ static int	checkUri(std::string& uri){
 	
 	if (uri[0] != '/' || uri.find_first_not_of(allowedChars) != std::string::npos)
 		return 400;
-	if (uri.size() > 2083) //replace this with the limit specified in the server_context
+	if (uri.size() > 2048) //replace this with the limit specified in the server_context
 		return 414;
 	return 200;
 }

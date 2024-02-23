@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   PostRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:03:16 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/20 11:39:04 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/02/23 16:01:35 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,11 @@ e_statusCode	PostRequest::checkHeaders(void){
 		return (HTTP_BAD_REQUEST);
 	if (_headers.find("Content-Length") == _headers.end() && _headers.find("Transfer-Encoding") == _headers.end())
 		return (HTTP_BAD_REQUEST);
-	(_headers.find("Transfer-Encoding") != _headers.end()) ? _isChunked = true : _isChunked = false;
+	if (_headers.find("Transfer-Encoding") != _headers.end()){
+		if (_headers.find("Transfer-Encoding")->second != "chunked")
+			return HTTP_NOT_IMPLEMENTED;
+		_isChunked = true;
+	} 
 	(_isChunked) ? _contentLength = 0 : _contentLength = strtoll(_headers["Content-Length"].c_str(), NULL, 10);
 	_parse.setParseState(Body);
 	return HTTP_OK;
