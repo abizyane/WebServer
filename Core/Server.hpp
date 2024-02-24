@@ -3,45 +3,35 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/15 10:48:57 by nakebli           #+#    #+#             */
-/*   Updated: 2024/02/20 17:44:31 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/02/24 16:53:18 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
-
+#include "Socket/Socket.hpp"
 #include "../Configuration/MainConf.hpp"
-#include "Socket.hpp"
-#include "Poller.hpp"
 #include "Client.hpp"
-#include "../Http/Response.hpp"
-#include "../utils/utils.hpp"
-#include <deque>
-
-class Socket;
-
-typedef std::vector<Socket>::iterator 		SockIter;
-typedef std::vector<ClientInfo*>::iterator 	ClientIter;
-
+#include "Poller/Poller.hpp"
+#include <map>
 class   Server {
-	private :
-		std::vector<Socket>     			_sockets;
-		std::vector<ClientInfo*>			_clients;
-		Poller								_pollfds;
-
 	public :
-		Server();
-		ClientIter		findClient( int	fd );
-		void			ServerCoreHandle( void );
-		void			handleListner( pollfd structpoll );
-		bool			handleRequest( pollfd structpoll );
-		SockIter		findServerSock( int fd );
-		bool			isGood();
-		~Server() {};
+		Server( void ) {};
+		~Server( void ) {};
+		void		init();
+		void		run();
+	private :
+		std::map<int, Client*>		_clients;
+		std::vector<Socket*>		_listeners;
+		Poller						_poller;
+		Poller						_tempPoller;
+		std::vector<int>			_erasedClients; // erased clients in _poller 
+		int							_nServ;
 
-		// to test
-		void	printSockets();
-		void	printPollfds();
+		
+		void						_acceptNewClients( void );
+		void						_handleClients( void );
+		void						_eraseClients( void );
 };

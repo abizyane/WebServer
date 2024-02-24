@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/13 09:53:10 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/20 13:51:09 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/02/23 20:54:49 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,9 @@
 #include <iostream>
 #include <stdarg.h>
 #include <exception>
+#include <unistd.h>
+#include <sys/time.h>
+
 
 
 template<typename T>
@@ -37,3 +40,4 @@ std::string toString(const T& data) {
 
 void    error(int n, ...);
 std::string    normPath( std::string path );
+unsigned long   getTime( void );

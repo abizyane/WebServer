@@ -1,31 +1,36 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Client.hpp                                         :+:      :+:    :+:   */
+/*   Poller.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/02/17 11:34:21 by nakebli           #+#    #+#             */
-/*   Updated: 2024/02/24 14:52:14 by zel-bouz         ###   ########.fr       */
+/*   Created: 2024/02/23 16:05:24 by zel-bouz          #+#    #+#             */
+/*   Updated: 2024/02/23 16:47:58 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#pragma once
+#include "Poller.hpp"
 
-#include "Socket/Socket.hpp"
+Poller::Poller( void ) : std::vector<struct pollfd>() {
+}
 
-class Client {
-	public :
-		Client ( Socket* sock );
-		bool	setRequest( void );
-		void	sendResponse( void );
-		Socket	*getSock( void );
-		bool	isAlive( unsigned long maxTime ) const;
-		bool	responseIsDone( void );
-		~Client();
-	private :
-		Socket				*sock;
-		unsigned long		joinedTime;
-		std::string			request;
-		std::string			response;
-};
+int	Poller::poll( int timeout )
+{
+	int ret = ::poll(this->data(), this->size(), timeout);
+	return ret;
+}
+
+void	Poller::push( int fd, short events )
+{
+	if (fd > 0) {
+		struct pollfd pFd;
+		memset(&pFd, 0, sizeof(struct pollfd));
+		pFd.fd = fd;
+		pFd.events = events;
+		this->push_back(pFd);
+	}
+}
+
+Poller::~Poller( void ) {
+}
