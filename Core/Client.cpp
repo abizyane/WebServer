@@ -3,61 +3,62 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 11:39:35 by nakebli           #+#    #+#             */
-/*   Updated: 2024/02/21 18:07:13 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/02/24 16:22:00 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Client.hpp"
+#include "../utils/utils.hpp"
 
-
-ClientInfo&	ClientInfo::operator=( const ClientInfo& rhs ) {
-	this->addr = rhs.addr;
-	this->len = rhs.len;
-	this->fd = rhs.fd;
-	return *this;
-}
-
-ClientInfo::ClientInfo( const ClientInfo& rhs ) {
-	this->addr = rhs.addr;
-	this->len = rhs.len;
-	this->fd = rhs.fd;
-};
-
-ClientInfo::ClientInfo( int sockfd ) {
-	len = sizeof(addr);
-	good = true;
-	fd = accept(sockfd, (struct sockaddr *)&addr, &len);
-	if (fd < 0)
-		std::cerr << "failed to accept new client" << std::endl;
-	else
-		std::cerr << "new client connected" << std::endl;
-}
-
-ClientInfo::~ClientInfo( void ) {
-    close(fd);
-}
-
-void      ClientInfo::parserequest( std::string  request )
+Client::Client ( Socket* sock ) : sock(sock), joinedTime(getTime()) 
 {
-	processRequest.parseLine(request);
 }
 
-bool     ClientInfo::sendResponse( void )
+bool	Client::setRequest( void )
 {
-	std::string	response =  processRequest.getResponse()->GetResponse();
-	std::cout << "----->" <<response << std::endl;
-	int		bytessent = send(fd, response.c_str(), response.size(), 0);
-	return (bytessent > 0);
+	try {
+		std::string	data = sock->receive();
+		if (data.empty()) return false;
+		request.append(data);
+		std::cout << "recieved: " << data << '\n';
+		joinedTime = getTime();
+	} catch( std::exception & e) {
+		std::cerr << e.what() << '\n';
+		// std::cout << sock->fileno() << '\n';
+		// exit(1);
+	}
+	return true;
 }
 
-bool      ClientInfo::readyToResponse( pollfd structpoll )
+bool	Client::isAlive( unsigned long maxTime ) const
 {
-	(void)structpoll;
-	return (processRequest.good() /*&& (structpoll.revents & POLLOUT)*/);
+	return (getTime() - joinedTime) < maxTime;
 }
-// GET /echo HTTP/1.1
-// Host: reqbin.com
-// Accept: */*
+
+void	Client::sendResponse( void )
+{
+	try {
+		sock->send("HTTP/1.1 200 Ok\r\n<h1> siir t9awed </h1>\r\n");
+		request = "";
+	} catch (std::exception & e ) {
+		std::cerr << e.what() << '\n';
+	}
+}
+
+Socket	*Client::getSock( void )
+{
+	return sock;
+}
+
+bool	Client::responseIsDone( void )
+{
+	return request.size() > 400;
+}
+
+Client::~Client()
+{
+	delete sock;
+}

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/13 09:51:28 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/20 13:51:04 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/02/23 20:54:11 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,4 +44,11 @@ std::string    normPath( std::string path )
         previousSlash = false;
     }
     return result;
+}
+
+unsigned long   getTime( void )
+{
+    struct timeval time;
+    gettimeofday(&time, NULL);
+    return time.tv_sec;
 }

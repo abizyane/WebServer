@@ -6,7 +6,7 @@
 /*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 11:36:53 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/21 20:37:50 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/02/24 17:06:40 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,6 +86,10 @@ bool	LocationConf::hasExtention( const std::string& extention )
 std::string		LocationConf::getRoot( void ) const
 {
 	return ((_root != NULL) ? *_root : "");
+}
+
+bool	LocationConf::hasUpload( void ) const {
+	return _uploadStore != NULL;
 }
 
 std::string		LocationConf::getUploadStore( void ) const 
