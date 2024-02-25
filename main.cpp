@@ -6,12 +6,12 @@
 /*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 15:40:10 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/21 21:58:27 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/25 10:45:17 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Parser/Parser.hpp"
-#include "Core/Server.hpp"
+#include "Core/Server/Server.hpp"
 #include "Configuration/MainConf.hpp"
 
 int main()
@@ -19,9 +19,17 @@ int main()
 	Parser	parser;
 	try {
 		parser.parse();
-		Server	*server = new Server();
-		
-		server->ServerCoreHandle();
+		// MainConf *main = MainConf::getConf();
+		// const std::vector<ServerConf*> servers = main->getServersConf();
+		// for (size_t i = 0; i < servers.size(); i++) {
+		// 	LocationConf* loc = servers[i]->getUri("/blog/home");
+		// 	if (loc != NULL) {
+		// 		std::cout << "root: " << loc->getRoot() << '\n';
+		// 	}
+		// }
+		Server server;
+		server.init();
+		server.run();
 	} catch (std::exception & e) {
 		std::cerr << e.what() << '\n';
 	} catch (...) {
