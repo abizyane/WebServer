@@ -6,7 +6,7 @@
 /*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 11:35:24 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/21 20:22:12 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/02/24 17:10:59 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,16 +40,22 @@ class	LocationConf : public HTTP
 		void	addLocation( const std::string& url, LocationConf* location );
 		void	addExtention( const std::string& extention );
 		void	addRedirectpage( int code, const std::string& page );
+
+		
 		bool	hasRedirect( void ) const;
 		bool	hasCgi( void ) const;
+		bool	hasUpload( void ) const;
 
-		bool				hasExtention( const std::string& extention );
+		bool				isCgi( const std::string& extention ); // .py
 		std::string			getRoot( void ) const;
 		std::string			getUploadStore( void ) const;
 		std::string			getErrPage( int code, const std::string& defaultPage );
 		bool				methodIsAllowed( const std::string& method ) const;
-		bool				dirListingEnabled( void ) const;
+		bool				dirListingEnabled( void ) const; // autoIndex
 		size_t				getClientBodySize( void ) const;
+		std::pair<int, std::string>	getRedirectPage( void ) const;
+
+		// return 301 facebook.com/home
 
 		void	passDirectiveToRoutes( void );
 		LocationConf*	getUri( std::string uri ) const;
