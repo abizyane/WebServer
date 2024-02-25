@@ -6,7 +6,7 @@
 /*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 11:36:53 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/24 17:06:40 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/02/25 09:30:48 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,7 +78,7 @@ bool	LocationConf::hasRedirect( void ) const
 
 // new implemented :
 
-bool	LocationConf::hasExtention( const std::string& extention )
+bool	LocationConf::isCgi( const std::string& extention )
 {
 	return _extentions != NULL && _extentions->find(extention) != _extentions->end();
 }

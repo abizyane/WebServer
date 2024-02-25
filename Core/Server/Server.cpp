@@ -6,7 +6,7 @@
 /*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/25 09:45:12 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/25 13:04:43 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/02/25 15:15:25 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,7 +75,11 @@ void	Server::_manageClients( void ) {
 			} catch (std::exception & e) {
 				std::cerr << e.what() << std::endl;
 			}
-		} // else if (_poller[i].revents & POLLOUT) // until request parseIsDone
+		} else if (_poller[i].revents & POLLOUT) {// until request parseIsDone
+			client->sendResponse();
+			std::cout << "client served" << '\n';
+			_purgeClient(i);
+		}
 		else if (_poller[i].revents & POLLHUP)
 			_purgeClient(i);
 	}
@@ -90,7 +94,7 @@ void	Server::run( void ) {
 		_manageClients();
 		_eraseInactiveClients();
 		_poller = _tempPoller;
-		std::cout << "number of clients: " << _clients.size() << std::endl;
+		// std::cout << "number of clients: " << _clients.size() << std::endl;
 	}
 }
 
