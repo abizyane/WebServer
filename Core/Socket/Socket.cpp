@@ -6,7 +6,7 @@
 /*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 14:35:24 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/24 16:57:00 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/02/25 10:13:26 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,9 @@ Socket::Socket(void) : _sockFd(-1)
 {
 }
 
+Socket::Socket( int sock ) : _sockFd(sock) {
+	
+}
 void Socket::open(int domain, int type, int protocol)
 {
 	_sockFd = ::socket(domain, type, protocol);

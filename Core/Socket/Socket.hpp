@@ -6,7 +6,7 @@
 /*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 14:18:21 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/24 16:30:43 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/02/25 11:55:15 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
 #include <cstring>
 #include <fcntl.h>
 
-#define BUFFER_SIZE 4096
+#define BUFFER_SIZE 1024
 
 typedef int sock_t;
 
@@ -31,6 +31,7 @@ class	Socket
 
 	public:
 		Socket( void );
+		Socket( int );
 		void	open( int domain = AF_INET, int type = SOCK_STREAM, int protocol = 0);
 		void	close( void );
 		void	setToNonBlock( void );
