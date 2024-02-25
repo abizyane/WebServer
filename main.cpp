@@ -6,12 +6,12 @@
 /*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 15:40:10 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/24 14:57:51 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/02/25 10:45:17 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Parser/Parser.hpp"
-#include "Core/Server.hpp"
+#include "Core/Server/Server.hpp"
 #include "Configuration/MainConf.hpp"
 
 
