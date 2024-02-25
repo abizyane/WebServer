@@ -32,7 +32,11 @@
 *.app
 Makefile
 main.cpp
+
+# local files
 .vscode
 brew-nginx.sh
 .DS_Store
 .vscode
+*py
+
