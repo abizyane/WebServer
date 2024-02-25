@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:07:10 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/23 16:16:02 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/24 16:09:37 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 #include "ProcessRequest.hpp"
 #include "../Configuration/MainConf.hpp"
+#include "../Configuration/LocationConf.hpp"
 #include "DefaultPages.hpp"
 
 class Response {
@@ -25,8 +26,7 @@ class Response {
 		std::string							_requestUri;
 		std::map<std::string, std::string>	_requestHeaders;
 		std::string							_requestBody;
-		MainConf*							_mainConf;
-		// ServerConf*							_serverConf;
+		LocationConf*						_location;
 		e_statusCode						_status;
 		bool								_good;
 		std::string							_response;

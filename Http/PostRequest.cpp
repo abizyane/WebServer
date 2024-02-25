@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   PostRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:03:16 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/23 16:01:35 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/25 19:06:58 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,7 +82,7 @@ e_statusCode	PostRequest::parseBody(std::string &line){
 	try{
 		if (!_isChunked){
 			str = ss.str();
-			str.erase(str.find_last_not_of(" \t\n\r\f\v") + 1);
+			str.erase(str.find_last_not_of(" \t\n\r\f\v") + 1); // TODO: check this
 			for (; _bodyIndex + i < _contentLength && i < str.size(); i++)
 				_body += str[i];
 			_bodyIndex += i;

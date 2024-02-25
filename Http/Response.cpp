@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/23 16:15:42 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/25 19:15:47 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,12 +18,11 @@ Response::Response(IRequest &request, ProcessRequest& parse): _request(&request)
 		_requestUri = _request->getUri();
 		_requestHeaders = _request->getHeaders();
 		_requestBody = _request->getBody();
-		_status = _request->getParse().getStatusCode();
+		_status = _parse->getStatusCode();
 	}
 	else
 		_status = _parse->getStatusCode();
-	_mainConf = MainConf::getConf();
-	// _serverConf = _mainConf->getServerByHostPort(80, _requestHeaders["Host"]);
+	_location = MainConf::getConf()->getServersConf()[0]->getUri(_requestUri); // we should change this to get the right location
 	_prepareResponse();
 }
 
@@ -62,7 +61,23 @@ void	Response::_buildResponse(){
 }
 
 void	Response::_processGetResponse(){
+	if (_requestMethod == "POST" && _location->getUploadStore() != ""){
+		_status = HTTP_OK;
+		
 	
+	}
+	
+	else
+
+	if (_location != NULL){
+		if (_location->methodIsAllowed(_requestMethod))
+			_status = HTTP_OK;
+		else
+			_status = HTTP_METHOD_NOT_ALLOWED;
+	
+	}
+	else
+		_status = HTTP_NOT_FOUND;//if => requested resource not found in root
 }
 
 void	Response::_processPostResponse(){

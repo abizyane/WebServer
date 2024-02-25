@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/25 09:45:12 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/25 15:15:25 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/02/25 18:12:55 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,6 @@ void	Server::init( void ) {
 	}
 	nServ = _sockets.size();
 }
-
 
 void	Server::_acceptNewClients( void ) {
 	for (size_t i = 0; i < nServ; i++) {
@@ -76,7 +75,7 @@ void	Server::_manageClients( void ) {
 				std::cerr << e.what() << std::endl;
 			}
 		} else if (_poller[i].revents & POLLOUT) {// until request parseIsDone
-			client->sendResponse();
+			client->sendResponse(); //TODO:: handle video responses
 			std::cout << "client served" << '\n';
 			_purgeClient(i);
 		}
