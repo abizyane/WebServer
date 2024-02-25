@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   GetRequest.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 21:58:16 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/23 15:58:50 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/25 18:43:33 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,7 +67,7 @@ e_statusCode	GetRequest::parseHeader(std::string &line){
 			return HTTP_BAD_REQUEST;
 		std::string key = line.substr(0, line.find(":"));
 		line.erase(0, line.find(":") + 1);
-		if (line.find_first_of(" \t\n\r\f\v") == 1)
+		if (line.find_first_of(" \t\n\r\f\v") == 1) // check nginx
 			return HTTP_BAD_REQUEST; //value cannot start with a whitespace
 		line.erase(line.find_last_not_of(" \t\n\r\f\v") + 1);
 		std::string value = line;

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/25 10:11:04 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/25 15:11:43 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/02/25 18:08:54 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,11 +40,8 @@ bool	Client::consumStream( void ) {
 
 void	Client::sendResponse( void ) {
 	try {
-		if (processor.good()) {
-			Response* res = processor.getResponse();
-			std::cout << res->GetResponse() << '\n';
-			sockFd->send(res->GetResponse());
-		}
+		if (processor.good())
+			sockFd->send(processor.getResponseBuffer());
 	} catch (std::exception& e) {
 		std::cerr << e.what() << '\n';
 	}
