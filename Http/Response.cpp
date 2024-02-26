@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/25 19:15:47 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/25 22:56:18 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,23 +61,7 @@ void	Response::_buildResponse(){
 }
 
 void	Response::_processGetResponse(){
-	if (_requestMethod == "POST" && _location->getUploadStore() != ""){
-		_status = HTTP_OK;
-		
-	
-	}
-	
-	else
-
-	if (_location != NULL){
-		if (_location->methodIsAllowed(_requestMethod))
-			_status = HTTP_OK;
-		else
-			_status = HTTP_METHOD_NOT_ALLOWED;
-	
-	}
-	else
-		_status = HTTP_NOT_FOUND;//if => requested resource not found in root
+ 
 }
 
 void	Response::_processPostResponse(){

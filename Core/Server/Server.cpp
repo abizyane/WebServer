@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/25 09:45:12 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/25 18:12:55 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/25 23:16:59 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,8 +76,8 @@ void	Server::_manageClients( void ) {
 			}
 		} else if (_poller[i].revents & POLLOUT) {// until request parseIsDone
 			client->sendResponse(); //TODO:: handle video responses
-			std::cout << "client served" << '\n';
-			_purgeClient(i);
+			// std::cout << "client served" << '\n';
+			// _purgeClient(i);
 		}
 		else if (_poller[i].revents & POLLHUP)
 			_purgeClient(i);
