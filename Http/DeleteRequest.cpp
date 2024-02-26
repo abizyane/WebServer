@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   DeleteRequest.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:04:42 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/23 15:59:42 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/26 01:28:57 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,8 +45,7 @@ e_statusCode	DeleteRequest::parseHeader(std::string &line){
 			return HTTP_BAD_REQUEST;
 		std::string key = line.substr(0, line.find(":"));
 		line.erase(0, line.find(":") + 1);
-		if (line.find_first_of(" \t\n\r\f\v") == 1)
-			return HTTP_BAD_REQUEST; //value cannot start with a whitespace
+		line.erase(0, line.find_first_not_of(" \t\n\r\f\v"));
 		line.erase(line.find_last_not_of(" \t\n\r\f\v") + 1);
 		std::string value = line;
 		line.clear();
@@ -64,7 +63,7 @@ e_statusCode	DeleteRequest::parseHeader(std::string &line){
 e_statusCode	DeleteRequest::checkHeaders(void){
 	if (_headers.find("Host") == _headers.end())
 		return (HTTP_BAD_REQUEST);
-		
+
 	if (_headers.find("Content-Length") != _headers.end() || _headers.find("Transfer-Encoding") != _headers.end()){
 		_hasBody = true;
 		if (_headers.find("Transfer-Encoding") != _headers.end()){
@@ -72,7 +71,11 @@ e_statusCode	DeleteRequest::checkHeaders(void){
 				return HTTP_NOT_IMPLEMENTED;
 			_isChunked = true;
 		} 
-		(_isChunked) ? _contentLength = 0 : _contentLength = strtoll(_headers["Content-Length"].c_str(), NULL, 10);
+		if (!_isChunked){
+			_contentLength = strtoll(_headers["Content-Length"].c_str(), NULL, 10);
+			if (_contentLength == 0 && _headers["Content-Length"] != "0")
+				return HTTP_BAD_REQUEST;
+		}
 	}
 	else
 		_parse.setParseState(Done);
