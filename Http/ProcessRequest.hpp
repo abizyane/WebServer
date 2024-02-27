@@ -58,7 +58,7 @@ class ProcessRequest {
 		std::string		getResponseBuffer( void );
 
 		void			setParseState(e_parseState state);
-		void			setGood(bool good);
+		void			setGood(bool good)  ;
 
 		~ProcessRequest();
 };
