@@ -6,23 +6,15 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/25 22:56:18 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/27 18:23:02 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Response.hpp"
 
-Response::Response(IRequest &request, ProcessRequest& parse): _request(&request), _parse(&parse), _good(false){
-	if (_request != NULL){
-		_requestMethod = _request->getMethod();
-		_requestUri = _request->getUri();
-		_requestHeaders = _request->getHeaders();
-		_requestBody = _request->getBody();
-		_status = _parse->getStatusCode();
-	}
-	else
-		_status = _parse->getStatusCode();
-	_location = MainConf::getConf()->getServersConf()[0]->getUri(_requestUri); // we should change this to get the right location
+Response::Response(IRequest &request, ProcessRequest& parse): _request(&request), _parse(&parse), _good(false), _state(RESPONSE){
+	_status = _parse->getStatusCode();
+	_location = MainConf::getConf()->getServersConf()[0]->getUri(_request->getUri());
 	_prepareResponse();
 }
 
@@ -70,11 +62,42 @@ void	Response::_processPostResponse(){
 void	Response::_processDeleteResponse(){
 }
 
+	// std::map<std::string, std::string>::iterator it = _request->getHeaders().find("Connection");
+	// if (it != _request->getHeaders().end() && it->second == "keep-alive"){
+	// 	if (_state == BODY){
+			
+	// 	}
+	// 	if (_response != "")
+	// 		_state = DONE;
+	// }
+// 		"Connection: keep-alive\r\n";
+// 		"Connection: close\r\n";
+std::string    Response::GetResponse(){
+	std::string response;
+	_bodyIndex = 0;
+	switch (_state){
+		case RESPONSE:
+		
+			_state = BODY;
+			break;
+		case BODY:
+
+			
+			_state = DONE;
+			break;
+		default:
+			break;
+	}
+	
+	
+	return response;
+}
+
 void    Response::_prepareResponse(){
 	if (_status == HTTP_OK){
 		std::string  methods[3] = {"GET", "POST", "DELETE"};
 		for (int i = 0; i < 3; i++)
-			if (_requestMethod == methods[i])
+			if (_request->getMethod() == methods[i])
 				switch (i){
 					case 0:
 						_processGetResponse();
@@ -90,10 +113,6 @@ void    Response::_prepareResponse(){
 	}
 	_buildResponse();
 	_good = true;
-}
-
-std::string    Response::GetResponse(){
-	return _response;
 }
 
 Response::~Response(){

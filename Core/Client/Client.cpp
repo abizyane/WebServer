@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/25 10:11:04 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/25 22:54:25 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/26 01:53:58 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,14 +37,15 @@ bool	Client::consumStream( void ) {
 	return true;
 }
 
-
 void	Client::sendResponse( void ) {
 	try {
-		if (processor.good()){
+		if (processor.good())
 			sockFd->send(processor.getResponseBuffer());
-			processor.setGood(false); // this is just to make sure that the response is sent only once until i handle the keep-alive
-		}
-	} catch (std::exception& e) {
+	} catch (std::exception& e){
 		std::cerr << e.what() << '\n';
 	}
+}
+
+bool	Client::ResponseSent( void ){
+	return processor.good();
 }

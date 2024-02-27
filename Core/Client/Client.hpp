@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/25 10:11:05 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/25 15:03:47 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/02/26 01:37:34 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,4 +30,6 @@ class	Client
 		Socket*	sock( void ) const;
 		bool	consumStream( void );
 		void	sendResponse( void );
+
+		bool	ResponseSent( void );
 };

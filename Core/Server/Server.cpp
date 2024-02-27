@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/25 09:45:12 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/25 23:16:59 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/02/27 04:59:18 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 
 Server::Server( void ) {
 }
-
 
 void	Server::init( void ) {
 	std::set<unsigned int>	ports =	MainConf::getConf()->getAllPorts();
@@ -29,7 +28,7 @@ void	Server::init( void ) {
 			std::cout << "start listening on 0.0.0.0:" << *first << " ..." << std::endl;
 			_poller.push(sock->fileno());
 			_sockets.push_back(sock);
-		} catch (std::exception& e) {
+		} catch (std::exception& e){
 			delete sock;
 			std::cerr << e.what() << std::endl;
 		}
@@ -76,8 +75,8 @@ void	Server::_manageClients( void ) {
 			}
 		} else if (_poller[i].revents & POLLOUT) {// until request parseIsDone
 			client->sendResponse(); //TODO:: handle video responses
-			// std::cout << "client served" << '\n';
-			// _purgeClient(i);
+			if (client->ResponseSent())
+				_purgeClient(i);
 		}
 		else if (_poller[i].revents & POLLHUP)
 			_purgeClient(i);
