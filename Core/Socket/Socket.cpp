@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Socket.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 14:35:24 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/25 10:13:26 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/03/01 18:43:57 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,10 +85,12 @@ std::string	Socket::receive( void )
 	return data;
 }
 
-void		Socket::send( const std::string& data )
+size_t		Socket::send( const std::string& data )
 {
-	if (::send(_sockFd, data.c_str(), data.size(), 0) < 0)
+	size_t	ret;
+	if ((ret = ::send(_sockFd, data.c_str(), data.size(), 0)) < 0)
 		throw std::runtime_error("faild to send data in socket: " + std::string(strerror(errno)));
+	return ret;
 }
 
 sock_t	Socket::fileno( void ) const

@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 21:58:16 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/26 01:24:42 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/01 19:14:55 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ e_statusCode	GetRequest::checkHeaders(void){
 			_isChunked = true;
 		} 
 		if (!_isChunked){
-			_contentLength = strtoll(_headers["Content-Length"].c_str(), NULL, 10);
+			_contentLength = strtoll(_headers["Content-Length"].c_str(), NULL, 10); // protect the case of a non number
 			if (_contentLength == 0 && _headers["Content-Length"] != "0")
 				return HTTP_BAD_REQUEST;
 		}

@@ -6,13 +6,14 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/01 16:45:23 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/01 18:59:39 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Response.hpp"
 
 Response::Response(IRequest &request, ProcessRequest& parse, int port): _request(&request), _parse(&parse), _good(false), _state(RESPONSE){
+	_bodyIndex = 0;
 	_status = _parse->getStatusCode();
 	(void)port;
 	if (_request != NULL)
@@ -43,6 +44,7 @@ void	Response::_buildResponse(){
 		_response += "HTTP/1.1 503 Service Unavailable\r\n";
 	else if (_status == HTTP_VERSION_NOT_SUPPORTED)
 		_response += "HTTP/1.1 505 HTTP Version Not Supported\r\n";
+	
 	_response += "Server: Nginx++/1.0.0 (Unix)\r\n";
 	_response += "Content-Type: text/html\r\n";
 	_response += "Content-Length: 45\r\n";
@@ -75,22 +77,30 @@ void	Response::_processDeleteResponse(){
 
 // 		"Connection: keep-alive\r\n";
 // 		"Connection: close\r\n";
-std::string    Response::GetResponse(){
+std::string    Response::GetResponse(size_t lastSent){
 	std::string		response;
-	_bodyIndex = 0;
-	switch (_state){
-		case RESPONSE:
-		
-			_state = BODY;
-			break;
-		case BODY:
-
-			
-			_state = DONE;
-			break;
-		default:
-			break;
-    }
+	(void)lastSent;
+	(void)_state;
+	// switch (_state){
+	// 	case RESPONSE:
+	// 		size_t index;
+	// 		_response.find("\r\n\r\n") != std::string::npos ?
+	// 			index = _response.find("\r\n\r\n") + 4 : index = _response.find("\n\n") + 2;
+	// 		response = _response.substr(0, index);
+	// 		_response.erase(0, index);
+	// 		_state = BODY;
+	// 		break;
+	// 	case BODY:
+	// 		if (_response.size() > 0){
+	// 			response = _response.substr(0, 1024);
+	// 			_response.erase(0, 1024);
+	// 		}
+	// 		else
+	// 		_state = DONE;
+	// 		break;
+	// 	default:
+	// 		break;
+    // }
 	response = _response;
 	return response;
 }
