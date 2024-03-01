@@ -6,13 +6,13 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/25 10:11:04 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/26 01:53:58 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/01 16:44:30 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Client.hpp"
 
-Client::Client( Socket* sock ) : sockFd(sock) {
+Client::Client( Socket* sock ) : sockFd(sock), processor(80){ // tatbedel hadi anourdine
 }
 
 Client::~Client( void ) {

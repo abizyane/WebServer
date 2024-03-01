@@ -6,15 +6,17 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/27 18:23:02 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/01 16:45:23 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Response.hpp"
 
-Response::Response(IRequest &request, ProcessRequest& parse): _request(&request), _parse(&parse), _good(false), _state(RESPONSE){
+Response::Response(IRequest &request, ProcessRequest& parse, int port): _request(&request), _parse(&parse), _good(false), _state(RESPONSE){
 	_status = _parse->getStatusCode();
-	_location = MainConf::getConf()->getServersConf()[0]->getUri(_request->getUri());
+	(void)port;
+	if (_request != NULL)
+		_location = MainConf::getConf()->getServersConf()[0]->getUri(_request->getUri()); // bdel hadi b getServerbyhostorport()
 	_prepareResponse();
 }
 
@@ -70,10 +72,11 @@ void	Response::_processDeleteResponse(){
 	// 	if (_response != "")
 	// 		_state = DONE;
 	// }
+
 // 		"Connection: keep-alive\r\n";
 // 		"Connection: close\r\n";
 std::string    Response::GetResponse(){
-	std::string response;
+	std::string		response;
 	_bodyIndex = 0;
 	switch (_state){
 		case RESPONSE:
@@ -87,9 +90,8 @@ std::string    Response::GetResponse(){
 			break;
 		default:
 			break;
-	}
-	
-	
+    }
+	response = _response;
 	return response;
 }
 
