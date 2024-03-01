@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Socket.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 14:18:21 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/25 11:55:15 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/03/01 18:41:11 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ class	Socket
 		sockaddr_in	getAddr( void ) const;
 		Socket*	accept( void );
 		std::string	receive( void );
-		void		send( const std::string& data );
+		size_t		send( const std::string& data );
 		// void	connect( )
 		// void	setOptions( int level = SOL_SOCKET, int option_name = 1, const void *option_value = (int*)(1), socklen_t option_len = sizeof(int));
 	

@@ -44,7 +44,6 @@ class ProcessRequest {
 		bool			_good;
 		std::string		_responseBuffer;
 		void			_parseRequestLine(std::string&	requestLine);
-		void			_generateResponse( void );
 
 	public:
 		ProcessRequest(int port);
@@ -56,7 +55,6 @@ class ProcessRequest {
 		Response*		getResponse( void );
 		e_parseState	getParseState( void );
 		e_statusCode	getStatusCode( void );
-		std::string		getResponseBuffer( void );
 
 		void			setParseState(e_parseState state);
 		void			setGood(bool good)  ;

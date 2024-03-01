@@ -44,10 +44,6 @@ void	ProcessRequest::setGood(bool good){
 	_good = good;
 }
 
-std::string	ProcessRequest::getResponseBuffer( void ){
-	return _responseBuffer;
-}
-
 static std::string	getToken(std::string &line) {
 		std::string		token;
 		size_t			index = line.find_first_of(" \t\n\r\f\v");
@@ -89,13 +85,6 @@ static int	checkVersion(std::string& version){
 	return ((version == "HTTP/1.1")? 200 : 505);
 }
 
-void ProcessRequest::_generateResponse( void ){
-	_response = new Response(*_request, *this, _port);
-	
-	_responseBuffer = _response->GetResponse();
-	_good = true;
-}
-
 void	ProcessRequest::parseLine(std::string	request){
 	std::string		line;
 
@@ -128,8 +117,10 @@ void	ProcessRequest::parseLine(std::string	request){
 	if (_state == Body)
 		_status = _request->parseBody(_requestBuffer);
 
-	if (_state == Error || _state == Done)
-		_generateResponse();
+	if (_state == Error || _state == Done){
+		_response = new Response(*_request, *this, _port);
+		_good = true;
+	}
 }
 
 void	ProcessRequest::_parseRequestLine(std::string &requestLine){

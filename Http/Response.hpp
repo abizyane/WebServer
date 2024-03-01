@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:07:10 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/01 16:39:47 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/01 18:53:16 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,8 @@ class Response {
 
 		bool			good( void );
 
-		std::string		GetResponse(void);
+		std::string		GetResponse(size_t lastSent);
+    
 		~Response();
 
 };
