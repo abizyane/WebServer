@@ -12,7 +12,7 @@
 
 #include "ProcessRequest.hpp"
 
-ProcessRequest::ProcessRequest() : _state(RequestLine), _status(HTTP_OK),
+ProcessRequest::ProcessRequest(int port) :_port(port), _state(RequestLine), _status(HTTP_OK),
 	_request(NULL), _response(NULL), _good(false){
 }
 
@@ -90,7 +90,7 @@ static int	checkVersion(std::string& version){
 }
 
 void ProcessRequest::_generateResponse( void ){
-	_response = new Response(*_request, *this);
+	_response = new Response(*_request, *this, _port);
 	
 	_responseBuffer = _response->GetResponse();
 	_good = true;

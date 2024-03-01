@@ -36,6 +36,7 @@ typedef enum {
 class ProcessRequest {
 	private:
 		std::string 	_requestBuffer;
+		int				_port;
 		e_parseState	_state;
 		e_statusCode	_status;
 		IRequest*		_request;
@@ -46,7 +47,7 @@ class ProcessRequest {
 		void			_generateResponse( void );
 
 	public:
-		ProcessRequest();
+		ProcessRequest(int port);
 
 		void			parseLine(std::string	request);
 		bool			good( void );
