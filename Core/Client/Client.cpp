@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/25 10:11:04 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/01 18:50:27 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/02 14:18:12 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,5 +47,5 @@ void	Client::sendResponse( void ) {
 }
 
 bool	Client::ResponseSent( void ){
-	return processor.good();
+	return processor.good() && processor.getResponse()->sent();
 }

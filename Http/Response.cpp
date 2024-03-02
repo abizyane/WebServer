@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/01 18:59:39 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/02 14:29:50 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,10 @@ Response::Response(IRequest &request, ProcessRequest& parse, int port): _request
 
 bool    Response::good(){
 	return _good;
+}
+
+bool    Response::sent(){
+	return _state == DONE;
 }
 
 void	Response::_buildResponse(){
@@ -66,42 +70,29 @@ void	Response::_processPostResponse(){
 void	Response::_processDeleteResponse(){
 }
 
-	// std::map<std::string, std::string>::iterator it = _request->getHeaders().find("Connection");
-	// if (it != _request->getHeaders().end() && it->second == "keep-alive"){
-	// 	if (_state == BODY){
-			
-	// 	}
-	// 	if (_response != "")
-	// 		_state = DONE;
-	// }
-
-// 		"Connection: keep-alive\r\n";
-// 		"Connection: close\r\n";
 std::string    Response::GetResponse(size_t lastSent){
 	std::string		response;
-	(void)lastSent;
-	(void)_state;
-	// switch (_state){
-	// 	case RESPONSE:
-	// 		size_t index;
-	// 		_response.find("\r\n\r\n") != std::string::npos ?
-	// 			index = _response.find("\r\n\r\n") + 4 : index = _response.find("\n\n") + 2;
-	// 		response = _response.substr(0, index);
-	// 		_response.erase(0, index);
-	// 		_state = BODY;
-	// 		break;
-	// 	case BODY:
-	// 		if (_response.size() > 0){
-	// 			response = _response.substr(0, 1024);
-	// 			_response.erase(0, 1024);
-	// 		}
-	// 		else
-	// 		_state = DONE;
-	// 		break;
-	// 	default:
-	// 		break;
-    // }
-	response = _response;
+	size_t index;
+	switch (_state){
+		case RESPONSE:
+			_response.find("\r\n\r\n") != std::string::npos ?
+				index = _response.find("\r\n\r\n") + 4 : index = _response.find("\n\n") + 2;
+			response = _response.substr(0, index);
+			// _response.erase(0, index);
+			_state = BODY;
+			break;
+		case BODY:
+			index = 45; // 45 is just for testing => [ strtoll(_headers["Content-Length"].c_str(), NULL, 10) - 1 ]
+			_response.erase(0, lastSent);
+			if (_response.size() > 0 && _bodyIndex < index)
+				response = _response.substr(0, index - _bodyIndex);
+			else
+				_state = DONE; 
+			_bodyIndex += lastSent;
+			break;
+		default:
+			break;
+    }
 	return response;
 }
 
