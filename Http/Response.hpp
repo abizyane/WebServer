@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:07:10 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/01 18:53:16 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/02 14:17:21 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ class Response {
 		size_t								_bodyIndex;
 		std::string							_response;
 		std::map<std::string, std::string>  _headers;
-		std::vector<char>					_body;
+		std::string     					_body;
 		
 		void								_buildResponse( void );
 		void								_processGetResponse( void );
@@ -48,6 +48,7 @@ class Response {
 		Response(IRequest& request, ProcessRequest& parse, int port);
 
 		bool			good( void );
+		bool			sent( void );
 
 		std::string		GetResponse(size_t lastSent);
     
