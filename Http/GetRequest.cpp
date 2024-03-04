@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 21:58:16 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/01 19:14:55 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/04 15:56:48 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,14 @@ GetRequest::GetRequest(std::string &method, std::string &uri, ProcessRequest& pa
 	_contentLength = 0;
 	_hasBody = false;
 	_bodyIndex = 0;
+
+	std::string name(".body");
+	std::srand(std::time(0));
+	for (size_t i = 0; i < 10; i++)
+		name.push_back(std::to_string(std::rand())[0]);
+	_body.open(name, std::ios::out | std::ios::in | std::ios::trunc);
+	if (!_body.is_open())
+		_parse.setParseState(Error); //   HTTP_INTERNAL_SERVER_ERROR;
 }
 
 std::string		GetRequest::getMethod( void ) const{
@@ -33,8 +41,10 @@ std::map<std::string, std::string>	GetRequest::getHeaders( void ) const{
 	return _headers;
 }
 
-std::string		GetRequest::getBody( void ) const{
-	return _body;
+std::string		GetRequest::getBody( void ) {
+	std::string line;
+	_body >> line;
+	return line;
 }
 
 ProcessRequest&	GetRequest::getParse( void ) const{
@@ -53,9 +63,9 @@ e_statusCode	GetRequest::checkHeaders(void){
 			_isChunked = true;
 		} 
 		if (!_isChunked){
-			_contentLength = strtoll(_headers["Content-Length"].c_str(), NULL, 10); // protect the case of a non number
-			if (_contentLength == 0 && _headers["Content-Length"] != "0")
+			if (_headers["Content-Length"].find_first_not_of("0123456789") != std::string::npos)
 				return HTTP_BAD_REQUEST;
+			_contentLength = strtoll(_headers["Content-Length"].c_str(), NULL, 10);
 		}
 	}
 	else
@@ -78,7 +88,7 @@ e_statusCode	GetRequest::parseHeader(std::string &line){
         std::string allowedChars("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-!#$%&'*+-.^_|~");
 		if (key.empty() || value.empty() || _headers.find(key) != _headers.end() ||
 			key.find_first_not_of(allowedChars) != std::string::npos)
-			return HTTP_BAD_REQUEST; //invalid header
+			return HTTP_BAD_REQUEST;
 		_headers[key] = value;
 	}catch(const std::exception &){
 		return HTTP_BAD_REQUEST;
@@ -93,21 +103,19 @@ e_statusCode	GetRequest::parseBody(std::string &line){ // TODO: i think that we 
 	try{
 		if (!_isChunked){
 			str = ss.str();
-			str.erase(str.find_last_not_of(" \t\n\r\f\v") + 1);
 			for (; _bodyIndex + i < _contentLength && i < str.size(); i++)
-				_body += str[i];
+				_body << str[i];
 			_bodyIndex += i;
 			if(_bodyIndex == _contentLength)
 				_parse.setParseState(Done);
 		}
 		else{
 			std::getline(ss, str, '\n');
-			str.erase(str.find_last_not_of(" \t\n\r\f\v") + 1);
 			size_t	chunkLen = strtoll(str.c_str(), NULL, 16);
 			str.clear();
 			str = ss.str();
 			for (; _bodyIndex + i < chunkLen && i < str.size(); i++)
-				_body += str[i];
+				_body << str[i];
 			_bodyIndex += i;
 			if (chunkLen == 0)
 				_parse.setParseState(Done);
@@ -119,13 +127,9 @@ e_statusCode	GetRequest::parseBody(std::string &line){ // TODO: i think that we 
 		return HTTP_BAD_REQUEST;
 	}
 	line.clear();
-    return HTTP_OK;
+	return HTTP_OK;
 }
 
-//      GET / HTTP/1.1
-//      Host: dasdasd
-//	  	Content-Length: 10
 GetRequest::~GetRequest( void ){
-
-
+	_body.close();
 }

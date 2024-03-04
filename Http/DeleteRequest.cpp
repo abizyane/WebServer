@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:04:42 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/26 01:28:57 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/04 15:57:18 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,14 @@ DeleteRequest::DeleteRequest(std::string &method, std::string &uri, ProcessReque
 	_hasBody = false;
 	_isChunked = false;
 	_contentLength = 0;
+
+	std::string name(".body");
+	std::srand(std::time(0));
+	for (size_t i = 0; i < 10; i++)
+		name.push_back(std::to_string(std::rand())[0]);
+	_body.open(name, std::ios::out | std::ios::in | std::ios::trunc);
+	if (!_body.is_open())
+		_parse.setParseState(Error); //   HTTP_INTERNAL_SERVER_ERROR;
 }
 
 std::string		DeleteRequest::getMethod( void ) const{
@@ -31,8 +39,10 @@ std::map<std::string, std::string>	DeleteRequest::getHeaders( void ) const{
 	return _headers;
 }
 
-std::string		DeleteRequest::getBody( void ) const{
-	return _body;
+std::string		DeleteRequest::getBody( void ) {
+	std::string line;
+	_body >> line;
+	return line;
 }
 
 ProcessRequest&	DeleteRequest::getParse( void ) const{
@@ -72,9 +82,9 @@ e_statusCode	DeleteRequest::checkHeaders(void){
 			_isChunked = true;
 		} 
 		if (!_isChunked){
-			_contentLength = strtoll(_headers["Content-Length"].c_str(), NULL, 10);
-			if (_contentLength == 0 && _headers["Content-Length"] != "0")
+			if (_headers["Content-Length"].find_first_not_of("0123456789") != std::string::npos)
 				return HTTP_BAD_REQUEST;
+			_contentLength = strtoll(_headers["Content-Length"].c_str(), NULL, 10);
 		}
 	}
 	else
@@ -91,21 +101,19 @@ e_statusCode	DeleteRequest::parseBody(std::string &line){ // TODO: i think that 
 	try{
 		if (!_isChunked){
 			str = ss.str();
-			str.erase(str.find_last_not_of(" \t\n\r\f\v") + 1);
 			for (; _bodyIndex + i < _contentLength && i < str.size(); i++)
-				_body += str[i];
+				_body << str[i];
 			_bodyIndex += i;
 			if(_bodyIndex == _contentLength)
 				_parse.setParseState(Done);
 		}
 		else{
 			std::getline(ss, str, '\n');
-			str.erase(str.find_last_not_of(" \t\n\r\f\v") + 1);
 			size_t	chunkLen = strtoll(str.c_str(), NULL, 16);
 			str.clear();
 			str = ss.str();
 			for (; _bodyIndex + i < chunkLen && i < str.size(); i++)
-				_body += str[i];
+				_body << str[i];
 			_bodyIndex += i;
 			if (chunkLen == 0)
 				_parse.setParseState(Done);
@@ -117,10 +125,10 @@ e_statusCode	DeleteRequest::parseBody(std::string &line){ // TODO: i think that 
 		return HTTP_BAD_REQUEST;
 	}
 	line.clear();
-    return HTTP_OK;
+	return HTTP_OK;
 }
 
 DeleteRequest::~DeleteRequest( void ){
-
+	_body.close();
 }
 
