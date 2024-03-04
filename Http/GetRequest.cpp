@@ -21,10 +21,10 @@ GetRequest::GetRequest(std::string &method, std::string &uri, ProcessRequest& pa
 	_bodyIndex = 0;
 
 	_fileName = ".requestbody";
-	std::srand(std::time(0));
-	for (size_t i = 0; i < 20; i++)
-		_fileName.push_back(std::to_string(std::rand())[0]);
-	_body.open(_fileName, std::ios::out | std::ios::in | std::ios::trunc);
+	// std::srand(std::time(0));
+	// for (size_t i = 0; i < 20; i++)
+	// 	_fileName.push_back(std::to_string(std::rand())[0]);
+	_body.open(_fileName.c_str(), std::ios::out | std::ios::in | std::ios::trunc);
 	if (!_body.is_open())
 		_parse.setParseState(Error); //   HTTP_INTERNAL_SERVER_ERROR;
 }
@@ -66,7 +66,9 @@ e_statusCode	GetRequest::checkHeaders(void){
 			if (_headers["Content-Length"].find_first_not_of("0123456789") != std::string::npos)
 				return HTTP_BAD_REQUEST;
 			_contentLength = strtoll(_headers["Content-Length"].c_str(), NULL, 10);
-		}
+		}td::srand(std::time(0));
+	// for (size_t i = 0; i < 20; i++)
+	// 	_fileName.push_back(std::to_string(std::rand())[0]);
 	}
 	else
 		_parse.setParseState(Done);

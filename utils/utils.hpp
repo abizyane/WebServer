@@ -18,7 +18,8 @@
 #include <exception>
 #include <unistd.h>
 #include <sys/time.h>
-
+#include <cstring>
+#include <cstdlib>
 
 
 template<typename T>

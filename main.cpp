@@ -11,7 +11,8 @@
 /* ************************************************************************** */
 
 #include "Parser/Parser.hpp"
-#include "Core/Server/Server.hpp"
+// #include "Core/Server/Server.hpp"
+#include "Core/CoreServer.hpp"
 #include "Configuration/MainConf.hpp"
 
 int main()
@@ -27,7 +28,7 @@ int main()
 		// 		std::cout << "root: " << loc->getRoot() << '\n';
 		// 	}
 		// }
-		Server server;
+		CoreServer server;
 		server.init();
 		server.run();
 	} catch (std::exception & e) {

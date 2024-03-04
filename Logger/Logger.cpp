@@ -12,8 +12,8 @@
 
 #include "Logger.hpp"
 
-Logger*	Logger::_access = nullptr;
-Logger*	Logger::_error = nullptr;
+Logger*	Logger::_access = NULL;
+Logger*	Logger::_error = NULL;
 
 Logger::Logger( const std::string& fileName ) : _fileName(fileName), _logFile(fileName.c_str(), std::ios::app)
 {
@@ -25,14 +25,14 @@ Logger::~Logger( void ) {
 
 Logger&	Logger::getAccessLog( const std::string& accessLogStream )
 {
-	if (_access == nullptr)
+	if (_access == NULL)
 		_access = new Logger( accessLogStream );
 	return *_access;	
 }
 
 Logger&	Logger::getErrorLog( const std::string& errorLogStream )
 {
-	if (_error == nullptr)
+	if (_error == NULL)
 		_error = new Logger( errorLogStream );
 	return *_error;
 }
@@ -48,6 +48,6 @@ void	Logger::deleteLogs( void )
 {
 	delete _error;
 	delete _access;
-	_error = nullptr;
-	_access = nullptr;
+	_error = NULL;
+	_access = NULL;
 }

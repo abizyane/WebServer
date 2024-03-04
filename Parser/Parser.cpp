@@ -242,8 +242,8 @@ void	Parser::_parsePort(ServerConf& server)
 	_advance(Token::WORD);
 	int port;
 	ss >> port;
-	if (!ss.eof() || port < 0 || port > 1023)
-		error(1, str("invalid port number :"), str(ss.str()), str(" at: "), str(CONF_PATH), str(":"), str(_lex.line()));
+	if (!ss.eof() || port < 0 || port > 65000)
+		error(6, str("invalid port number :"), str(ss.str()), str(" at: "), str(CONF_PATH), str(":"), str(_lex.line()));
 	std::stringstream		directive;
 	directive << "port:" << port;
 	if (server.hasDirective(directive.str()))
