@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:04:42 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/04 15:57:18 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/04 18:37:37 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,11 +18,11 @@ DeleteRequest::DeleteRequest(std::string &method, std::string &uri, ProcessReque
 	_isChunked = false;
 	_contentLength = 0;
 
-	std::string name(".body");
+	_fileName = ".requestbody";
 	std::srand(std::time(0));
-	for (size_t i = 0; i < 10; i++)
-		name.push_back(std::to_string(std::rand())[0]);
-	_body.open(name, std::ios::out | std::ios::in | std::ios::trunc);
+	for (size_t i = 0; i < 20; i++)
+		_fileName.push_back(std::to_string(std::rand())[0]);
+	_body.open(_fileName, std::ios::out | std::ios::in | std::ios::trunc);
 	if (!_body.is_open())
 		_parse.setParseState(Error); //   HTTP_INTERNAL_SERVER_ERROR;
 }
@@ -129,6 +129,7 @@ e_statusCode	DeleteRequest::parseBody(std::string &line){ // TODO: i think that 
 }
 
 DeleteRequest::~DeleteRequest( void ){
+	std::remove(_fileName.c_str());
 	_body.close();
 }
 

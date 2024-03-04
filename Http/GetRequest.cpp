@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 21:58:16 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/04 15:56:48 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/04 18:37:47 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,11 +20,11 @@ GetRequest::GetRequest(std::string &method, std::string &uri, ProcessRequest& pa
 	_hasBody = false;
 	_bodyIndex = 0;
 
-	std::string name(".body");
+	_fileName = ".requestbody";
 	std::srand(std::time(0));
-	for (size_t i = 0; i < 10; i++)
-		name.push_back(std::to_string(std::rand())[0]);
-	_body.open(name, std::ios::out | std::ios::in | std::ios::trunc);
+	for (size_t i = 0; i < 20; i++)
+		_fileName.push_back(std::to_string(std::rand())[0]);
+	_body.open(_fileName, std::ios::out | std::ios::in | std::ios::trunc);
 	if (!_body.is_open())
 		_parse.setParseState(Error); //   HTTP_INTERNAL_SERVER_ERROR;
 }
@@ -131,5 +131,6 @@ e_statusCode	GetRequest::parseBody(std::string &line){ // TODO: i think that we 
 }
 
 GetRequest::~GetRequest( void ){
+	std::remove(_fileName.c_str());
 	_body.close();
 }
