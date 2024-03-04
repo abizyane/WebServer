@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/02 14:29:50 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/04 14:19:38 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,7 +78,6 @@ std::string    Response::GetResponse(size_t lastSent){
 			_response.find("\r\n\r\n") != std::string::npos ?
 				index = _response.find("\r\n\r\n") + 4 : index = _response.find("\n\n") + 2;
 			response = _response.substr(0, index);
-			// _response.erase(0, index);
 			_state = BODY;
 			break;
 		case BODY:
