@@ -6,15 +6,19 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/04 14:19:38 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/04 18:30:45 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Response.hpp"
 
+std::map<std::string, std::string> Response::_mimeMap;
+std::map<e_statusCode, std::string> Response::_statusMap;
+
 Response::Response(IRequest &request, ProcessRequest& parse, int port): _request(&request), _parse(&parse), _good(false), _state(RESPONSE){
 	_bodyIndex = 0;
 	_status = _parse->getStatusCode();
+	Response::initMaps();
 	(void)port;
 	if (_request != NULL)
 		_location = MainConf::getConf()->getServersConf()[0]->getUri(_request->getUri()); // bdel hadi b getServerbyhostorport()
@@ -30,38 +34,27 @@ bool    Response::sent(){
 }
 
 void	Response::_buildResponse(){
-	// TODO: prapare the response based on the response data
-	// this function now is just for testing
-	if (_status == HTTP_OK)
-		_response += "HTTP/1.1 200 OK\r\n";
-	else if (_status == HTTP_BAD_REQUEST)
-		_response += "HTTP/1.1 400 Bad Request\r\n";
-	else if (_status == HTTP_NOT_FOUND)
-		_response += "HTTP/1.1 404 Not Found\r\n";
-	else if (_status == HTTP_METHOD_NOT_ALLOWED)
-		_response += "HTTP/1.1 405 Method Not Allowed\r\n";
-	else if (_status == HTTP_INTERNAL_SERVER_ERROR)
-		_response += "HTTP/1.1 500 Internal Server Error\r\n";
-	else if (_status == HTTP_NOT_IMPLEMENTED)
-		_response += "HTTP/1.1 501 Not Implemented\r\n";
-	else if (_status == HTTP_SERVICE_UNAVAILABLE)
-		_response += "HTTP/1.1 503 Service Unavailable\r\n";
-	else if (_status == HTTP_VERSION_NOT_SUPPORTED)
-		_response += "HTTP/1.1 505 HTTP Version Not Supported\r\n";
-	
-	_response += "Server: Nginx++/1.0.0 (Unix)\r\n";
-	_response += "Content-Type: text/html\r\n";
-	_response += "Content-Length: 45\r\n";
-	_response += "Connection: close\r\n";
+	_response += "HTTP/1.1 ";
+	_response += _statusMap[_status] + "\r\n";
+	{ // the insertion of headers should be done in the _processResponse functions
+		_headers["Server"] = "Nginx++/1.0.0 (Unix)";
+		_headers["Content-Type"] = _mimeMap["html"]; // the url instead of "html"
+		_headers["Content-Length"] = "45"; // the size of the response body instead of "45"
+		_headers["Date"] = "Mon, 04 Mar 2024 18:21:13 GMT"; // the current date instead of "Mon, 04 Mar 2024 18:21:13 GMT"
+		_headers["Accept-Ranges"] = "bytes";
+		_headers["Content-Language"] = "en"; // the language of the file instead of "en"
+		_headers["Content-Encoding"] = "gzip"; // the encoding of the file instead of "gzip"
+		_headers["Connection"] = "close";
+	}
+	for (std::map<std::string, std::string>::iterator it = _headers.begin(); it != _headers.end(); it++)
+		_response += it->first + ": " + it->second + "\r\n";
 	_response += "\r\n";
-	// if (_status == HTTP_OK)
-	_response += "<html><body><h1>It works!</h1></body></html>";
-	// else
-		// _response += DefaultPages::getPage(HTTP_NOT_FOUND);
+
+	
+	_response += "<html><body><h1>It works!</h1></body></html>"; // the body of the response instead of this
 }
 
 void	Response::_processGetResponse(){
- 
 }
 
 void	Response::_processPostResponse(){

@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:05:34 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/04 15:48:42 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/04 18:35:39 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@ class	DeleteRequest : public IRequest{
 		size_t								_contentLength;
 		ProcessRequest&						_parse;
 		std::fstream						_body;
+		std::string							_fileName;
 
 	public:
 		DeleteRequest(std::string &method, std::string &uri, ProcessRequest& parse);

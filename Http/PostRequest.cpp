@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:03:16 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/04 15:58:06 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/04 18:36:54 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,11 +18,11 @@ PostRequest::PostRequest(std::string &method, std::string &uri, ProcessRequest& 
 	_bodyIndex = 0;
 	_isChunked = false;
 
-	std::string name(".body");
+	_fileName = ".requestbody";
 	std::srand(std::time(0));
-	for (size_t i = 0; i < 10; i++)
-		name.push_back(std::to_string(std::rand())[0]);
-	_body.open(name, std::ios::out | std::ios::in | std::ios::trunc);
+	for (size_t i = 0; i < 20; i++)
+		_fileName.push_back(std::to_string(std::rand())[0]);
+	_body.open(_fileName, std::ios::out | std::ios::in | std::ios::trunc);
 	if (!_body.is_open())
 		_parse.setParseState(Error); //   HTTP_INTERNAL_SERVER_ERROR;
 	
@@ -125,5 +125,6 @@ e_statusCode	PostRequest::parseBody(std::string &line){
 }
 
 PostRequest::~PostRequest( void ){
+	std::remove(_fileName.c_str());
 	_body.close();
 }

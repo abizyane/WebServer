@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:07:10 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/02 14:17:21 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/04 18:13:02 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,9 @@ typedef enum {
 
 class Response {
 	private :
-		IRequest*							_request;
+		static std::map<std::string, std::string>   _mimeMap;
+		static std::map<e_statusCode, std::string>  _statusMap;
+        IRequest*							_request;
 		ProcessRequest*						_parse;
 		LocationConf*						_location;
 		bool								_good;
@@ -46,7 +48,7 @@ class Response {
 	
 	public :
 		Response(IRequest& request, ProcessRequest& parse, int port);
-
+        static void							initMaps( void );
 		bool			good( void );
 		bool			sent( void );
 
