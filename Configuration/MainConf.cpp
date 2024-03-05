@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   MainConf.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 12:19:15 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/21 20:12:52 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/03/05 01:44:09 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,4 +102,16 @@ void	MainConf::passDirectiveToServers( void ) {
 		}
 		_servers[idx]->passDirectiveToRoutes();
 	}
+}
+
+ServerConf*		MainConf::getServerByHostPort( int port, std::string host ) {
+	std::vector<ServerConf*>::iterator	it = _servers.begin();
+	ServerConf*					server = NULL;
+	for (; it != _servers.end(); it++) {
+		if ((*it)->hasHostName(host))
+			return (*it);
+		if ((*it)->hasPort(port))
+			server = *it;
+	}
+	return (server);
 }

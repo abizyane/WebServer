@@ -12,7 +12,7 @@
 
 #include "ProcessRequest.hpp"
 
-ProcessRequest::ProcessRequest() : _state(RequestLine), _status(HTTP_OK),
+ProcessRequest::ProcessRequest(in_port_t port) :_port(port), _state(RequestLine), _status(HTTP_OK),
 	_request(NULL), _response(NULL), _good(false){
 }
 
@@ -40,8 +40,12 @@ e_statusCode	ProcessRequest::getStatusCode( void ){
 	return _status;
 }
 
-std::string	ProcessRequest::getResponseBuffer( void ){
-	return _responseBuffer;
+std::string&	ProcessRequest::getRequestBuffer( void ){
+	return _requestBuffer;
+}
+
+void	ProcessRequest::setGood(bool good){
+	_good = good;
 }
 
 static std::string	getToken(std::string &line) {
@@ -74,7 +78,7 @@ static int	checkUri(std::string& uri){
 	
 	if (uri[0] != '/' || uri.find_first_not_of(allowedChars) != std::string::npos)
 		return 400;
-	if (uri.size() > 2083) //replace this with the limit specified in the server_context
+	if (uri.size() > 2048) //replace this with the limit specified in the server_context
 		return 414;
 	return 200;
 }
@@ -83,13 +87,6 @@ static int	checkVersion(std::string& version){
 	if (version.compare(0, 5, "HTTP/"))
 		return 400;
 	return ((version == "HTTP/1.1")? 200 : 505);
-}
-
-void ProcessRequest::_generateResponse( void ){
-	_response = new Response(*_request, *this);
-	
-	_responseBuffer = _response->GetResponse();
-	_good = true;
 }
 
 void	ProcessRequest::parseLine(std::string	request){
@@ -103,16 +100,17 @@ void	ProcessRequest::parseLine(std::string	request){
 			line = _requestBuffer.substr(0, _requestBuffer.find("\r\n")) :
 				line = _requestBuffer.substr(0, _requestBuffer.find("\n"));
 
-		if (_state == Headers && line.empty()){
+		if (_state == Headers && line.empty())
 			_request->checkHeaders();
-			_state = Body;
-		}
+
 		switch (_state){
 			case RequestLine:
 				_parseRequestLine(line);
 				break;
 			case Headers:
 				_status = _request->parseHeader(line);
+				if (_status != HTTP_OK)
+					_state = Error;
 			default:
 				break;
 		}
@@ -123,8 +121,14 @@ void	ProcessRequest::parseLine(std::string	request){
 	if (_state == Body)
 		_status = _request->parseBody(_requestBuffer);
 
-	if (_state == Error || _state == Done)
-		_generateResponse();
+	if (_state == Error || _state == Done){
+		// i think here it should be smtg like :
+		// if (_response)
+			_response = new Response(*_request, *this, _port);
+		// else
+			// 	_response->prepareResponse();
+		_good = true;
+	}
 }
 
 void	ProcessRequest::_parseRequestLine(std::string &requestLine){
@@ -158,7 +162,7 @@ void	ProcessRequest::_parseRequestLine(std::string &requestLine){
 				return;
 		}
 	}catch(const std::out_of_range&){
-		_status = HTTP_BAD_REQUEST;		
+		_status = HTTP_BAD_REQUEST;
 		_state = Error;
 		return;
 	}

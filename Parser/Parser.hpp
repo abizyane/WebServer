@@ -21,6 +21,7 @@
 #include "../utils/utils.hpp"
 #include <sstream>
 #include <exception>
+#include <deque>
 
 
 class	Parser

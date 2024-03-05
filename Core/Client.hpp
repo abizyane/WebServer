@@ -1,40 +1,85 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   Client.hpp                                         :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/02/17 11:34:21 by nakebli           #+#    #+#             */
-/*   Updated: 2024/02/20 20:13:50 by nakebli          ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #pragma once
 
-#include "../Configuration/MainConf.hpp"
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <unistd.h>
-#include <poll.h>
+#include "Selector.hpp"
 #include "../Http/ProcessRequest.hpp"
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <cstring>
 
-class	ClientInfo {
-	public :
-		sockaddr_in		addr;
-		socklen_t		len;
-		int				fd;
-		bool			good;
-		ProcessRequest  processRequest;
-
-		ClientInfo( void ) {};
-		ClientInfo( int sockfd );
-		~ClientInfo( void );
-		ClientInfo( const ClientInfo& rhs );
-		ClientInfo&	operator=( const ClientInfo& rhs );
+// typedef enum {
+// 	STANDBY, PARSING, DONE
+// } e_state;
 
 
-		void	      	parserequest( std::string  request );
-		bool			sendResponse( void );
-		bool    	  	readyToResponse( pollfd structpoll );
+#define SIMPLE_HTTP_RESPONSE "HTTP/1.1 200 OK\r\n"\
+                              "Content-Type: text/html\r\n"\
+                              "\r\n"\
+                              "<html>\r\n"\
+                              "<head>\r\n"\
+                              "<title>Simple HTTP Response</title>\r\n"\
+                              "</head>\r\n"\
+                              "<body>\r\n"\
+                              "<h1>Hello, World!</h1>\r\n"\
+                              "<p>This is a simple HTTP response.</p>\r\n"\
+                              "</body>\r\n"\
+                              "</html>\r\n"
+
+class	Client
+{
+	private:
+		Selector&		_selector;
+		int				sock;
+		sockaddr_in		info;
+		int				fd[2];
+		e_parseState	state;
+		ProcessRequest*	processor;
+		std::string		response;
+	public:
+		Client( Selector& _selector, int sock, sockaddr_in info ) \
+		: _selector(_selector), sock(sock), info(info), state(RequestLine) {
+			_selector.set(sock, Selector::WR_SET | Selector::RD_SET);
+			fd[0] = fd[1] = -1;
+			state = RequestLine;
+			processor = new ProcessRequest(info.sin_port);
+		}
+		
+		inline int fileno( void ) const {
+			return sock;
+		}
+
+		inline int writefd( void ) const {
+			return fd[0];
+		}
+		
+		inline int readfd( void ) const {
+			return fd[1];
+		}
+
+		inline	sockaddr_in infos( void ) const {
+			return info;
+		}
+
+		inline	void	readRequest( char *buffer, int size ) {
+			// processor->getRequestBuffer().append(buffer, size);
+			(void)size;
+			processor->parseLine(buffer);
+			state = Done;
+		}
+		
+		inline bool		sendResponse( void ) {
+			if (state == Done) {
+				if (::send(sock, SIMPLE_HTTP_RESPONSE, strlen(SIMPLE_HTTP_RESPONSE), 0) < 0)
+					throw std::runtime_error(("send(): failed"));
+				return true;
+			}
+			return false;
+		}
+
+		~Client( void ) {
+			_selector.unset(sock, Selector::WR_SET | Selector::RD_SET);
+			close(sock);
+			close(fd[1]);
+			close(fd[0]);
+		}
 };

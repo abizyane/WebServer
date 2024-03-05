@@ -22,6 +22,7 @@
 #include "GetRequest.hpp"
 #include "PostRequest.hpp"
 #include "DeleteRequest.hpp"
+#include <arpa/inet.h>
 
 class Response;
 
@@ -36,6 +37,7 @@ typedef enum {
 class ProcessRequest {
 	private:
 		std::string 	_requestBuffer;
+		int				_port;
 		e_parseState	_state;
 		e_statusCode	_status;
 		IRequest*		_request;
@@ -43,21 +45,21 @@ class ProcessRequest {
 		bool			_good;
 		std::string		_responseBuffer;
 		void			_parseRequestLine(std::string&	requestLine);
-		void			_generateResponse( void );
 
 	public:
-		ProcessRequest();
+		ProcessRequest(in_port_t port);
 
 		void			parseLine(std::string	request);
 		bool			good( void );
 
-		IRequest*		getRequest( void );
-		Response*		getResponse( void );
-		e_parseState	getParseState( void );
-		e_statusCode	getStatusCode( void );
-		std::string		getResponseBuffer( void );
+		IRequest*			getRequest( void );
+		Response*			getResponse( void );
+		e_parseState		getParseState( void );
+		e_statusCode		getStatusCode( void );
+		std::string&		getRequestBuffer( void );
 
 		void			setParseState(e_parseState state);
+		void			setGood(bool good);
 
 		~ProcessRequest();
 };

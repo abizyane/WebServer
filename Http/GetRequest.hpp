@@ -6,13 +6,14 @@
 /*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 21:59:15 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/20 11:38:30 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/03/05 01:01:58 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include "IRequest.hpp"
+#include <time.h>
 
 class ProcessRequest;
 
@@ -22,7 +23,8 @@ class	GetRequest : public IRequest{
 		std::string							_uri;
 		std::string							_version;
 		std::map<std::string, std::string>	_headers;
-		std::string							_body;
+		std::fstream						_body;
+		std::string							_fileName;
 		bool								_hasBody;
 		size_t								_bodyIndex;
 		bool								_isChunked;
@@ -39,12 +41,10 @@ class	GetRequest : public IRequest{
 		std::string							getMethod( void ) const;
 		std::string							getUri( void ) const;
 		std::map<std::string, std::string>	getHeaders( void ) const;
-		std::string							getBody( void ) const;
+		std::string							getBody( void );
 		ProcessRequest&						getParse( void ) const;
 
 		~GetRequest( void );
 };
 
 #include "ProcessRequest.hpp"
-
-

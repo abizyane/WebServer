@@ -6,7 +6,7 @@
 /*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 12:25:47 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/21 18:57:18 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/03/05 01:40:24 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,8 @@ class	MainConf : public HTTP
 		std::set<unsigned int>			getAllPorts( void ) const;
 		const std::vector<ServerConf*>	&getServersConf( void ) const;
 
-		void	passDirectiveToServers( void );
+		void		passDirectiveToServers( void );
+		ServerConf*	getServerByHostPort(int port, std::string host);
 };
 
 #endif

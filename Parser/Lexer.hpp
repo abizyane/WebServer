@@ -18,6 +18,7 @@
 #include <fstream>
 #include <exception>
 #include "../includes/Constants.hpp"
+#include <cstring>
 
 
 class	Lexer

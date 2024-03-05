@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   DeleteRequest.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:05:34 by abizyane          #+#    #+#             */
-/*   Updated: 2024/02/20 11:38:01 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/03/04 18:35:39 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,8 @@ class	DeleteRequest : public IRequest{
 		bool								_isChunked;
 		size_t								_contentLength;
 		ProcessRequest&						_parse;
-		std::string							_body;
+		std::fstream						_body;
+		std::string							_fileName;
 
 	public:
 		DeleteRequest(std::string &method, std::string &uri, ProcessRequest& parse);
@@ -39,7 +40,7 @@ class	DeleteRequest : public IRequest{
 		std::string							getMethod( void ) const;
 		std::string							getUri( void ) const;
 		std::map<std::string, std::string>	getHeaders( void ) const;
-		std::string							getBody( void ) const;
+		std::string							getBody( void );
 		ProcessRequest&						getParse( void ) const;
 
 		~DeleteRequest( void );
