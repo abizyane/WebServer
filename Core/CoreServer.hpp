@@ -89,7 +89,7 @@ class	CoreServer
 								it = server->_clients.erase(it);
 								continue;
 							} else {
-								client->readRequest(buff, ret);
+								client->readRequest(buff);
 							}
 						}
 
