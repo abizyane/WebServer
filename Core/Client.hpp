@@ -7,24 +7,6 @@
 #include <unistd.h>
 #include <cstring>
 
-// typedef enum {
-// 	STANDBY, PARSING, DONE
-// } e_state;
-
-
-#define SIMPLE_HTTP_RESPONSE "HTTP/1.1 200 OK\r\n"\
-                              "Content-Type: text/html\r\n"\
-                              "\r\n"\
-                              "<html>\r\n"\
-                              "<head>\r\n"\
-                              "<title>Simple HTTP Response</title>\r\n"\
-                              "</head>\r\n"\
-                              "<body>\r\n"\
-                              "<h1>Hello, World!</h1>\r\n"\
-                              "<p>This is a simple HTTP response.</p>\r\n"\
-                              "</body>\r\n"\
-                              "</html>\r\n"
-
 class	Client
 {
 	private:
@@ -32,16 +14,14 @@ class	Client
 		int				sock;
 		sockaddr_in		info;
 		int				fd[2];
-		e_parseState	state;
-		ProcessRequest*	processor;
-		std::string		response;
+		ProcessRequest	_processor;
+		size_t			_bytesSent;
+
 	public:
-		Client( Selector& _selector, int sock, sockaddr_in info ) \
-		: _selector(_selector), sock(sock), info(info), state(RequestLine) {
+		Client( Selector& _selector, int sock, sockaddr_in info ) : _selector(_selector), sock(sock), info(info), _processor(info.sin_port){
 			_selector.set(sock, Selector::WR_SET | Selector::RD_SET);
 			fd[0] = fd[1] = -1;
-			state = RequestLine;
-			processor = new ProcessRequest(info.sin_port);
+			_bytesSent = 0;
 		}
 		
 		inline int fileno( void ) const {
@@ -60,18 +40,15 @@ class	Client
 			return info;
 		}
 
-		inline	void	readRequest( char *buffer, int size ) {
-			// processor->getRequestBuffer().append(buffer, size);
-			(void)size;
-			processor->parseLine(buffer);
-			state = Done;
+		inline	void	readRequest( char *buffer) {
+			_processor.parseLine(buffer);
 		}
 		
 		inline bool		sendResponse( void ) {
-			if (state == Done) {
-				if (::send(sock, SIMPLE_HTTP_RESPONSE, strlen(SIMPLE_HTTP_RESPONSE), 0) < 0)
-					throw std::runtime_error(("send(): failed"));
-				return true;
+			if (_processor.good()){
+				std::string response = _processor.getResponse()->GetResponse(_bytesSent);
+				_bytesSent = ::send(sock, response.c_str(), response.size(), 0);
+				return (_processor.getResponse()->sent());
 			}
 			return false;
 		}

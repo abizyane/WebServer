@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/05 14:42:42 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/03/04 18:30:45 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,12 +19,9 @@ Response::Response(IRequest &request, ProcessRequest& parse, int port): _request
 	_bodyIndex = 0;
 	_status = _parse->getStatusCode();
 	Response::initMaps();
-	MainConf*	conf = MainConf::getConf();
-	std::cout << "Port :" << port << std::endl;
-	ServerConf* server = conf->getServerByHostPort(port, request.getHeaders()["Host"]);
+	(void)port;
 	if (_request != NULL)
-		_location = server->getUri(_request->getUri());
-	std::cout << "locarion: " << _location->getRoot() << std::endl;
+		_location = MainConf::getConf()->getServersConf()[0]->getUri(_request->getUri()); // bdel hadi b getServerbyhostorport()
 	_prepareResponse();
 }
 
@@ -57,38 +54,7 @@ void	Response::_buildResponse(){
 	_response += "<html><body><h1>It works!</h1></body></html>"; // the body of the response instead of this
 }
 
-void	Response::_GetRequestedDire( std::string path ) {
-	(void)path;
-}
-void	Response::_GetRequestedFile( std::string path ) {
-	std::cout << "path: " << path << std::endl;
-	if (_location->hasCgi()) {
-		std::cout << "cgi handel request" << std::endl;
-	}
-	else {
-		
-	}
-}
-
-void	Response::_processGetResponse() {
-	if (!_location)
-	{
-		_status = HTTP_NOT_FOUND;
-		return ;
-	}
-	std::string path = normPath(_location->getRoot() + _request->getUri());
-	PathType type = get_resource_type(path);
-	switch (type) {
-        case FILE_PATH:
-			_GetRequestedFile(path);
-            break;
-        case DIRECTORY_PATH:
-			_GetRequestedDire(path);
-            break;
-        case UNKNOWN:
-            std::cerr << path << " is an unknown type." << std::endl;
-            break;
-    }
+void	Response::_processGetResponse(){
 }
 
 void	Response::_processPostResponse(){
@@ -105,7 +71,6 @@ std::string    Response::GetResponse(size_t lastSent){
 			_response.find("\r\n\r\n") != std::string::npos ?
 				index = _response.find("\r\n\r\n") + 4 : index = _response.find("\n\n") + 2;
 			response = _response.substr(0, index);
-			// _response.erase(0, index);
 			_state = BODY;
 			break;
 		case BODY:

@@ -22,7 +22,6 @@
 #include "GetRequest.hpp"
 #include "PostRequest.hpp"
 #include "DeleteRequest.hpp"
-#include <arpa/inet.h>
 
 class Response;
 
@@ -47,16 +46,15 @@ class ProcessRequest {
 		void			_parseRequestLine(std::string&	requestLine);
 
 	public:
-		ProcessRequest(in_port_t port);
+		ProcessRequest(int port);
 
 		void			parseLine(std::string	request);
 		bool			good( void );
 
-		IRequest*			getRequest( void );
-		Response*			getResponse( void );
-		e_parseState		getParseState( void );
-		e_statusCode		getStatusCode( void );
-		std::string&		getRequestBuffer( void );
+		IRequest*		getRequest( void );
+		Response*		getResponse( void );
+		e_parseState	getParseState( void );
+		e_statusCode	getStatusCode( void );
 
 		void			setParseState(e_parseState state);
 		void			setGood(bool good);

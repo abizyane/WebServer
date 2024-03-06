@@ -26,7 +26,6 @@ class	CoreServer
 			sockaddr_in	info;
 			socklen_t	len = 0;
 			memset(&info, 0, sizeof(sockaddr_in));
-			info.sin_port = htons(server->getInfo().sin_port);
 			int ans = accept(server->fileno(), (sockaddr*)&info, &len);
 			if (ans == -1)
 				throw std::runtime_error("accept() faild");
@@ -90,7 +89,7 @@ class	CoreServer
 								it = server->_clients.erase(it);
 								continue;
 							} else {
-								client->readRequest(buff, ret);
+								client->readRequest(buff);
 							}
 						}
 

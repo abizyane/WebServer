@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Client.hpp"
-#include <bits/stdc++.h>
+#include <vector>
 #include <fcntl.h>
 
 class	Server {
@@ -32,10 +32,6 @@ class	Server {
 			if (setsockopt(_sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1)
 				throw std::runtime_error("setsockopt() failed");
 			_selector.set(_sock, Selector::RD_SET);
-		}
-
-		sockaddr_in	getInfo( void ) const {
-			return _info;
 		}
 
 		inline	int	fileno( void ) const {

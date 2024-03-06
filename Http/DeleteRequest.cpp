@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   DeleteRequest.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:04:42 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/04 18:37:37 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/06 11:47:16 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ DeleteRequest::DeleteRequest(std::string &method, std::string &uri, ProcessReque
 	_contentLength = 0;
 
 	_fileName = ".requestbody";
-	// std::srand(std::time(0));
+	std::srand(time(0));
 	// for (size_t i = 0; i < 20; i++)
 	// 	_fileName.push_back(std::to_string(std::rand())[0]);
 	_body.open(_fileName.c_str(), std::ios::out | std::ios::in | std::ios::trunc);

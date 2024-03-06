@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:07:10 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/05 14:31:47 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/03/04 18:13:02 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,6 @@
 
 #include "ProcessRequest.hpp"
 #include "../Configuration/MainConf.hpp"
-#include "../Configuration/ServerConf.hpp"
 #include "../Configuration/LocationConf.hpp"
 #include "DefaultPages.hpp"
 
@@ -46,8 +45,6 @@ class Response {
 		void								_processPostResponse( void );
 		void								_processDeleteResponse( void );
 		void								_prepareResponse( void );
-        void	                            _GetRequestedDire( std::string path );
-        void	                            _GetRequestedFile( std::string path );
 	
 	public :
 		Response(IRequest& request, ProcessRequest& parse, int port);

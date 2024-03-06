@@ -12,7 +12,7 @@
 
 #include "ProcessRequest.hpp"
 
-ProcessRequest::ProcessRequest(in_port_t port) :_port(port), _state(RequestLine), _status(HTTP_OK),
+ProcessRequest::ProcessRequest(int port) :_port(port), _state(RequestLine), _status(HTTP_OK),
 	_request(NULL), _response(NULL), _good(false){
 }
 
@@ -38,10 +38,6 @@ void	ProcessRequest::setParseState(e_parseState state){
 
 e_statusCode	ProcessRequest::getStatusCode( void ){
 	return _status;
-}
-
-std::string&	ProcessRequest::getRequestBuffer( void ){
-	return _requestBuffer;
 }
 
 void	ProcessRequest::setGood(bool good){
@@ -122,11 +118,7 @@ void	ProcessRequest::parseLine(std::string	request){
 		_status = _request->parseBody(_requestBuffer);
 
 	if (_state == Error || _state == Done){
-		// i think here it should be smtg like :
-		// if (_response)
-			_response = new Response(*_request, *this, _port);
-		// else
-			// 	_response->prepareResponse();
+		_response = new Response(*_request, *this, _port);
 		_good = true;
 	}
 }
@@ -162,7 +154,7 @@ void	ProcessRequest::_parseRequestLine(std::string &requestLine){
 				return;
 		}
 	}catch(const std::out_of_range&){
-		_status = HTTP_BAD_REQUEST;
+		_status = HTTP_BAD_REQUEST;		
 		_state = Error;
 		return;
 	}

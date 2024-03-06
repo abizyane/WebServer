@@ -3,17 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   GetRequest.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 21:59:15 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/05 01:01:58 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/03/04 18:34:54 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include "IRequest.hpp"
-#include <time.h>
 
 class ProcessRequest;
 
@@ -48,3 +47,5 @@ class	GetRequest : public IRequest{
 };
 
 #include "ProcessRequest.hpp"
+
+

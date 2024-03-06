@@ -3,16 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   PostRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:03:16 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/04 18:36:54 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/06 11:46:50 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "PostRequest.hpp"
-#include <time.h>
-#include <sys/time.h>
 
 PostRequest::PostRequest(std::string &method, std::string &uri, ProcessRequest& parse)
     : _method(method), _uri(uri), _version("HTTP/1.1"), _parse(parse){
@@ -21,7 +19,7 @@ PostRequest::PostRequest(std::string &method, std::string &uri, ProcessRequest& 
 	_isChunked = false;
 
 	_fileName = ".requestbody";
-	// std::srand(std::time(0));
+	// std::srand(time(0));
 	// for (size_t i = 0; i < 20; i++)
 	// 	_fileName.push_back(std::to_string(std::rand())[0]);
 	_body.open(_fileName.c_str(), std::ios::out | std::ios::in | std::ios::trunc);
