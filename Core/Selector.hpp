@@ -5,6 +5,7 @@
 #include <iostream>
 #include <stdio.h>
 #include "../utils/utils.hpp"
+#include <cerrno>
 
 class	Selector
 {
