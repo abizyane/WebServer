@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ZakariaElbouzkri <elbouzkri9@gmail.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 15:40:10 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/06 06:31:51 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/03/06 07:46:56 by ZakariaElbo      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 // #include "Core/Server/Server.hpp"
 #include "Core/CoreServer.hpp"
 #include "Configuration/MainConf.hpp"
-
+#include <signal.h>
 
 void	handler( int sig )
 {
