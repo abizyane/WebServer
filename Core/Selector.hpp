@@ -4,6 +4,7 @@
 #include <sys/time.h>
 #include <iostream>
 #include <stdio.h>
+#include "../utils/utils.hpp"
 
 class	Selector
 {
@@ -12,29 +13,27 @@ class	Selector
 		fd_set			writefds;
 		fd_set			rfds;
 		fd_set			wfds;
-		struct timeval	timeout;
 	public:
 
 		enum {
 			WR_SET = 1 << 0, RD_SET = 1 << 1
 		};
 
-		Selector( int time_sec = 1) {
+		Selector( void ) {
 			FD_ZERO(&readfds);
 			FD_ZERO(&writefds);
 			FD_ZERO(&rfds);
 			FD_ZERO(&wfds);
-			timeout.tv_sec = time_sec;
-			timeout.tv_sec = 0;
 		}
 		~Selector( void ) {};
 
 		inline bool select( int nfds ) {
 			rfds = readfds;
 			wfds = writefds;
-			int ret = ::select(nfds, &rfds, &wfds, NULL, &timeout);
-			if (ret == -1)
-				perror("select");
+			int ret = ::select(nfds, &rfds, &wfds, NULL, NULL);
+			if (ret == -1) {
+				std::cerr << strTime() << "select() failed: " << strerror(errno) << std::endl;	
+			}
 			return ret > 0;
 		}
 		

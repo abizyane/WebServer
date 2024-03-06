@@ -6,7 +6,7 @@
 /*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 12:06:59 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/21 20:38:19 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/03/06 01:54:29 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,9 +121,9 @@ void	ServerConf::passDirectiveToRoutes( void )
 			std::map<int, std::string>::iterator it = _errorPage->begin();
 			std::map<int, std::string>::iterator ite = _errorPage->end();
 			for (; it != ite; it++) {
-				if (!first->second->hasDirective("error_page:" + toString(it->first))) {
+				if (!first->second->hasDirective("error_page:" + to_str(it->first))) {
 					first->second->addErrorPage(it->first, it->second);
-					first->second->markDirective("error_page:" + toString(it->first));
+					first->second->markDirective("error_page:" + to_str(it->first));
 				}
 			}
 		}

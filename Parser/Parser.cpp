@@ -9,8 +9,7 @@ Parser::Parser( void )
 	_currTok = _lex.getNextToken();
 }
 
-Parser::~Parser( void )
-{
+Parser::~Parser( void ){
 }
 
 Parser::Parser( Parser const& rhs )
@@ -24,19 +23,15 @@ Parser&	Parser::operator=( const Parser& rhs )
 	return (*this);
 }
 
-template<typename T>
-std::string	Str(const T& data) {
-	std::stringstream	ss(data);
-	std::string	result; ss >> result;
-	return result;
+void	Parser::_error( const std::string& message )
+{
+	throw std::runtime_error(message.c_str());
 }
 
 void	Parser::_advance( Token tok ) 
 {
-	if (_currTok != tok) {
-		error(8, str("unexpected token "), str(_currTok), str(" while expecting "),
-		str(tok), str(" at: "), str(CONF_PATH), str(":"), str(_lex.line()));
-	}
+	if (_currTok != tok)
+		_error(slog("unexpected token %s while expecting %s at: %s:%d", to_str(_currTok).c_str(), to_str(tok).c_str(), CONF_PATH, _lex.line()));
 	if (_currTok != Token::_EOF)
 		_currTok = _lex.getNextToken();
 }
@@ -57,9 +52,11 @@ void	Parser::parse( void )
 			case Token::BODY_SIZE:	_parseClientBody(*conf); break;
 			case Token::SERVER:		conf->addServer(_parseServer()); break;
 			default:
-				error(6, str("unexpected token "), str(_currTok), str(" at: "), str(CONF_PATH), str(":"), str(_lex.line()));
+				_error(slog("unexpected token %s at: %s:%d", to_str(_currTok).c_str(), CONF_PATH, _lex.line()));
 		}
 	}
+	if (conf->number_of_servers() == 0)
+		_error("config file should contain at least one server config");
 	_advance(Token::CLOSE_CURLY);
 	_advance(Token::_EOF);
 	conf->passDirectiveToServers();
@@ -71,7 +68,7 @@ void	Parser::_duplicateError(const std::string& directive)
 	std::stringstream	ss;
 	ss << "duplicated direcive " << directive;
 	ss << " at " << CONF_PATH << ":" << _lex.line();
-	throw std::runtime_error(ss.str().c_str());
+	_error(ss.str());
 }
 
 void	Parser::_parseRoot(HTTP& httpConf)
@@ -95,17 +92,16 @@ void	Parser::_parseErrorPage(HTTP& httpConf)
 	unsigned int code; ss1 >> code;
 	std::string	page; ss2 >>  page;
 	if (!ss1.eof() || code < 400 || code > 599)
-		error(1, str("invalid http error code "), str(code), str(" at: "), str(CONF_PATH), str(":"), str(_lex.line()));
-	std::stringstream	ss; ss << "error_page:" << code;
-	if (httpConf.hasDirective(ss.str()))
-		_duplicateError(ss.str());
+		_error(slog("invalid http error code %d at: %s:%d", code, CONF_PATH, _lex.line()));
+
+	std::string	directive = slog("error_page:%d", code);
+	if (httpConf.hasDirective(directive))
+		_duplicateError(directive);
 	httpConf.addErrorPage(code, page);
-	httpConf.markDirective(ss.str());
+	httpConf.markDirective(directive);
 	_advance(Token::SEMICOLEN);
 }
 
-// allow GET POST;
-// deny	 GET DELETE POST;
 
 void	Parser::_parseMethods(HTTP& httpConf)
 {
@@ -152,7 +148,7 @@ void	Parser::_parseIndex(HTTP& httpConf)
 void	Parser::_parseUpload(HTTP& httpConf)
 {
 	_advance(Token::UPLOAD);
-	std::string	upload = _currTok.data(); // TODO: check url norm
+	std::string	upload = normPath(_currTok.data());
 	_advance(Token::WORD);
 	if (httpConf.hasDirective("upload_store"))
 		_duplicateError("upload_store");
@@ -167,8 +163,9 @@ void	Parser::_parseAutoIndex(HTTP& httpConf)
 	bool	value = false;
 	if (_currTok.data() == "on")
 		value = true;
-	else if (_currTok.data() != "off")
-		error(6, str("autoindex expected [on] or [off] but found "), str(_currTok), str(" at: "), str(CONF_PATH), str(":"), str(_lex.line()));
+	else if (_currTok.data() != "off") {
+		_error(slog("autoindex expected [on] or [off] but found %s at: %s:%d", to_str(_currTok).c_str(), CONF_PATH, _lex.line()));
+	}
 	_advance(Token::WORD);
 	if (httpConf.hasDirective("autoindex"))
 		_duplicateError("autoindex");
@@ -184,7 +181,7 @@ void	Parser::_parseClientBody(HTTP& httpConf)
 	_advance(Token::WORD);
 	unsigned int code;
 	if (!(ss >> code) || !ss.eof())
-		error(6, str("invalid client_body_max_size number "), str(_currTok), str(" at: "), str(CONF_PATH), str(":"), str(_lex.line()));
+		_error(slog("invalid client_body_max_size number %d at: %s:%d", to_str(_currTok).c_str(), CONF_PATH, _lex.line()));
 	if (httpConf.hasDirective("clientBody"))
 		_duplicateError("clientBody");
 	httpConf.markDirective("clientBody");
@@ -192,7 +189,7 @@ void	Parser::_parseClientBody(HTTP& httpConf)
 	_advance(Token::SEMICOLEN);
 }
 
-ServerConf*	Parser::_parseServer( void ) // TODO:
+ServerConf*	Parser::_parseServer( void )
 {
 	_advance(Token::SERVER);
 	_advance(Token::OPEN_CURLY);
@@ -215,7 +212,7 @@ ServerConf*	Parser::_parseServer( void ) // TODO:
 				break;
 			}
 			default:
-				error(6, str("unexpected token "), str(_currTok), str(" at: "), str(CONF_PATH), str(":"), str(_lex.line()));
+				_error(slog("unexpected token %s at: %s:%d", to_str(_currTok).c_str(), CONF_PATH, _lex.line()));
 		}
 	}
 	_advance(Token::CLOSE_CURLY);
@@ -243,7 +240,7 @@ void	Parser::_parsePort(ServerConf& server)
 	int port;
 	ss >> port;
 	if (!ss.eof() || port < 0 || port > 65000)
-		error(6, str("invalid port number :"), str(ss.str()), str(" at: "), str(CONF_PATH), str(":"), str(_lex.line()));
+		_error(slog("invalid port number: %d at: %s:%d", ss.str().c_str(), CONF_PATH, _lex.line()));
 	std::stringstream		directive;
 	directive << "port:" << port;
 	if (server.hasDirective(directive.str()))
@@ -253,12 +250,11 @@ void	Parser::_parsePort(ServerConf& server)
 	_advance(Token::SEMICOLEN);
 }
 
-std::pair<std::string, LocationConf*>	Parser::_parseLocation( ServerConf& parentServer, std::string parentUri ) // TODO: 
+std::pair<std::string, LocationConf*>	Parser::_parseLocation( ServerConf& parentServer, std::string parentUri )
 {
 	_advance(Token::LOCATION);
 	std::pair<std::string, LocationConf*> ans;
-	//	check a zakaria wash haka 
-	ans.first =  normPath(parentUri + _currTok.data()); // TODO: norm route it™
+	ans.first =  normPath(parentUri + _currTok.data());
 	if (parentServer.hasDirective(ans.first))
 		_duplicateError(ans.first);
 	parentServer.markDirective(ans.first);
@@ -279,17 +275,14 @@ std::pair<std::string, LocationConf*>	Parser::_parseLocation( ServerConf& parent
 			case Token::RETURN:		_parseRedirect(*location);	break;
 			case Token::LOCATION: {
 				std::pair<std::string, LocationConf*>	res = _parseLocation( parentServer, ans.first );
-				// location->addLocation(res.first, res.second);
 				break;
 			}
 			default:
-				error(6, str("unexpected token "), str(_currTok), str(" at: "), str(CONF_PATH), str(":"), str(_lex.line()));
+				_error(slog("unexpected token %s at: %s:%d", to_str(_currTok).c_str(), CONF_PATH, _lex.line()));
 		}
 	}
 	ans.second = location;
 	_advance(Token::CLOSE_CURLY);
-	// added the location to the sever
-	// parentServer.addLocation(ans.first, ans.second);
 	return (ans);
 }
 
@@ -326,7 +319,7 @@ void	Parser::_parseRedirect( LocationConf& location )
 	ss >> code >> page;
 
 	if (!ss.eof() || code < 300 || code > 399)
-		error(6, str("invalid return value "), str(ss.str()), str(" at: "), str(CONF_PATH), str(":"), str(_lex.line()));
+		_error(slog("invalid return value %s at: %s:%d", ss.str().c_str(), CONF_PATH, _lex.line()));
 	if (location.hasDirective("return"))
 		_duplicateError("return");
 	location.markDirective("return");
@@ -334,5 +327,3 @@ void	Parser::_parseRedirect( LocationConf& location )
 	_advance(Token::SEMICOLEN);
 }
 
-
-// std::runtime_error(err("unexpected token", tok, "at: ", CONF_PATH, ":", _lex.line()))
