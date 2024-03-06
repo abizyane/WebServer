@@ -92,7 +92,7 @@ class	Client
 			if (inet_ntop(AF_INET, &(rhs.info.sin_addr), ip_address, INET_ADDRSTRLEN) != NULL) {
 				os << ip_address << ":" << ntohs(rhs.info.sin_port);
 			} else {
-				os << "Error: Failed to convert IP address";
+				os << "Failed to convert IP address";
 			}
 			return os;
 		}
