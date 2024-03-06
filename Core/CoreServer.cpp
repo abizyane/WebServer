@@ -6,7 +6,7 @@
 /*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/05 23:22:22 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/06 06:32:30 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/03/06 06:50:30 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -142,7 +142,7 @@ void	CoreServer::run( void )
 
 		for (size_t i = 0; i < _servers.size(); i++) {
 			Server* server = _servers[i];
-			if (_selector.isReadable(server->fileno()) &&  maxfds < 1000) {
+			if (_selector.isReadable(server->fileno()) &&  maxfds < 300) {
 				try {
 					_acceptNewClient(server);
 				} catch (std::exception & e) {
