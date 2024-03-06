@@ -6,6 +6,9 @@
 #include <unistd.h>
 #include <cstring>
 
+
+#define TIMEOUT 10 // in seconds
+
 typedef enum {
 	STANDBY, PARSING, DONE
 } e_state;
@@ -27,18 +30,20 @@ typedef enum {
 class	Client
 {
 	private:
-		Selector&	_selector;
-		int			sock;
-		sockaddr_in	info;
-		int			fd[2];
-		e_state		state;
-		std::string	request;
-		std::string	response;
+		Selector&		_selector;
+		int				sock;
+		sockaddr_in		info;
+		int				fd[2];
+		e_state			state;
+		std::string		request;
+		std::string		response;
+		time_t			_lastActive;
 	public:
 		Client( Selector& _selector, int sock, sockaddr_in info ) : _selector(_selector), sock(sock), info(info) {
 			_selector.set(sock, Selector::WR_SET | Selector::RD_SET);
 			fd[0] = fd[1] = -1;
 			state = STANDBY;
+			_lastActive = currTime();
 		}
 		
 		inline int fileno( void ) const {
@@ -60,12 +65,16 @@ class	Client
 		inline	void	readRequest( char *buffer, int size ) {
 			request.append(buffer, size);
 			state = DONE;
+			_lastActive = currTime();
 		}
 		
 		inline bool		sendResponse( void ) {
 			if (state == DONE) {
-				if (::send(sock, SIMPLE_HTTP_RESPONSE, strlen(SIMPLE_HTTP_RESPONSE), 0) < 0)
-					throw std::runtime_error(("send(): failed"));
+				if (::send(sock, SIMPLE_HTTP_RESPONSE, strlen(SIMPLE_HTTP_RESPONSE), 0) < 0) {
+					std::cout << strTime() << " send() failed to send response to client " << *this << std::endl;
+				} else {
+					std::cout << strTime() << " client " << *this << " served " << std::endl;
+				}
 				return true;
 			}
 			return false;
@@ -77,4 +86,19 @@ class	Client
 			close(fd[1]);
 			close(fd[0]);
 		}
+
+		inline friend std::ostream&	operator<<( std::ostream& os, const Client& rhs ) {
+			char ip_address[INET_ADDRSTRLEN];
+			if (inet_ntop(AF_INET, &(rhs.info.sin_addr), ip_address, INET_ADDRSTRLEN) != NULL) {
+				os << ip_address << ":" << ntohs(rhs.info.sin_port);
+			} else {
+				os << "Error: Failed to convert IP address";
+			}
+			return os;
+		}
+	
+		inline time_t lastActive( void ) {
+			return	_lastActive;
+		}
 };
+

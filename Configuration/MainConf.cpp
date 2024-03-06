@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   MainConf.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
+/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 12:19:15 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/22 14:58:46 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/06 01:54:18 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,9 +82,9 @@ void	MainConf::passDirectiveToServers( void ) {
 			std::map<int, std::string>::iterator it = _errorPage->begin();
 			std::map<int, std::string>::iterator ite = _errorPage->end();
 			for (; it != ite; it++) {
-				if (!_servers[idx]->hasDirective("error_page:" + toString(it->first))) {
+				if (!_servers[idx]->hasDirective("error_page:" + to_str(it->first))) {
 					_servers[idx]->addErrorPage(it->first, it->second);
-					_servers[idx]->markDirective("error_page:" + toString(it->first));
+					_servers[idx]->markDirective("error_page:" + to_str(it->first));
 				}
 			}
 		}
