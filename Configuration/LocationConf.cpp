@@ -6,7 +6,7 @@
 /*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 11:36:53 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/06 01:54:04 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/03/06 06:36:55 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,9 +26,14 @@ LocationConf::LocationConf( HTTP const& rhs ) : HTTP(rhs), _locations(NULL), _ex
 
 LocationConf::~LocationConf( void )
 {
-	delete	_locations;
 	delete	_extentions;
 	delete 	_redirect;
+	if (_locations != NULL) {
+		for (std::map<std::string, LocationConf*>::iterator it = _locations->begin(); it != _locations->end(); it++){
+			delete it->second;
+		}
+	}
+	delete _locations;
 }
 
 LocationConf::LocationConf( LocationConf const& rhs ) : HTTP(rhs), _locations(NULL), _extentions(NULL)

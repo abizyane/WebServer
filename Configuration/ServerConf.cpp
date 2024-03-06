@@ -6,7 +6,7 @@
 /*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 12:06:59 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/06 01:54:29 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/03/06 06:37:16 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,11 @@ ServerConf::~ServerConf( void )
 {
 	delete	_hostNames;
 	delete	_ports;
+	if (_locations != NULL) {
+		for (std::map<std::string, LocationConf*>::iterator it = _locations->begin(); it != _locations->end(); it++){
+			delete it->second;
+		}
+	}
 	delete	_locations;
 }
 

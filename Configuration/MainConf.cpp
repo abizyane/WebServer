@@ -6,7 +6,7 @@
 /*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 12:19:15 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/06 01:54:18 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/03/06 06:34:41 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,9 @@ MainConf::MainConf( void ) : HTTP()
 
 MainConf::~MainConf( void )
 {
-	// TODO: delete all servers
+	for (size_t i = 0; i < _servers.size(); i++) {
+		delete _servers[i];
+	}
 }
 
 
