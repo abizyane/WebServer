@@ -6,16 +6,29 @@
 /*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/05 23:22:22 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/06 06:09:30 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/03/06 06:32:30 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "CoreServer.hpp"
 
+CoreServer*	CoreServer::_instance = NULL;
+
 CoreServer::CoreServer( void ) {
 }
 
+CoreServer*	CoreServer::getCore( void )
+{
+	if (_instance == NULL)
+		_instance = new CoreServer();
+	return _instance;
+}
+
 CoreServer::~CoreServer( void ) {
+	for (size_t i = 0; i < _servers.size(); i++)
+	{
+		delete _servers[i];
+	}
 }
 
 
@@ -123,7 +136,7 @@ void	CoreServer::run( void )
 
 	while (true) {
 		int maxfds = _nfds();
-	
+
 		if (_selector.select(maxfds + 1) == false)
 			continue;
 
