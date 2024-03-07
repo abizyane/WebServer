@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/07 18:10:58 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/07 20:49:10 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,13 +50,12 @@ e_statusCode    Response::ResponseException::getStatus( void ){
 void	Response::_buildResponse(){
 	_response += "HTTP/1.1 ";
 	_response += _statusMap[_status] + "\r\n";
-	{
-		_headers["Server"] = "Nginx++/1.0.0 (Unix)";
-		char dt[30];
-		time_t tm = time(0);
-		strftime(dt, 30, "%a, %d %b %Y %H:%M:%S %Z", gmtime(&tm));
-		_headers["Date"] = std::string(dt);
-	}
+
+	_headers["Server"] = "Nginx++/1.0.0 (Unix)";
+	char dt[30];
+	time_t tm = time(0);
+	strftime(dt, 30, "%a, %d %b %Y %H:%M:%S %Z", gmtime(&tm));
+	_headers["Date"] = std::string(dt);
 	for (std::map<std::string, std::string>::iterator it = _headers.begin(); it != _headers.end(); it++)
 		_response += it->first + ": " + it->second + "\r\n";
 	_response += "\r\n";
@@ -70,9 +69,8 @@ void	Response::_readFile(){
 	if (!(fileStat.st_mode & S_IRWXU))
 		throw Response::ResponseException(HTTP_FORBIDDEN);
 	if (_file.is_open()){
-		std::stringstream ss;
-		ss << fileStat.st_size;
-		_headers["Content-Length"] = ss.str();
+		size_t size = static_cast<size_t>(fileStat.st_size);
+		_headers["Content-Length"] = toString(size);
 		if (_request->getUri().find_last_of('.') != std::string::npos)
 			_headers["Content-Type"] = _mimeMap[_request->getUri().substr(_request->getUri().find_last_of('.') + 1)];
 		else
@@ -84,35 +82,33 @@ void	Response::_readFile(){
 
 void	Response::_processGetResponse(){
 		_readFile();
-		// _handleRange();
+		_handleRange();
 }
 
 void	Response::_processPostResponse(){
 		_readFile();
-		// _handleRange();
+		_handleRange();
 }
 
 void	Response::_processDeleteResponse(){
 		_readFile();
-		// _handleRange();
+		_handleRange();
 }
 
 		// Content-Range: bytes start-end/total / for example Content-Range: bytes 500-999/2000
 		//request form : Range: bytes=start-end / for example Range: bytes=500-999
 void	Response::_handleRange(){
 	try {
-		if (_request->getHeaders().find("Range") != _request->getHeaders().end()){
+		if (_request->getHeaders()["Range"] != ""){
 			std::string range = _request->getHeaders()["Range"];
 			size_t start = strtoll(range.substr(range.find("=") + 1, range.find("-")).c_str(), NULL, 10);
 			size_t end = strtoll(range.substr(range.find("-") + 1).c_str(), NULL, 10);
 			// size_t total = strtoll(range.substr(range.find_last_of("/") + 1).c_str(), NULL, 10);
 			_file.seekg(start);
 			_bodyIndex = start;
-			_headers["Content-Range"] = "bytes " + toString(start) + "-" + toString(end) + "/" + toString(_file.tellg());
-			_headers["Content-Length"] = toString(end);
+			_headers["Content-Range"] = "bytes=" + toString(start) + "-" + toString(end) + "/" + _headers["Content-Length"];
+			_headers["Content-Length"] = toString(end - start + 1);
 		}
-		else
-			return;
 	}
 	catch (std::exception &){
 		throw Response::ResponseException(HTTP_REQUESTED_RANGE_NOT_SATISFIABLE);
