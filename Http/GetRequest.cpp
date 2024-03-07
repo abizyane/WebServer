@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   GetRequest.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 21:58:16 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/06 11:47:06 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/03/06 22:00:16 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,14 +19,7 @@ GetRequest::GetRequest(std::string &method, std::string &uri, ProcessRequest& pa
 	_contentLength = 0;
 	_hasBody = false;
 	_bodyIndex = 0;
-
 	_fileName = ".requestbody";
-	// std::srand(time(0));
-	// for (size_t i = 0; i < 20; i++)
-	// 	_fileName.push_back(std::to_string(std::rand())[0]);
-	_body.open(_fileName.c_str(), std::ios::out | std::ios::in | std::ios::trunc);
-	if (!_body.is_open())
-		_parse.setParseState(Error); //   HTTP_INTERNAL_SERVER_ERROR;
 }
 
 std::string		GetRequest::getMethod( void ) const{
@@ -66,6 +59,14 @@ e_statusCode	GetRequest::checkHeaders(void){
 			if (_headers["Content-Length"].find_first_not_of("0123456789") != std::string::npos)
 				return HTTP_BAD_REQUEST;
 			_contentLength = strtoll(_headers["Content-Length"].c_str(), NULL, 10);
+		}
+		std::srand(std::time(0));
+		for (size_t i = 0; i < 20; i++)
+			_fileName.push_back(std::to_string(std::rand())[0]);
+		_body.open(_fileName, std::ios::out | std::ios::in | std::ios::trunc);
+		if (!_body.is_open()){
+			_parse.setParseState(Error);
+			return HTTP_INTERNAL_SERVER_ERROR;
 		}
 	}
 	else
@@ -131,6 +132,8 @@ e_statusCode	GetRequest::parseBody(std::string &line){ // TODO: i think that we 
 }
 
 GetRequest::~GetRequest( void ){
-	std::remove(_fileName.c_str());
-	_body.close();
+	if (_body.is_open()){
+		std::remove(_fileName.c_str());
+		_body.close();
+	}
 }

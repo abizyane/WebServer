@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   DeleteRequest.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:04:42 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/06 11:47:16 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/03/06 22:02:02 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,14 +17,7 @@ DeleteRequest::DeleteRequest(std::string &method, std::string &uri, ProcessReque
 	_hasBody = false;
 	_isChunked = false;
 	_contentLength = 0;
-
 	_fileName = ".requestbody";
-	std::srand(time(0));
-	// for (size_t i = 0; i < 20; i++)
-	// 	_fileName.push_back(std::to_string(std::rand())[0]);
-	_body.open(_fileName.c_str(), std::ios::out | std::ios::in | std::ios::trunc);
-	if (!_body.is_open())
-		_parse.setParseState(Error); //   HTTP_INTERNAL_SERVER_ERROR;
 }
 
 std::string		DeleteRequest::getMethod( void ) const{
@@ -86,6 +79,14 @@ e_statusCode	DeleteRequest::checkHeaders(void){
 				return HTTP_BAD_REQUEST;
 			_contentLength = strtoll(_headers["Content-Length"].c_str(), NULL, 10);
 		}
+		std::srand(std::time(0));
+		for (size_t i = 0; i < 20; i++)
+			_fileName.push_back(std::to_string(std::rand())[0]);
+		_body.open(_fileName, std::ios::out | std::ios::in | std::ios::trunc);
+		if (!_body.is_open()){
+			_parse.setParseState(Error);
+			return HTTP_INTERNAL_SERVER_ERROR;
+		}
 	}
 	else
 		_parse.setParseState(Done);
@@ -129,7 +130,9 @@ e_statusCode	DeleteRequest::parseBody(std::string &line){ // TODO: i think that 
 }
 
 DeleteRequest::~DeleteRequest( void ){
-	std::remove(_fileName.c_str());
-	_body.close();
+	if (_body.is_open()){
+		std::remove(_fileName.c_str());
+		_body.close();
+	}
 }
 

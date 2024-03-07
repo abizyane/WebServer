@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/04 18:30:45 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/07 15:33:15 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,9 +19,13 @@ Response::Response(IRequest &request, ProcessRequest& parse, int port): _request
 	_bodyIndex = 0;
 	_status = _parse->getStatusCode();
 	Response::initMaps();
-	(void)port;
-	if (_request != NULL)
-		_location = MainConf::getConf()->getServersConf()[0]->getUri(_request->getUri()); // bdel hadi b getServerbyhostorport()
+	if (_request != NULL) {
+		ServerConf* server = MainConf::getConf()->getServerByPortHost(port, request.getHeaders()["Host"]);
+		if (server != NULL)
+			_location = server->getUri(_request->getUri());
+	}
+	std::cout << "port: " << port << std::endl;
+	std::cout << "location: " << _location->getRoot() << std::endl;
 	_prepareResponse();
 }
 
@@ -33,34 +37,86 @@ bool    Response::sent(){
 	return _state == DONE;
 }
 
+Response::ResponseException::ResponseException(e_statusCode status): __status(status){
+}
+
+const char* Response::ResponseException::what() const throw(){
+	return _statusMap[__status].c_str();
+}
+
+e_statusCode    Response::ResponseException::getStatus( void ){
+	return __status;
+}
+
 void	Response::_buildResponse(){
 	_response += "HTTP/1.1 ";
 	_response += _statusMap[_status] + "\r\n";
 	{ // the insertion of headers should be done in the _processResponse functions
 		_headers["Server"] = "Nginx++/1.0.0 (Unix)";
-		_headers["Content-Type"] = _mimeMap["html"]; // the url instead of "html"
-		_headers["Content-Length"] = "45"; // the size of the response body instead of "45"
+		// _headers["Content-Type"] = _mimeMap["html"]; // the url instead of "html"
+		// _headers["Content-Length"] = ""; // the size of the response body instead of "45"
 		_headers["Date"] = "Mon, 04 Mar 2024 18:21:13 GMT"; // the current date instead of "Mon, 04 Mar 2024 18:21:13 GMT"
-		_headers["Accept-Ranges"] = "bytes";
+		// _headers["Accept-Ranges"] = "bytes";
 		_headers["Content-Language"] = "en"; // the language of the file instead of "en"
-		_headers["Content-Encoding"] = "gzip"; // the encoding of the file instead of "gzip"
+		// _headers["Content-Encoding"] = "gzip"; // the encoding of the file instead of "gzip"
 		_headers["Connection"] = "close";
 	}
 	for (std::map<std::string, std::string>::iterator it = _headers.begin(); it != _headers.end(); it++)
 		_response += it->first + ": " + it->second + "\r\n";
 	_response += "\r\n";
 
-	
-	_response += "<html><body><h1>It works!</h1></body></html>"; // the body of the response instead of this
+}
+
+void	Response::_readFile(){ // i used "Makefile" as a test file until the getServerbyhostorport() function is implemented
+	struct stat fileStat;
+	_file.open("index.html", std::ios::in | std::ios::binary | std::ios::out);
+	stat("Makefile", &fileStat);
+	if (!(fileStat.st_mode & S_IRWXU)) // checks the permissions of the file
+		throw Response::ResponseException(HTTP_FORBIDDEN);
+	if (_file.is_open()){
+		std::stringstream ss;
+		ss << fileStat.st_size;
+		// _headers["Content-Length"] = ss.str();
+		if (_request->getUri().find_last_of('.') != std::string::npos)
+			_headers["Content-Type"] = _mimeMap[_request->getUri().substr(_request->getUri().find_last_of('.') + 1)];
+		else
+			_headers["Content-Type"] = "text/html";
+	}
+	else
+		throw Response::ResponseException(HTTP_NOT_FOUND);
 }
 
 void	Response::_processGetResponse(){
+	try {
+		_readFile();
+		
+	}
+	catch (Response::ResponseException &e){
+		_status = e.getStatus();
+		_parse->setParseState(Error);
+	}
 }
 
 void	Response::_processPostResponse(){
+	try {
+		_readFile();
+		
+	}
+	catch (Response::ResponseException &e){
+		_status = e.getStatus();
+		_parse->setParseState(Error);
+	}
 }
 
 void	Response::_processDeleteResponse(){
+	try {
+		_readFile();
+		
+	}
+	catch (Response::ResponseException &e){
+		_status = e.getStatus();
+		_parse->setParseState(Error);
+	}
 }
 
 std::string    Response::GetResponse(size_t lastSent){
@@ -74,10 +130,12 @@ std::string    Response::GetResponse(size_t lastSent){
 			_state = BODY;
 			break;
 		case BODY:
-			index = 45; // 45 is just for testing => [ strtoll(_headers["Content-Length"].c_str(), NULL, 10) - 1 ]
+			index = strtoll(_headers["Content-Length"].c_str(), NULL, 10) - 1;
 			_response.erase(0, lastSent);
 			if (_response.size() > 0 && _bodyIndex < index)
 				response = _response.substr(0, index - _bodyIndex);
+			else if (_response.size() == 0 && _file.peek() != std::ifstream::traits_type::eof())
+				std::getline(_file, _response, '\0');
 			else
 				_state = DONE; 
 			_bodyIndex += lastSent;

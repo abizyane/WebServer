@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   MainConf.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 12:25:47 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/25 17:21:07 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/06 23:21:51 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,8 @@ class	MainConf : public HTTP
 		std::set<unsigned int>			getAllPorts( void ) const;
 		const std::vector<ServerConf*>	&getServersConf( void ) const;
 
-		void	passDirectiveToServers( void );
+		void		passDirectiveToServers( void );
+		ServerConf*	getServerByPortHost(int port, std::string host);
 };
 
 #endif

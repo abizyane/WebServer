@@ -37,5 +37,8 @@ class	Server {
 		inline	int	fileno( void ) const {
 			return _sock;
 		}
-		
+
+		sockaddr_in	getinfo( void ) const {
+			return _info;
+		}
 };
