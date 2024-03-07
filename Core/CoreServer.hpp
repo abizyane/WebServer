@@ -27,6 +27,7 @@ class	CoreServer
 			socklen_t	len = 0;
 			memset(&info, 0, sizeof(sockaddr_in));
 			int ans = accept(server->fileno(), (sockaddr*)&info, &len);
+			info.sin_port = server->getInfo().sin_port;
 			if (ans == -1)
 				throw std::runtime_error("accept() faild");
 			if (fcntl(ans, F_SETFL, O_NONBLOCK) < 0)

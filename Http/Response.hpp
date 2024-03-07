@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:07:10 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/06 16:53:49 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/07 17:09:56 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,7 @@ class Response {
 		e_statusCode						_status;
 		e_state								_state;
 		size_t								_bodyIndex;
+		
 		std::string							_response;
 		std::map<std::string, std::string>  _headers;
 		std::fstream						_file;
@@ -48,6 +49,7 @@ class Response {
 		void								_processDeleteResponse( void );
 		void								_prepareResponse( void );
 		void								_readFile( void );
+		void								_handleRange( void );
 
 	public :
 		Response(IRequest& request, ProcessRequest& parse, int port);

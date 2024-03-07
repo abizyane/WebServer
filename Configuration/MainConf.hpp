@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 12:25:47 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/25 17:21:07 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/07 17:37:36 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ class	MainConf : public HTTP
 		static	MainConf*	getConf( void );
 		void	addServer( ServerConf* server );
 		
-		// ServerConf*	getServerByHostPort(int	port, std::string host);
+		ServerConf*						getServerByHostPort(int	port, std::string host);
 		std::set<unsigned int>			getAllPorts( void ) const;
 		const std::vector<ServerConf*>	&getServersConf( void ) const;
 
