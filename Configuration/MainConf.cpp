@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   MainConf.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abizyane <abizyane@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 12:19:15 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/22 14:58:46 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/07 17:39:45 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,20 @@ MainConf*	MainConf::_instance = NULL;
 
 MainConf::MainConf( void ) : HTTP()
 {
+}
+
+ServerConf*	MainConf::getServerByHostPort(int port, std::string host)
+{
+	std::vector<ServerConf*>::iterator	it = _servers.begin();
+	ServerConf*							server = NULL;
+	for (; it != _servers.end(); it++)
+	{
+		if ((*it)->hasPort(port))
+			server = *it;
+		if ((*it)->hasHostName(host))
+			return (*it);
+	}
+	return (server);
 }
 
 MainConf::~MainConf( void )

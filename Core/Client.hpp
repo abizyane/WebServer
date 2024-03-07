@@ -18,7 +18,7 @@ class	Client
 		size_t			_bytesSent;
 
 	public:
-		Client( Selector& _selector, int sock, sockaddr_in info ) : _selector(_selector), sock(sock), info(info), _processor(info.sin_port){
+		Client( Selector& _selector, int sock, sockaddr_in info ) : _selector(_selector), sock(sock), info(info), _processor(htons(info.sin_port)){
 			_selector.set(sock, Selector::WR_SET | Selector::RD_SET);
 			fd[0] = fd[1] = -1;
 			_bytesSent = 0;

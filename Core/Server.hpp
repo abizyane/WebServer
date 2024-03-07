@@ -38,4 +38,7 @@ class	Server {
 			return _sock;
 		}
 		
+		sockaddr_in&	getInfo( void ) {
+			return _info;
+		}
 };

@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/06 21:51:37 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/07 18:10:58 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,9 +19,11 @@ Response::Response(IRequest &request, ProcessRequest& parse, int port): _request
 	_bodyIndex = 0;
 	_status = _parse->getStatusCode();
 	Response::initMaps();
-	(void)port;
-	if (_request != NULL)
-		_location = MainConf::getConf()->getServersConf()[0]->getUri(_request->getUri()); // bdel hadi b getServerbyhostorport()
+	if (_request != NULL) {
+		ServerConf* server = MainConf::getConf()->getServerByHostPort(port, _request->getHeaders()["Host"]);
+		if (server != NULL)
+			_location = server->getUri(_request->getUri());
+	}
 	_prepareResponse();
 }
 
@@ -44,35 +46,33 @@ e_statusCode    Response::ResponseException::getStatus( void ){
 	return __status;
 }
 
+
 void	Response::_buildResponse(){
 	_response += "HTTP/1.1 ";
 	_response += _statusMap[_status] + "\r\n";
-	{ // the insertion of headers should be done in the _processResponse functions
+	{
 		_headers["Server"] = "Nginx++/1.0.0 (Unix)";
-		// _headers["Content-Type"] = _mimeMap["html"]; // the url instead of "html"
-		// _headers["Content-Length"] = "45"; // the size of the response body instead of "45"
-		_headers["Date"] = "Mon, 04 Mar 2024 18:21:13 GMT"; // the current date instead of "Mon, 04 Mar 2024 18:21:13 GMT"
-		_headers["Accept-Ranges"] = "bytes";
-		_headers["Content-Language"] = "en"; // the language of the file instead of "en"
-		_headers["Content-Encoding"] = "gzip"; // the encoding of the file instead of "gzip"
-		_headers["Connection"] = "close";
+		char dt[30];
+		time_t tm = time(0);
+		strftime(dt, 30, "%a, %d %b %Y %H:%M:%S %Z", gmtime(&tm));
+		_headers["Date"] = std::string(dt);
 	}
 	for (std::map<std::string, std::string>::iterator it = _headers.begin(); it != _headers.end(); it++)
 		_response += it->first + ": " + it->second + "\r\n";
 	_response += "\r\n";
-
 }
 
-void	Response::_readFile(){ // i used "Makefile" as a test file until the getServerbyhostorport() function is implemented
+void	Response::_readFile(){
 	struct stat fileStat;
-	_file.open("Makefile", std::ios::in | std::ios::binary | std::ios::out);
-	stat("Makefile", &fileStat);
-	if (!(fileStat.st_mode & S_IRWXU)) // checks the permissions of the file
+	std::string resource = _location->getRoot() + _request->getUri();
+	_file.open(resource, std::ios::in | std::ios::binary | std::ios::out);
+	stat(resource.c_str(), &fileStat);
+	if (!(fileStat.st_mode & S_IRWXU))
 		throw Response::ResponseException(HTTP_FORBIDDEN);
 	if (_file.is_open()){
 		std::stringstream ss;
 		ss << fileStat.st_size;
-		_headers["Content-Length"] = ' ' + ss.str();
+		_headers["Content-Length"] = ss.str();
 		if (_request->getUri().find_last_of('.') != std::string::npos)
 			_headers["Content-Type"] = _mimeMap[_request->getUri().substr(_request->getUri().find_last_of('.') + 1)];
 		else
@@ -83,35 +83,39 @@ void	Response::_readFile(){ // i used "Makefile" as a test file until the getSer
 }
 
 void	Response::_processGetResponse(){
-	try {
 		_readFile();
-		
-	}
-	catch (Response::ResponseException &e){
-		_status = e.getStatus();
-		_parse->setParseState(Error);
-	}
+		// _handleRange();
 }
 
 void	Response::_processPostResponse(){
-	try {
 		_readFile();
-		
-	}
-	catch (Response::ResponseException &e){
-		_status = e.getStatus();
-		_parse->setParseState(Error);
-	}
+		// _handleRange();
 }
 
 void	Response::_processDeleteResponse(){
-	try {
 		_readFile();
-		
+		// _handleRange();
+}
+
+		// Content-Range: bytes start-end/total / for example Content-Range: bytes 500-999/2000
+		//request form : Range: bytes=start-end / for example Range: bytes=500-999
+void	Response::_handleRange(){
+	try {
+		if (_request->getHeaders().find("Range") != _request->getHeaders().end()){
+			std::string range = _request->getHeaders()["Range"];
+			size_t start = strtoll(range.substr(range.find("=") + 1, range.find("-")).c_str(), NULL, 10);
+			size_t end = strtoll(range.substr(range.find("-") + 1).c_str(), NULL, 10);
+			// size_t total = strtoll(range.substr(range.find_last_of("/") + 1).c_str(), NULL, 10);
+			_file.seekg(start);
+			_bodyIndex = start;
+			_headers["Content-Range"] = "bytes " + toString(start) + "-" + toString(end) + "/" + toString(_file.tellg());
+			_headers["Content-Length"] = toString(end);
+		}
+		else
+			return;
 	}
-	catch (Response::ResponseException &e){
-		_status = e.getStatus();
-		_parse->setParseState(Error);
+	catch (std::exception &){
+		throw Response::ResponseException(HTTP_REQUESTED_RANGE_NOT_SATISFIABLE);
 	}
 }
 
@@ -128,13 +132,17 @@ std::string    Response::GetResponse(size_t lastSent){
 		case BODY:
 			index = strtoll(_headers["Content-Length"].c_str(), NULL, 10) - 1;
 			_response.erase(0, lastSent);
-			if (_response.size() > 0 && _bodyIndex < index)
+			HERE :
+			if (_response.size() > 0 && _bodyIndex < index){
 				response = _response.substr(0, index - _bodyIndex);
-			else if (_response.size() == 0 && _file.peek() != std::ifstream::traits_type::eof())
+				_bodyIndex += _response.size();
+			}
+			else if (_response.size() == 0 && _file.peek() != std::ifstream::traits_type::eof()){
 				std::getline(_file, _response, '\0');
+				goto HERE;
+			}
 			else
 				_state = DONE; 
-			_bodyIndex += lastSent;
 			break;
 		default:
 			break;
@@ -143,22 +151,27 @@ std::string    Response::GetResponse(size_t lastSent){
 }
 
 void    Response::_prepareResponse(){
-	if (_status == HTTP_OK){
-		std::string  methods[3] = {"GET", "POST", "DELETE"};
-		for (int i = 0; i < 3; i++)
-			if (_request->getMethod() == methods[i])
-				switch (i){
-					case 0:
-						_processGetResponse();
-						break;
-					case 1:
-						_processPostResponse();
-						break;
-					case 2:
-						_processDeleteResponse();
-					default:
-						break;
-				}
+	try{
+		if (_status == HTTP_OK){
+			std::string  methods[3] = {"GET", "POST", "DELETE"};
+			for (int i = 0; i < 3; i++)
+				if (_request->getMethod() == methods[i])
+					switch (i){
+						case 0:
+							_processGetResponse();
+							break;
+						case 1:
+							_processPostResponse();
+							break;
+						case 2:
+							_processDeleteResponse();
+						default:
+							break;
+					}
+		}
+	}
+	catch (Response::ResponseException &e){
+		_status = e.getStatus();
 	}
 	_buildResponse();
 	_good = true;

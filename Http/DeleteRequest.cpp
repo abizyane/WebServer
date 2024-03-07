@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:04:42 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/06 22:02:02 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/07 17:13:14 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,7 +81,7 @@ e_statusCode	DeleteRequest::checkHeaders(void){
 		}
 		std::srand(std::time(0));
 		for (size_t i = 0; i < 20; i++)
-			_fileName.push_back(std::to_string(std::rand())[0]);
+			_fileName.push_back(toString(std::rand())[0]);
 		_body.open(_fileName, std::ios::out | std::ios::in | std::ios::trunc);
 		if (!_body.is_open()){
 			_parse.setParseState(Error);
@@ -131,8 +131,8 @@ e_statusCode	DeleteRequest::parseBody(std::string &line){ // TODO: i think that 
 
 DeleteRequest::~DeleteRequest( void ){
 	if (_body.is_open()){
-		std::remove(_fileName.c_str());
 		_body.close();
+		std::remove(_fileName.c_str());
 	}
 }
 
