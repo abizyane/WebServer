@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   MainConf.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 12:25:47 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/07 17:37:36 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/08 02:28:50 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,9 @@ class	MainConf : public HTTP
 		const std::vector<ServerConf*>	&getServersConf( void ) const;
 
 		void	passDirectiveToServers( void );
+		inline int number_of_servers( void ) const {
+			return _servers.size();
+		}
 };
 
 #endif

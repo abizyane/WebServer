@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/07 20:49:10 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/08 23:14:55 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,13 +64,13 @@ void	Response::_buildResponse(){
 void	Response::_readFile(){
 	struct stat fileStat;
 	std::string resource = _location->getRoot() + _request->getUri();
-	_file.open(resource, std::ios::in | std::ios::binary | std::ios::out);
+	_file.open(resource.c_str(), std::ios::in | std::ios::binary | std::ios::out);
 	stat(resource.c_str(), &fileStat);
 	if (!(fileStat.st_mode & S_IRWXU))
 		throw Response::ResponseException(HTTP_FORBIDDEN);
 	if (_file.is_open()){
 		size_t size = static_cast<size_t>(fileStat.st_size);
-		_headers["Content-Length"] = toString(size);
+		_headers["Content-Length"] = to_str(size);
 		if (_request->getUri().find_last_of('.') != std::string::npos)
 			_headers["Content-Type"] = _mimeMap[_request->getUri().substr(_request->getUri().find_last_of('.') + 1)];
 		else
@@ -95,19 +95,16 @@ void	Response::_processDeleteResponse(){
 		_handleRange();
 }
 
-		// Content-Range: bytes start-end/total / for example Content-Range: bytes 500-999/2000
-		//request form : Range: bytes=start-end / for example Range: bytes=500-999
 void	Response::_handleRange(){
 	try {
 		if (_request->getHeaders()["Range"] != ""){
 			std::string range = _request->getHeaders()["Range"];
 			size_t start = strtoll(range.substr(range.find("=") + 1, range.find("-")).c_str(), NULL, 10);
 			size_t end = strtoll(range.substr(range.find("-") + 1).c_str(), NULL, 10);
-			// size_t total = strtoll(range.substr(range.find_last_of("/") + 1).c_str(), NULL, 10);
-			_file.seekg(start);
+			_file.seekg(start - 1);
 			_bodyIndex = start;
-			_headers["Content-Range"] = "bytes=" + toString(start) + "-" + toString(end) + "/" + _headers["Content-Length"];
-			_headers["Content-Length"] = toString(end - start + 1);
+			_headers["Content-Range"] = "bytes=" + to_str(start) + "-" + to_str(end) + "/" + _headers["Content-Length"];
+			_headers["Content-Length"] = to_str(end - start + 1);
 		}
 	}
 	catch (std::exception &){
@@ -126,7 +123,7 @@ std::string    Response::GetResponse(size_t lastSent){
 			_state = BODY;
 			break;
 		case BODY:
-			index = strtoll(_headers["Content-Length"].c_str(), NULL, 10) - 1;
+			index = strtoll(_headers["Content-Length"].c_str(), NULL, 10);
 			_response.erase(0, lastSent);
 			HERE :
 			if (_response.size() > 0 && _bodyIndex < index){
@@ -138,7 +135,7 @@ std::string    Response::GetResponse(size_t lastSent){
 				goto HERE;
 			}
 			else
-				_state = DONE; 
+				_state = DONE;
 			break;
 		default:
 			break;
@@ -175,3 +172,5 @@ void    Response::_prepareResponse(){
 
 Response::~Response(){
 }
+
+

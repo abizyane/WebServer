@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   LocationConf.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ZakariaElbouzkri <elbouzkri9@gmail.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 11:36:53 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/25 09:30:48 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/03/08 10:26:06 by ZakariaElbo      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "LocationConf.hpp"
 #include "../utils/utils.hpp"
-
+#include <fstream>
 
 LocationConf::LocationConf( void ) : HTTP(), _locations(NULL), _extentions(NULL)
 	, _redirect(NULL)
@@ -26,10 +26,16 @@ LocationConf::LocationConf( HTTP const& rhs ) : HTTP(rhs), _locations(NULL), _ex
 
 LocationConf::~LocationConf( void )
 {
-	delete	_locations;
 	delete	_extentions;
 	delete 	_redirect;
+	if (_locations != NULL) {
+		for (std::map<std::string, LocationConf*>::iterator it = _locations->begin(); it != _locations->end(); it++){
+			delete it->second;
+		}
+	}
+	delete _locations;
 }
+
 
 LocationConf::LocationConf( LocationConf const& rhs ) : HTTP(rhs), _locations(NULL), _extentions(NULL)
 	, _redirect(NULL)
@@ -101,8 +107,14 @@ std::string		LocationConf::getErrPage( int code, const std::string& defaultPag )
 {
 	if (_errorPage == NULL)
 		return (defaultPag);
+	std::string ans;
 	std::map<int, std::string>::iterator it = _errorPage->find(code);
-	return ((it == _errorPage->end()) ? defaultPag : it->second);
+	if (it != _errorPage->end()) {
+		std::ifstream	file(it->second.c_str());
+		if (file.is_open() && std::getline(file, ans, '\0'))
+			return ans;
+	}
+	return ans;
 }
 
 bool	LocationConf::methodIsAllowed( const std::string& method) const
@@ -150,9 +162,9 @@ void	LocationConf::passDirectiveToRoutes( void )
 			std::map<int, std::string>::iterator it = _errorPage->begin();
 			std::map<int, std::string>::iterator ite = _errorPage->end();
 			for (; it != ite; it++) {
-				if (!first->second->hasDirective("error_page:" + toString(it->first))) {
+				if (!first->second->hasDirective("error_page:" + to_str(it->first))) {
 					first->second->addErrorPage(it->first, it->second);
-					first->second->markDirective("error_page:" + toString(it->first));
+					first->second->markDirective("error_page:" + to_str(it->first));
 				}
 			}
 		}
@@ -168,7 +180,7 @@ void	LocationConf::passDirectiveToRoutes( void )
 			for (; it != ite; it++)
 				first->second->addIndex(*it);
 		}
-		if (_locations != NULL) {
+		if (_extentions != NULL) {
 			std::set<std::string>::iterator it = _extentions->begin();
 			std::set<std::string>::iterator ite = _extentions->end();
 			for (; it != ite; it++)

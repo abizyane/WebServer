@@ -4,20 +4,103 @@
     <title>Nginx++ Test</title>
     <style>
       body {
-        font-family: Arial, sans-serif;
+        font-family: 'Arial', sans-serif;
+        margin: 0;
+        padding: 0;
+        animation: gradient 15s ease infinite;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
       }
-      h1 {
-        color: blue;
+      @keyframes gradient {
+        0% { background: linear-gradient(to right, #007bff, #001133); }
+        25% { background: linear-gradient(to right, #001133, #007bff); }
+        50% { background: linear-gradient(to right, #007bff, #001133); }
+        75% { background: linear-gradient(to right, #001133, #007bff); }
+        100% { background: linear-gradient(to right, #007bff, #001133); }
+      }
+      h1, h2 {
+        text-align: center;
+        padding: 20px 0;
+        animation: fadeIn 2s ease-in-out;
+      }
+      p, article {
+        font-size: 18px;
+        line-height: 1.6;
+        padding: 0 20px;
+        animation: fadeIn 2s ease-in-out 0.5s;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: rgba(255, 255, 255, 0.8);
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        color: #333;
+        border-radius: 10px;
         text-align: center;
       }
-      p {
-        color: green;
-        font-size: 18px;
+      .footer {
+        text-align: center;
+        padding: 20px 0;
+        background-color: #333;
+        color: #fff;
+        border-radius: 10px;
+        margin-top: 20px;
+      }
+      button {
+        background-color: #4CAF50;
+        color: white;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+        border-radius: 12px;
+        border: none;
+        transition: background-color 0.3s ease;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+      .section {
+        margin-bottom: 20px;
+      }
+      @keyframes fadeIn {
+        0% { opacity: 0; transform: translateY(20px); }
+        100% { opacity: 1; transform: translateY(0); }
       }
     </style>
   </head>
   <body>
-    <h1>This is just for testing the respond body</h1>
-    <p>test ... test ... .</p>
+    <div class="container">
+      <h1>This is just for testing the respond body</h1>
+      <div class="section">
+        <h2>The Italian Mafia</h2>
+        <article>
+          <p>The Italian Mafia, also known as the Cosa Nostra, is a criminal organization that originated in Sicily in the late 19th century. It has since spread to other parts of Italy and beyond, becoming one of the most powerful and notorious criminal organizations in the world.</p>
+          <p>The Mafia is known for its strict code of silence, known as "omertà", which requires members to keep silent about the organization's activities. This code has been a significant factor in the Mafia's ability to operate undetected for decades.</p>
+          <p>Despite its criminal activities, the Mafia has also been involved in various legitimate businesses, including construction, real estate, and hospitality. This has allowed it to maintain a level of legitimacy and influence in society.</p>
+          <p>The Mafia's influence extends beyond Italy, with its tentacles reaching into politics, the economy, and even the entertainment industry. Its power and reach have made it a subject of fascination and fear around the world.</p>
+        </article>
+      </div>
+      <div class="section">
+        <h2>News & Updates</h2>
+        <p>Stay updated with the latest news and developments related to the Italian Mafia.</p>
+        <button>Subscribe</button>
+      </div>
+      <div class="section">
+        <h2>Contact Us</h2>
+        <p>For more information or to get in touch, please use the contact form below.</p>
+        <button>Contact Form</button>
+      </div>
+    </div>
+    <div class="footer">
+      <p>© 2023 Nginx++ Test</p>
+    </div>
   </body>
 </html>

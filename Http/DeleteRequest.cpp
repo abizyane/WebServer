@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   DeleteRequest.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: ZakariaElbouzkri <elbouzkri9@gmail.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:04:42 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/07 17:13:14 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/08 07:55:27 by ZakariaElbo      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,8 +81,8 @@ e_statusCode	DeleteRequest::checkHeaders(void){
 		}
 		std::srand(std::time(0));
 		for (size_t i = 0; i < 20; i++)
-			_fileName.push_back(toString(std::rand())[0]);
-		_body.open(_fileName, std::ios::out | std::ios::in | std::ios::trunc);
+			_fileName.push_back(to_str(std::rand())[0]);
+		_body.open(_fileName.c_str(), std::ios::out | std::ios::in | std::ios::trunc);
 		if (!_body.is_open()){
 			_parse.setParseState(Error);
 			return HTTP_INTERNAL_SERVER_ERROR;
