@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:07:10 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/07 17:09:56 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/08 12:54:31 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,10 +38,9 @@ class Response {
 		e_state								_state;
 		size_t								_bodyIndex;
 		
-		std::string							_response;
 		std::map<std::string, std::string>  _headers;
 		std::fstream						_file;
-		std::string     					_body;
+		std::string							_response;
 		
 		void								_buildResponse( void );
 		void								_processGetResponse( void );

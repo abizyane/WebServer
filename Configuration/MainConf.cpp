@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   MainConf.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 12:19:15 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/07 17:39:45 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/08 02:57:42 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,9 +34,10 @@ ServerConf*	MainConf::getServerByHostPort(int port, std::string host)
 
 MainConf::~MainConf( void )
 {
-	// TODO: delete all servers
+	for (size_t i = 0; i < _servers.size(); i++) {
+		delete _servers[i];
+	}
 }
-
 
 MainConf&	MainConf::operator=( const MainConf& rhs )
 {
@@ -96,9 +97,9 @@ void	MainConf::passDirectiveToServers( void ) {
 			std::map<int, std::string>::iterator it = _errorPage->begin();
 			std::map<int, std::string>::iterator ite = _errorPage->end();
 			for (; it != ite; it++) {
-				if (!_servers[idx]->hasDirective("error_page:" + toString(it->first))) {
+				if (!_servers[idx]->hasDirective("error_page:" + to_str(it->first))) {
 					_servers[idx]->addErrorPage(it->first, it->second);
-					_servers[idx]->markDirective("error_page:" + toString(it->first));
+					_servers[idx]->markDirective("error_page:" + to_str(it->first));
 				}
 			}
 		}

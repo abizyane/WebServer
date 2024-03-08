@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 15:40:10 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/01 19:05:00 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/08 03:58:03 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,26 +14,43 @@
 // #include "Core/Server/Server.hpp"
 #include "Core/CoreServer.hpp"
 #include "Configuration/MainConf.hpp"
+#include <signal.h>
+
+void	typingEffect( const std::string& message )
+{
+	for (size_t i = 0; i < message.size(); i++) {
+		std::cout << message[i];
+		fflush(stdout);
+		usleep(10000);
+	}
+	std::cout << std::endl;
+}
+
+void	handler( int sig )
+{
+	(void)sig;
+	typingEffect("\b\b" + strTime() + " exiting server....");
+	delete CoreServer::getCore();
+	delete MainConf::getConf();
+	exit(0);
+}
 
 int main()
 {
-	Parser	parser;
+	CoreServer	*core = CoreServer::getCore();
+
+	signal(SIGINT, handler);
+	signal(SIGQUIT, handler);
+	signal(SIGPIPE, SIG_IGN);
 	try {
+		Parser	parser;
 		parser.parse();
-		// MainConf *main = MainConf::getConf();
-		// const std::vector<ServerConf*> servers = main->getServersConf();
-		// for (size_t i = 0; i < servers.size(); i++) {
-		// 	LocationConf* loc = servers[i]->getUri("/blog/home");
-		// 	if (loc != NULL) {
-		// 		std::cout << "root: " << loc->getRoot() << '\n';
-		// 	}
-		// }
-		CoreServer server;
-		server.init();
-		server.run();
+		std::cout << MainConf::getConf()->getServersConf()[0]->getUri("/home")->getRoot() << std::endl;
 	} catch (std::exception & e) {
-		std::cerr << e.what() << '\n';
-	} catch (...) {
-		std::cerr << "..." << '\n';
+		std::cout << strTime() << " " << e.what() << std::endl;
 	}
+	core->init();
+	core->run();
+	delete CoreServer::getCore();
+	delete MainConf::getConf();
 }
