@@ -70,7 +70,7 @@ static int		checkMethod(std::string& method){
 }
 
 static int	checkUri(std::string& uri){
-	std::string allowedChars("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-._~:/?#[]@!$&'()*+,;=%");
+	std::string allowedChars("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-._~:/?#[]@!$&'()*+,;=%0123456789");
 	
 	if (uri[0] != '/' || uri.find_first_not_of(allowedChars) != std::string::npos)
 		return 400;

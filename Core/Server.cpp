@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/08 02:42:54 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/08 02:46:49 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/03/09 19:48:09 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,15 +23,15 @@ void	Server::init( const std::string& host, int port ) {
 	_sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (_sock == -1)
 		throw std::runtime_error("socket() failed");
+	int opt = 1;
+	if (setsockopt(_sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1)
+		throw std::runtime_error("setsockopt() failed");
 	if (fcntl(_sock, F_SETFL, O_NONBLOCK) == -1)
 		throw std::runtime_error("fcntl() failed");
 	if (bind(_sock, (sockaddr*)&_info, sizeof(_info)) == -1)
 		throw std::runtime_error("bind() failed");
 	if (listen(_sock, SOMAXCONN) == -1)
 		throw std::runtime_error("listen() failed");
-	int opt = 1;
-	if (setsockopt(_sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1)
-		throw std::runtime_error("setsockopt() failed");
 	_selector.set(_sock, Selector::RD_SET);
 }
 
