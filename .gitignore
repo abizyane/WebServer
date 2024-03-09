@@ -39,4 +39,7 @@ brew-nginx.sh
 .DS_Store
 .vscode
 *py
-
+*.jpg
+*.jpeg
+*.ico
+*.html

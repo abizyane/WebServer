@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   DeleteRequest.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ZakariaElbouzkri <elbouzkri9@gmail.com>    +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:04:42 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/08 07:55:27 by ZakariaElbo      ###   ########.fr       */
+/*   Updated: 2024/03/09 13:31:15 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,8 +102,8 @@ e_statusCode	DeleteRequest::parseBody(std::string &line){ // TODO: i think that 
 	try{
 		if (!_isChunked){
 			str = ss.str();
-			for (; _bodyIndex + i < _contentLength && i < str.size(); i++)
-				_body << str[i];
+			for (; _bodyIndex + i < _contentLength && i < str.size(); i++);
+			_body.write(str.c_str(), i);
 			_bodyIndex += i;
 			if(_bodyIndex == _contentLength)
 				_parse.setParseState(Done);
@@ -113,8 +113,8 @@ e_statusCode	DeleteRequest::parseBody(std::string &line){ // TODO: i think that 
 			size_t	chunkLen = strtoll(str.c_str(), NULL, 16);
 			str.clear();
 			str = ss.str();
-			for (; _bodyIndex + i < chunkLen && i < str.size(); i++)
-				_body << str[i];
+			for (; _bodyIndex + i < chunkLen && i < str.size(); i++);
+			_body.write(str.c_str(), i);
 			_bodyIndex += i;
 			if (chunkLen == 0)
 				_parse.setParseState(Done);

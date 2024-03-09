@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CoreServer.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/08 02:35:06 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/08 03:17:14 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/03/09 17:08:45 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,12 +107,13 @@ void	CoreServer::_manageClients( Server* server )
 				client->readRequest(buff, ret);
 			}
 		}
-		if (_selector.isWriteable(client->fileno())) {
-			if (client->sendResponse()) {
-				_purgeClient(server, it);
-				continue;
-			}
+		if (client->sendResponse()) {
+			_purgeClient(server, it);
+			continue;
 		}
+		// _selector.setWrite(client->fileno());
+		// if (_selector.isWriteable(client->fileno())) {
+		// }
 		// if (currTime() - client->lastActive()  >= TIMEOUT) {
 		// 	_purgeClient(server, it);
 		// 	continue;

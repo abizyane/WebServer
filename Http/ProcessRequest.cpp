@@ -85,10 +85,10 @@ static int	checkVersion(std::string& version){
 	return ((version == "HTTP/1.1")? 200 : 505);
 }
 
-void	ProcessRequest::parseLine(std::string	request){
+void	ProcessRequest::parseLine(char *buffer, int size){
 	std::string		line;
 
-	_requestBuffer += request;
+	_requestBuffer.append(buffer, size);
 	while (_state != Body && (_requestBuffer.find("\r\n") != std::string::npos ||
 			_requestBuffer.find("\n") != std::string::npos)){
 
