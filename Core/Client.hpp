@@ -15,7 +15,7 @@ class	Client
 		sockaddr_in		info;
 		int				fd[2];
 		ProcessRequest	_processor;
-		size_t			_bytesSent;
+		ssize_t			_bytesSent;
 
 	public:
 		Client( Selector& _selector, int sock, sockaddr_in info );

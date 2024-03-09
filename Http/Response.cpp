@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/09 17:38:39 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/09 19:21:41 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,10 +101,13 @@ void	Response::_handleRange(){
 			std::string range = _request->getHeaders()["Range"];
 			size_t start = strtoll(range.substr(range.find("=") + 1, range.find("-")).c_str(), NULL, 10);
 			size_t end = strtoll(range.substr(range.find("-") + 1).c_str(), NULL, 10);
-			_file.seekg(start - 1);
+			size_t length = strtoll(_headers["Content-Length"].c_str(), NULL, 10);
+			_file.seekg(start, std::ios::beg); // - 1
 			_bodyIndex = start;
+			if (end > length || start > length || start > end || start < 0 || end < 0)
+				throw std::exception();
 			_headers["Content-Range"] = "bytes=" + to_str(start) + "-" + to_str(end) + "/" + _headers["Content-Length"];
-			_headers["Content-Length"] = to_str(end - start + 1);
+			// _headers["Content-Length"] = to_str(end - start); // + 1
 		}
 	}
 	catch (std::exception &){
@@ -117,18 +120,19 @@ std::string    Response::GetResponse(size_t lastSent){
 	size_t index;
 	switch (_state){
 		case RESPONSE:
+			response = _response.substr(0, _response.find("\r\n\r\n") + 4);
 			_state = BODY;
-			_bodyIndex -= _response.size();
-			return _response;
+			_bodyIndex -= response.size();
+			break;
 		case BODY:
 			index = strtoll(_headers["Content-Length"].c_str(), NULL, 10);
 			_response.erase(0, lastSent);
 			_bodyIndex += lastSent;
-			if (_response.size() == 0 && _file.peek() != std::ifstream::traits_type::eof()){
+			if (_response.size() == 0 && _bodyIndex < index){
 				std::vector<char> buffer(index - _bodyIndex);
 				_file.read(buffer.data(), index - _bodyIndex);
-				_response.assign(buffer.data(), _file.gcount());
-				_file.seekg(_file.gcount(), std::ios::cur);
+				std::streamsize readed = _file.gcount();
+				_response.assign(buffer.data(), readed);
 			}
 			if (_response.size() > 0 && _bodyIndex < index){
 				response = _response.substr(0, index - _bodyIndex);
