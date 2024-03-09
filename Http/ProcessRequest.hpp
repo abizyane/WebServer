@@ -48,7 +48,7 @@ class ProcessRequest {
 	public:
 		ProcessRequest(int port);
 
-		void			parseLine(std::string	request);
+		void			parseLine(char *buffer, int size);
 		bool			good( void );
 
 		IRequest*		getRequest( void );

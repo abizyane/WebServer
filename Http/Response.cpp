@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/08 23:14:55 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/09 17:38:39 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,22 +117,21 @@ std::string    Response::GetResponse(size_t lastSent){
 	size_t index;
 	switch (_state){
 		case RESPONSE:
-			_response.find("\r\n\r\n") != std::string::npos ?
-				index = _response.find("\r\n\r\n") + 4 : index = _response.find("\n\n") + 2;
-			response = _response.substr(0, index);
 			_state = BODY;
-			break;
+			_bodyIndex -= _response.size();
+			return _response;
 		case BODY:
 			index = strtoll(_headers["Content-Length"].c_str(), NULL, 10);
 			_response.erase(0, lastSent);
-			HERE :
+			_bodyIndex += lastSent;
+			if (_response.size() == 0 && _file.peek() != std::ifstream::traits_type::eof()){
+				std::vector<char> buffer(index - _bodyIndex);
+				_file.read(buffer.data(), index - _bodyIndex);
+				_response.assign(buffer.data(), _file.gcount());
+				_file.seekg(_file.gcount(), std::ios::cur);
+			}
 			if (_response.size() > 0 && _bodyIndex < index){
 				response = _response.substr(0, index - _bodyIndex);
-				_bodyIndex += _response.size();
-			}
-			else if (_response.size() == 0 && _file.peek() != std::ifstream::traits_type::eof()){
-				std::getline(_file, _response, '\0');
-				goto HERE;
 			}
 			else
 				_state = DONE;
@@ -171,6 +170,7 @@ void    Response::_prepareResponse(){
 }
 
 Response::~Response(){
+	if (_file.is_open())
+		_file.close();
 }
-
 

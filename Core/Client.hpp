@@ -39,9 +39,7 @@ class	Client
 		}
 
 		inline void	readRequest( char *buffer, int size ) {
-			std::string	req;
-			req.append(buffer, size);
-			_processor.parseLine(req);
+			_processor.parseLine(buffer, size);
 		}
 		
 		friend std::ostream&	operator<<( std::ostream& os, const Client& rhs );

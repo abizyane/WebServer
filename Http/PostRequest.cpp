@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   PostRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ZakariaElbouzkri <elbouzkri9@gmail.com>    +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:03:16 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/08 07:53:59 by ZakariaElbo      ###   ########.fr       */
+/*   Updated: 2024/03/09 13:31:29 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,8 +97,8 @@ e_statusCode	PostRequest::parseBody(std::string &line){
 	try{
 		if (!_isChunked){
 			str = ss.str();
-			for (; _bodyIndex + i < _contentLength && i < str.size(); i++)
-				_body << str[i];
+			for (; _bodyIndex + i < _contentLength && i < str.size(); i++);
+			_body.write(str.c_str(), i);
 			_bodyIndex += i;
 			if(_bodyIndex == _contentLength)
 				_parse.setParseState(Done);
@@ -108,8 +108,8 @@ e_statusCode	PostRequest::parseBody(std::string &line){
 			size_t	chunkLen = strtoll(str.c_str(), NULL, 16);
 			str.clear();
 			str = ss.str();
-			for (; _bodyIndex + i < chunkLen && i < str.size(); i++)
-				_body << str[i];
+			for (; _bodyIndex + i < chunkLen && i < str.size(); i++);
+			_body.write(str.c_str(), i);
 			_bodyIndex += i;
 			if (chunkLen == 0)
 				_parse.setParseState(Done);
