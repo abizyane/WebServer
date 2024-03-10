@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 21:58:16 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/09 13:27:47 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/10 17:10:41 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,10 +34,15 @@ std::map<std::string, std::string>	GetRequest::getHeaders( void ) const{
 	return _headers;
 }
 
-std::string		GetRequest::getBody( void ) {
-	std::string line;
-	_body >> line;
-	return line;
+std::vector<char>	GetRequest::getBody( void ) {
+	struct stat	s;
+	stat(_fileName.c_str(), &s);
+
+	std::vector<char> buffer(s.st_size);
+	_body.open(_fileName.c_str(), std::ios::in);
+	_body.read(buffer.data(), s.st_size);
+	_body.close();
+	return buffer;
 }
 
 ProcessRequest&	GetRequest::getParse( void ) const{
@@ -107,8 +112,10 @@ e_statusCode	GetRequest::parseBody(std::string &line){ // TODO: i think that we 
 			for (; _bodyIndex + i < _contentLength && i < str.size(); i++);
 			_body.write(str.c_str(), i);
 			_bodyIndex += i;
-			if(_bodyIndex == _contentLength)
+			if(_bodyIndex == _contentLength){
 				_parse.setParseState(Done);
+				_body.close();	
+			}
 		}
 		else{
 			std::getline(ss, str, '\n');
@@ -118,8 +125,10 @@ e_statusCode	GetRequest::parseBody(std::string &line){ // TODO: i think that we 
 			for (; _bodyIndex + i < chunkLen && i < str.size(); i++);
 			_body.write(str.c_str(), i);
 			_bodyIndex += i;
-			if (chunkLen == 0)
+			if (chunkLen == 0){
 				_parse.setParseState(Done);
+				_body.close();
+			}
 			else if (_bodyIndex == chunkLen)
 				_bodyIndex = 0;
 		}

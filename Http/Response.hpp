@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:07:10 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/08 12:54:31 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/10 17:16:00 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,8 @@ class Response {
 		e_statusCode						_status;
 		e_state								_state;
 		size_t								_bodyIndex;
-		
+		// bool								_hasBody = true;
+
 		std::map<std::string, std::string>  _headers;
 		std::fstream						_file;
 		std::string							_response;
@@ -47,7 +48,9 @@ class Response {
 		void								_processPostResponse( void );
 		void								_processDeleteResponse( void );
 		void								_prepareResponse( void );
-		void								_readFile( void );
+		void								_readFile(std::string resourse);
+		void								_writeFile(std::string resource);
+		void								_deleteFile(std::string resource);
 		void								_handleRange( void );
 
 	public :
@@ -55,6 +58,8 @@ class Response {
         static void							initMaps( void );
 		bool			good( void );
 		bool			sent( void );
+
+		IRequest*		getRequest( void );
 
 		class ResponseException : public std::exception {
 			private:
@@ -71,11 +76,3 @@ class Response {
 		~Response();
 
 };
-
-		// std::string& 						GetResponse(void);
-		// size_t		 						GetLength(void);
-		// std::string& 						GetBody(void);
-		// std::string& 						GetContentType(void);
-		// e_statusCode 						GetStatusCode(void);
-		// std::map<std::string, std::string>& GetHeaders(void);
-		// std::string& 						GetHeader(const std::string& key);

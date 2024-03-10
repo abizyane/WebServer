@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 15:57:05 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/04 15:58:40 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/10 17:12:36 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 #include <iostream>
 #include <map>
+#include <vector>
 #include <fstream>
 
 typedef enum{
@@ -69,7 +70,7 @@ class IRequest {
 		virtual std::string							getMethod( void ) const = 0;
 		virtual std::string							getUri( void ) const = 0;
 		virtual std::map<std::string, std::string>	getHeaders( void ) const = 0;
-		virtual std::string							getBody( void ) = 0;
+		virtual std::vector<char>					getBody( void ) = 0;
 		virtual ProcessRequest&						getParse( void ) const = 0;
 
 		virtual ~IRequest(){};

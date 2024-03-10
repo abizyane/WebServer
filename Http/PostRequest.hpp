@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:03:23 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/04 18:35:30 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/10 17:11:59 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ class	PostRequest : public IRequest{
 		std::string							getMethod( void ) const;
 		std::string							getUri( void ) const;
 		std::map<std::string, std::string>	getHeaders( void ) const;
-		std::string							getBody( void );
+		std::vector<char>					getBody( void );
 		ProcessRequest&						getParse( void ) const;
 
 		~PostRequest( void );

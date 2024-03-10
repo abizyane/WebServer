@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/10 14:24:17 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/10 17:39:13 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,6 @@ e_statusCode    Response::ResponseException::getStatus( void ){
 	return __status;
 }
 
-
 void	Response::_buildResponse(){
 	_response += "HTTP/1.1 ";
 	_response += _statusMap[_status] + "\r\n";
@@ -61,9 +60,40 @@ void	Response::_buildResponse(){
 	_response += "\r\n";
 }
 
-void	Response::_readFile(){
+void	Response::_writeFile(std::string resource){
+	//TODO: upload the body of the request to the server location as a file
+	std::string path;
+	std::string file(resource);
+	struct stat st;
+	if (resource.find_last_of('/') != std::string::npos){
+		path = resource.substr(0, resource.find_last_of('/'));
+		resource.erase(0, resource.find_last_of('/') + 1);
+		if (resource != "")
+			file = resource;
+		else
+			throw Response::ResponseException(HTTP_BAD_REQUEST); // should verify this case "POST /path/ "
+	}
+	if (path != "" && stat(path.c_str(), &st) == -1)
+			mkdir(path.c_str(), 0777);
+	resource = path + "/" + file;
+	_file.open(resource, std::ios::out | std::ios::binary);
+	if (_file.is_open()){
+		_file.write(_request->getBody().data(), _request->getBody().size());
+		_file.close();
+	}
+	else
+		throw Response::ResponseException(HTTP_INTERNAL_SERVER_ERROR);
+	_status = HTTP_CREATED;
+}
+
+void	Response::_deleteFile(std::string resource){
+	//TODO: delete the file from the server location
+	if (remove(resource.c_str()) != 0)
+		throw Response::ResponseException(HTTP_INTERNAL_SERVER_ERROR);
+}
+
+void	Response::_readFile(std::string resource){
 	struct stat fileStat;
-	std::string resource = _location->getRoot() + _request->getUri();
 	_file.open(resource.c_str(), std::ios::in | std::ios::binary | std::ios::out);
 	stat(resource.c_str(), &fileStat);
 	if (!(fileStat.st_mode & S_IRWXU))
@@ -81,18 +111,22 @@ void	Response::_readFile(){
 }
 
 void	Response::_processGetResponse(){
-		_readFile();
-		_handleRange();
+	std::string resource = _location->getRoot() + _request->getUri();
+	
+	_readFile(resource);
+	_handleRange();
 }
 
 void	Response::_processPostResponse(){
-		_readFile();
-		_handleRange();
+	std::string resource = _location->getRoot() + _request->getUri();
+	_readFile(resource);
+	_handleRange();
 }
 
 void	Response::_processDeleteResponse(){
-		_readFile();
-		_handleRange();
+	std::string resource = _location->getRoot() + _request->getUri();
+	_readFile(resource);
+	_handleRange();
 }
 
 void	Response::_handleRange(){
@@ -125,6 +159,8 @@ std::string    Response::GetResponse(size_t lastSent){
 		case RESPONSE:
 			response = _response.substr(0, _response.find("\r\n\r\n") + 4);
 			_state = BODY;
+			// if (!_hasBody)
+			// 	_state = DONE;
 			_bodyIndex -= response.size();
 			break;
 		case BODY:
