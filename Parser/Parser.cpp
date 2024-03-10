@@ -275,10 +275,12 @@ std::pair<std::string, LocationConf*>	Parser::_parseLocation( ServerConf& parent
 			case Token::RETURN:		_parseRedirect(*location);	break;
 			case Token::LOCATION: {
 				std::pair<std::string, LocationConf*>	res = _parseLocation( parentServer, ans.first );
+				location->addLocation(res.first, res.second);
 				break;
 			}
-			default:
+			default: {
 				_error(slog("unexpected token %s at: %s:%d", to_str(_currTok).c_str(), CONF_PATH, _lex.line()));
+			}
 		}
 	}
 	ans.second = location;

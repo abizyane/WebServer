@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:04:42 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/04 18:37:37 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/09 13:31:15 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,14 +17,7 @@ DeleteRequest::DeleteRequest(std::string &method, std::string &uri, ProcessReque
 	_hasBody = false;
 	_isChunked = false;
 	_contentLength = 0;
-
 	_fileName = ".requestbody";
-	// std::srand(std::time(0));
-	// for (size_t i = 0; i < 20; i++)
-	// 	_fileName.push_back(std::to_string(std::rand())[0]);
-	_body.open(_fileName.c_str(), std::ios::out | std::ios::in | std::ios::trunc);
-	if (!_body.is_open())
-		_parse.setParseState(Error); //   HTTP_INTERNAL_SERVER_ERROR;
 }
 
 std::string		DeleteRequest::getMethod( void ) const{
@@ -86,6 +79,14 @@ e_statusCode	DeleteRequest::checkHeaders(void){
 				return HTTP_BAD_REQUEST;
 			_contentLength = strtoll(_headers["Content-Length"].c_str(), NULL, 10);
 		}
+		std::srand(std::time(0));
+		for (size_t i = 0; i < 20; i++)
+			_fileName.push_back(to_str(std::rand())[0]);
+		_body.open(_fileName.c_str(), std::ios::out | std::ios::in | std::ios::trunc);
+		if (!_body.is_open()){
+			_parse.setParseState(Error);
+			return HTTP_INTERNAL_SERVER_ERROR;
+		}
 	}
 	else
 		_parse.setParseState(Done);
@@ -101,8 +102,8 @@ e_statusCode	DeleteRequest::parseBody(std::string &line){ // TODO: i think that 
 	try{
 		if (!_isChunked){
 			str = ss.str();
-			for (; _bodyIndex + i < _contentLength && i < str.size(); i++)
-				_body << str[i];
+			for (; _bodyIndex + i < _contentLength && i < str.size(); i++);
+			_body.write(str.c_str(), i);
 			_bodyIndex += i;
 			if(_bodyIndex == _contentLength)
 				_parse.setParseState(Done);
@@ -112,8 +113,8 @@ e_statusCode	DeleteRequest::parseBody(std::string &line){ // TODO: i think that 
 			size_t	chunkLen = strtoll(str.c_str(), NULL, 16);
 			str.clear();
 			str = ss.str();
-			for (; _bodyIndex + i < chunkLen && i < str.size(); i++)
-				_body << str[i];
+			for (; _bodyIndex + i < chunkLen && i < str.size(); i++);
+			_body.write(str.c_str(), i);
 			_bodyIndex += i;
 			if (chunkLen == 0)
 				_parse.setParseState(Done);
@@ -129,7 +130,9 @@ e_statusCode	DeleteRequest::parseBody(std::string &line){ // TODO: i think that 
 }
 
 DeleteRequest::~DeleteRequest( void ){
-	std::remove(_fileName.c_str());
-	_body.close();
+	if (_body.is_open()){
+		_body.close();
+		std::remove(_fileName.c_str());
+	}
 }
 

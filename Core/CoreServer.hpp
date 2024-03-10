@@ -7,7 +7,6 @@
 
 #define HOST "127.0.0.1"
 
-
 class	CoreServer
 {
 	private:
@@ -18,13 +17,15 @@ class	CoreServer
 		void	_acceptNewClient( Server* server );
 		void	_manageClients( Server* server );
 		void	_purgeClient( Server* server, std::vector<Client*>::iterator& it );
-
 		CoreServer( void );
-
+		
 		static CoreServer*	_instance;
+
 	public:
-		static CoreServer*	getCore( void );
 		~CoreServer( void );
+		static CoreServer*	getCore( void );
+
 		void	init( void );
-		void	run( void );
+		void	run();
+
 };

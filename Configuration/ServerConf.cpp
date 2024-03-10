@@ -6,7 +6,7 @@
 /*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 12:06:59 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/06 06:37:16 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/03/08 02:58:16 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,6 @@ ServerConf::~ServerConf( void )
 	}
 	delete	_locations;
 }
-
 ServerConf::ServerConf( ServerConf const& rhs ) : HTTP(rhs), _hostNames(NULL), _ports(NULL)
 	,_locations(NULL)
 {

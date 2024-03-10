@@ -70,7 +70,7 @@ static int		checkMethod(std::string& method){
 }
 
 static int	checkUri(std::string& uri){
-	std::string allowedChars("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-._~:/?#[]@!$&'()*+,;=%");
+	std::string allowedChars("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-._~:/?#[]@!$&'()*+,;=%0123456789");
 	
 	if (uri[0] != '/' || uri.find_first_not_of(allowedChars) != std::string::npos)
 		return 400;
@@ -85,10 +85,10 @@ static int	checkVersion(std::string& version){
 	return ((version == "HTTP/1.1")? 200 : 505);
 }
 
-void	ProcessRequest::parseLine(std::string	request){
+void	ProcessRequest::parseLine(char *buffer, int size){
 	std::string		line;
 
-	_requestBuffer += request;
+	_requestBuffer.append(buffer, size);
 	while (_state != Body && (_requestBuffer.find("\r\n") != std::string::npos ||
 			_requestBuffer.find("\n") != std::string::npos)){
 

@@ -6,7 +6,7 @@
 /*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 12:00:37 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/06 02:31:58 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/02/21 20:21:18 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,10 +38,6 @@ class	ServerConf : public HTTP
 		bool	hasHostName( const std::string& hostname ) const;
 		bool	hasPort( const int& port ) const;
 		void	getPorts( std::set<unsigned int>& ports );
-		inline int		ports_size( void ) const {
-			if (_ports == NULL) return 0;
-			return _ports->size();
-		}
 		void	passDirectiveToRoutes( void );
 
 		LocationConf*	getUri( std::string uri ) const;

@@ -6,28 +6,18 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:03:16 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/04 18:36:54 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/09 13:31:29 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "PostRequest.hpp"
-#include <time.h>
-#include <sys/time.h>
 
 PostRequest::PostRequest(std::string &method, std::string &uri, ProcessRequest& parse)
     : _method(method), _uri(uri), _version("HTTP/1.1"), _parse(parse){
 	_contentLength = 0;
 	_bodyIndex = 0;
 	_isChunked = false;
-
 	_fileName = ".requestbody";
-	// std::srand(std::time(0));
-	// for (size_t i = 0; i < 20; i++)
-	// 	_fileName.push_back(std::to_string(std::rand())[0]);
-	_body.open(_fileName.c_str(), std::ios::out | std::ios::in | std::ios::trunc);
-	if (!_body.is_open())
-		_parse.setParseState(Error); //   HTTP_INTERNAL_SERVER_ERROR;
-	
 }
 
 std::string		PostRequest::getMethod( void ) const{
@@ -88,6 +78,14 @@ e_statusCode	PostRequest::checkHeaders(void){
 			return HTTP_BAD_REQUEST;
 		_contentLength = strtoll(_headers["Content-Length"].c_str(), NULL, 10);
 	}
+	std::srand(std::time(0));
+	for (size_t i = 0; i < 20; i++)
+		_fileName.push_back(to_str(std::rand())[0]);
+	_body.open(_fileName.c_str(), std::ios::out | std::ios::in | std::ios::trunc);
+	if (!_body.is_open()){
+		_parse.setParseState(Error);
+		return HTTP_INTERNAL_SERVER_ERROR;
+	}
 	_parse.setParseState(Body);
 	return HTTP_OK;
 }
@@ -99,8 +97,8 @@ e_statusCode	PostRequest::parseBody(std::string &line){
 	try{
 		if (!_isChunked){
 			str = ss.str();
-			for (; _bodyIndex + i < _contentLength && i < str.size(); i++)
-				_body << str[i];
+			for (; _bodyIndex + i < _contentLength && i < str.size(); i++);
+			_body.write(str.c_str(), i);
 			_bodyIndex += i;
 			if(_bodyIndex == _contentLength)
 				_parse.setParseState(Done);
@@ -110,8 +108,8 @@ e_statusCode	PostRequest::parseBody(std::string &line){
 			size_t	chunkLen = strtoll(str.c_str(), NULL, 16);
 			str.clear();
 			str = ss.str();
-			for (; _bodyIndex + i < chunkLen && i < str.size(); i++)
-				_body << str[i];
+			for (; _bodyIndex + i < chunkLen && i < str.size(); i++);
+			_body.write(str.c_str(), i);
 			_bodyIndex += i;
 			if (chunkLen == 0)
 				_parse.setParseState(Done);
@@ -127,6 +125,8 @@ e_statusCode	PostRequest::parseBody(std::string &line){
 }
 
 PostRequest::~PostRequest( void ){
-	std::remove(_fileName.c_str());
-	_body.close();
+	if (_body.is_open()){
+		_body.close();
+		std::remove(_fileName.c_str());
+	}
 }

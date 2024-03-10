@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   LocationConf.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ZakariaElbouzkri <elbouzkri9@gmail.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 11:36:53 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/06 06:36:55 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/03/08 10:26:06 by ZakariaElbo      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "LocationConf.hpp"
 #include "../utils/utils.hpp"
-
+#include <fstream>
 
 LocationConf::LocationConf( void ) : HTTP(), _locations(NULL), _extentions(NULL)
 	, _redirect(NULL)
@@ -35,6 +35,7 @@ LocationConf::~LocationConf( void )
 	}
 	delete _locations;
 }
+
 
 LocationConf::LocationConf( LocationConf const& rhs ) : HTTP(rhs), _locations(NULL), _extentions(NULL)
 	, _redirect(NULL)
@@ -106,8 +107,14 @@ std::string		LocationConf::getErrPage( int code, const std::string& defaultPag )
 {
 	if (_errorPage == NULL)
 		return (defaultPag);
+	std::string ans;
 	std::map<int, std::string>::iterator it = _errorPage->find(code);
-	return ((it == _errorPage->end()) ? defaultPag : it->second);
+	if (it != _errorPage->end()) {
+		std::ifstream	file(it->second.c_str());
+		if (file.is_open() && std::getline(file, ans, '\0'))
+			return ans;
+	}
+	return ans;
 }
 
 bool	LocationConf::methodIsAllowed( const std::string& method) const
@@ -173,7 +180,7 @@ void	LocationConf::passDirectiveToRoutes( void )
 			for (; it != ite; it++)
 				first->second->addIndex(*it);
 		}
-		if (_locations != NULL) {
+		if (_extentions != NULL) {
 			std::set<std::string>::iterator it = _extentions->begin();
 			std::set<std::string>::iterator ite = _extentions->end();
 			for (; it != ite; it++)
