@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/09 19:54:29 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/10 14:24:17 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,15 +99,18 @@ void	Response::_handleRange(){
 	try {
 		if (_request->getHeaders()["Range"] != ""){
 			std::string range = _request->getHeaders()["Range"];
-			size_t start = strtoll(range.substr(range.find("=") + 1, range.find("-")).c_str(), NULL, 10);
-			size_t end = strtoll(range.substr(range.find("-") + 1).c_str(), NULL, 10);
-			size_t length = strtoll(_headers["Content-Length"].c_str(), NULL, 10);
-			_file.seekg(start, std::ios::beg); // - 1
-			_bodyIndex = start;
+			ssize_t length = strtoll(_headers["Content-Length"].c_str(), NULL, 10);
+			ssize_t start = strtoll(range.substr(range.find("=") + 1, range.find("-")).c_str(), NULL, 10);
+			range.erase(0, range.find("-") + 1);
+			ssize_t end = length - 1;
+			if (range != "")
+				end = strtoll(range.c_str(), NULL, 10);
+			_file.seekg(start, std::ios::beg);
 			if (end > length || start > length || start > end || start < 0 || end < 0)
-				throw std::exception();
-			_headers["Content-Range"] = "bytes=" + to_str(start) + "-" + to_str(end) + "/" + _headers["Content-Length"];
-			// _headers["Content-Length"] = to_str(end - start); // + 1
+				throw Response::ResponseException(HTTP_REQUESTED_RANGE_NOT_SATISFIABLE);
+			_headers["Content-Range"] = "bytes " + to_str(start) + "-" + to_str(end) + "/" + _headers["Content-Length"];
+			_headers["Content-Length"] = to_str(end - start + 1);
+			_status = HTTP_PARTIAL_CONTENT;
 		}
 	}
 	catch (std::exception &){
@@ -128,15 +131,14 @@ std::string    Response::GetResponse(size_t lastSent){
 			index = strtoll(_headers["Content-Length"].c_str(), NULL, 10);
 			_response.erase(0, lastSent);
 			_bodyIndex += lastSent;
-			if (_response.size() == 0 && _bodyIndex < index){
+			if (_response.size() == 0 && _bodyIndex < index && !_file.eof()){
 				std::vector<char> buffer(index - _bodyIndex);
 				_file.read(buffer.data(), index - _bodyIndex);
 				std::streamsize readed = _file.gcount();
 				_response.assign(buffer.data(), readed);
 			}
-			if (_response.size() > 0 && _bodyIndex < index){
+			if (_response.size() > 0 && _bodyIndex < index)
 				response = _response.substr(0, index - _bodyIndex);
-			}
 			else
 				_state = DONE;
 			break;

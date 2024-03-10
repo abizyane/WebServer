@@ -38,8 +38,12 @@ main.cpp
 brew-nginx.sh
 .DS_Store
 .vscode
-*py
+*.py
 *.jpg
 *.jpeg
 *.ico
 *.html
+*.css
+*.mp4
+*.js
+*.php
