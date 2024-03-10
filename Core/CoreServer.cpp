@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CoreServer.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/03/05 23:22:22 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/06 06:50:30 by zel-bouz         ###   ########.fr       */
+/*   Created: 2024/03/08 02:35:06 by zel-bouz          #+#    #+#             */
+/*   Updated: 2024/03/10 00:19:09 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,18 +17,19 @@ CoreServer*	CoreServer::_instance = NULL;
 CoreServer::CoreServer( void ) {
 }
 
-CoreServer*	CoreServer::getCore( void )
-{
-	if (_instance == NULL)
-		_instance = new CoreServer();
-	return _instance;
-}
-
 CoreServer::~CoreServer( void ) {
 	for (size_t i = 0; i < _servers.size(); i++)
 	{
 		delete _servers[i];
 	}
+}
+
+
+CoreServer*	CoreServer::getCore( void )
+{
+	if (_instance == NULL)
+		_instance = new CoreServer();
+	return _instance;
 }
 
 
@@ -45,36 +46,13 @@ int	CoreServer::_nfds( void ) {
 	return ans;
 }
 
-void	CoreServer::init( void )
-{
-	std::set<unsigned int>	_ports;
-
-	_ports = MainConf::getConf()->getAllPorts();
-	for (std::set<unsigned int>::iterator it = _ports.begin(); it != _ports.end(); it++)
-	{
-		Server*	server = new Server(_selector);
-		try
-		{
-			server->init(HOST, *it);
-			_servers.push_back(server);
-			std::cout << strTime() << slog(" start listening on [%s:%d]", HOST, *it) << std::endl;
-		}
-		catch(const std::exception& e)
-		{
-			delete server;
-			std::cout << strTime() << slog(" faild to setup server on [%s:%d]", HOST, *it) << std::endl;
-			sleep(1);
-		}
-	}
-}
-
-void	CoreServer::_acceptNewClient( Server* server )
-{
+void	CoreServer::_acceptNewClient( Server* server ) {
 	sockaddr_in	info;
 	socklen_t	len = 0;
 	memset(&info, 0, sizeof(sockaddr_in));
-
 	int ans = accept(server->fileno(), (sockaddr*)&info, &len);
+	getpeername(ans, (sockaddr*)&info, &len);
+	info.sin_port = server->getInfo().sin_port;
 	if (ans == -1)
 		throw std::runtime_error("accept() faild");
 	if (fcntl(ans, F_SETFL, O_NONBLOCK) < 0)
@@ -85,6 +63,23 @@ void	CoreServer::_acceptNewClient( Server* server )
 	std::cout << strTime() << " client at " << *client << " accepted" << std::endl;
 }
 
+void	CoreServer::init( void ) {
+	std::set<unsigned int>	_ports = MainConf::getConf()->getAllPorts();
+	for (std::set<unsigned int>::iterator it = _ports.begin(); it != _ports.end(); it++)
+	{
+		Server* server = new Server(_selector);
+		try {
+			server->init(HOST, *it);
+			std::cout << strTime() << slog(" start listening on [%s:%d]", HOST, *it) << std::endl;
+			_servers.push_back(server);
+		} catch (std::exception & e) {
+			delete server;
+			std::cout << strTime() << slog(" faild to setup server on [%s:%d]", HOST, *it) << std::endl;
+			sleep(1);
+		}
+
+	}
+}
 
 void	CoreServer::_purgeClient( Server* server, std::vector<Client*>::iterator& it )
 {
@@ -96,11 +91,11 @@ void	CoreServer::_purgeClient( Server* server, std::vector<Client*>::iterator& i
 	delete client;
 }
 
+
 void	CoreServer::_manageClients( Server* server )
 {
 	for (std::vector<Client*>::iterator it = server->_clients.begin(); it != server->_clients.end(); ) {
 		Client* client = *it;
-
 		if (_selector.isReadable(client->fileno())) {
 			char buff[1024] = {0};
 			int ret = ::recv(client->fileno(), buff, 1024, 0);
@@ -113,16 +108,18 @@ void	CoreServer::_manageClients( Server* server )
 				client->readRequest(buff, ret);
 			}
 		}
-		if (_selector.isWriteable(client->fileno())) {
-			if (client->sendResponse()) {
-				_purgeClient(server, it);
-				continue;
-			}
-		}
-		if (currTime() - client->lastActive()  >= TIMEOUT) {
+		if (client->sendResponse()) {
 			_purgeClient(server, it);
 			continue;
 		}
+		// _selector.setWrite(client->fileno());
+		// if (_selector.isWriteable(client->fileno())) {
+		// }
+		// if (currTime() - client->lastActive()  >= 550) {
+		// 	std::cout << strTime() << " client at " << *client << " timeout" << std::endl;
+		// 	_purgeClient(server, it);
+		// 	continue;
+		// }
 		++it;
 	}
 }
@@ -139,7 +136,7 @@ void	CoreServer::run( void )
 
 		if (_selector.select(maxfds + 1) == false)
 			continue;
-
+		
 		for (size_t i = 0; i < _servers.size(); i++) {
 			Server* server = _servers[i];
 			if (_selector.isReadable(server->fileno()) &&  maxfds < 300) {

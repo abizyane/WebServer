@@ -6,7 +6,7 @@
 /*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 12:19:15 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/06 06:34:41 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/03/08 02:57:42 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,13 +18,26 @@ MainConf::MainConf( void ) : HTTP()
 {
 }
 
+ServerConf*	MainConf::getServerByHostPort(int port, std::string host)
+{
+	std::vector<ServerConf*>::iterator	it = _servers.begin();
+	ServerConf*							server = NULL;
+	for (; it != _servers.end(); it++)
+	{
+		if ((*it)->hasPort(port))
+			server = *it;
+		if ((*it)->hasHostName(host))
+			return (*it);
+	}
+	return (server);
+}
+
 MainConf::~MainConf( void )
 {
 	for (size_t i = 0; i < _servers.size(); i++) {
 		delete _servers[i];
 	}
 }
-
 
 MainConf&	MainConf::operator=( const MainConf& rhs )
 {

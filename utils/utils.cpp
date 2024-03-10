@@ -3,16 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/13 09:51:28 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/06 05:56:43 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/03/10 00:20:44 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-
 #include "utils.hpp"
-
 
 std::string    normPath( std::string path )
 {
@@ -62,7 +60,6 @@ std::string slog(const char* format, ...)
     return va_end(args), result;
 }
 
-
 std::string	strTime()
 {
     std::time_t currentTime;
@@ -74,7 +71,6 @@ std::string	strTime()
     std::strftime(buffer, sizeof(buffer), "[%Y-%m-%d-%H:%M:%S]", localTime);
     return std::string(buffer);
 }
-
 
 time_t  currTime( void ) 
 {

@@ -6,7 +6,7 @@
 /*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 12:25:47 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/06 02:34:41 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/03/08 02:28:50 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,19 +33,11 @@ class	MainConf : public HTTP
 		static	MainConf*	getConf( void );
 		void	addServer( ServerConf* server );
 		
-		// ServerConf*	getServerByHostPort(int	port, std::string host);
+		ServerConf*						getServerByHostPort(int	port, std::string host);
 		std::set<unsigned int>			getAllPorts( void ) const;
 		const std::vector<ServerConf*>	&getServersConf( void ) const;
 
 		void	passDirectiveToServers( void );
-
-		inline int number_of_ports( void ) const {
-			int ans = 0;
-			for (size_t i = 0; i < _servers.size(); i++) {
-				ans += _servers[i]->ports_size();
-			}
-			return ans;
-		}
 		inline int number_of_servers( void ) const {
 			return _servers.size();
 		}

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   GetRequest.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 21:58:16 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/05 23:17:09 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/03/09 13:27:47 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,14 +19,7 @@ GetRequest::GetRequest(std::string &method, std::string &uri, ProcessRequest& pa
 	_contentLength = 0;
 	_hasBody = false;
 	_bodyIndex = 0;
-
 	_fileName = ".requestbody";
-	// std::srand(std::time(0));
-	// for (size_t i = 0; i < 20; i++)
-	// 	_fileName.push_back(std::to_string(std::rand())[0]);
-	_body.open(_fileName.c_str(), std::ios::out | std::ios::in | std::ios::trunc);
-	if (!_body.is_open())
-		_parse.setParseState(Error); //   HTTP_INTERNAL_SERVER_ERROR;
 }
 
 std::string		GetRequest::getMethod( void ) const{
@@ -66,9 +59,15 @@ e_statusCode	GetRequest::checkHeaders(void){
 			if (_headers["Content-Length"].find_first_not_of("0123456789") != std::string::npos)
 				return HTTP_BAD_REQUEST;
 			_contentLength = strtoll(_headers["Content-Length"].c_str(), NULL, 10);
-		}std::srand(std::time(0));
-	// for (size_t i = 0; i < 20; i++)
-	// 	_fileName.push_back(std::to_string(std::rand())[0]);
+		}
+		std::srand(std::time(0));
+		for (size_t i = 0; i < 20; i++)
+			_fileName.push_back(to_str(std::rand())[0]);
+		_body.open(_fileName.c_str(), std::ios::out | std::ios::in | std::ios::trunc);
+		if (!_body.is_open()){
+			_parse.setParseState(Error);
+			return HTTP_INTERNAL_SERVER_ERROR;
+		}
 	}
 	else
 		_parse.setParseState(Done);
@@ -105,8 +104,8 @@ e_statusCode	GetRequest::parseBody(std::string &line){ // TODO: i think that we 
 	try{
 		if (!_isChunked){
 			str = ss.str();
-			for (; _bodyIndex + i < _contentLength && i < str.size(); i++)
-				_body << str[i];
+			for (; _bodyIndex + i < _contentLength && i < str.size(); i++);
+			_body.write(str.c_str(), i);
 			_bodyIndex += i;
 			if(_bodyIndex == _contentLength)
 				_parse.setParseState(Done);
@@ -116,8 +115,8 @@ e_statusCode	GetRequest::parseBody(std::string &line){ // TODO: i think that we 
 			size_t	chunkLen = strtoll(str.c_str(), NULL, 16);
 			str.clear();
 			str = ss.str();
-			for (; _bodyIndex + i < chunkLen && i < str.size(); i++)
-				_body << str[i];
+			for (; _bodyIndex + i < chunkLen && i < str.size(); i++);
+			_body.write(str.c_str(), i);
 			_bodyIndex += i;
 			if (chunkLen == 0)
 				_parse.setParseState(Done);
@@ -133,6 +132,8 @@ e_statusCode	GetRequest::parseBody(std::string &line){ // TODO: i think that we 
 }
 
 GetRequest::~GetRequest( void ){
-	std::remove(_fileName.c_str());
-	_body.close();
+	if (_body.is_open()){
+		_body.close();
+		std::remove(_fileName.c_str());
+	}
 }
