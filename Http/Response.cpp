@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/10 17:39:13 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/10 20:48:39 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,8 +88,15 @@ void	Response::_writeFile(std::string resource){
 
 void	Response::_deleteFile(std::string resource){
 	//TODO: delete the file from the server location
+	struct stat st;
+	if (stat(resource.c_str(), &st) == -1)
+		throw Response::ResponseException(HTTP_NOT_FOUND);
+
 	if (remove(resource.c_str()) != 0)
 		throw Response::ResponseException(HTTP_INTERNAL_SERVER_ERROR);
+	else if (!(st.st_mode & S_IRWXU))
+		throw Response::ResponseException(HTTP_FORBIDDEN);
+	_status = HTTP_NO_CONTENT;
 }
 
 void	Response::_readFile(std::string resource){
@@ -101,32 +108,60 @@ void	Response::_readFile(std::string resource){
 	if (_file.is_open()){
 		size_t size = static_cast<size_t>(fileStat.st_size);
 		_headers["Content-Length"] = to_str(size);
-		if (_request->getUri().find_last_of('.') != std::string::npos)
+		if (S_ISDIR(fileStat.st_mode))
+			_headers["Content-Type"] = "Dir";
+		else if (_request->getUri().find_last_of('.') != std::string::npos)
 			_headers["Content-Type"] = _mimeMap[_request->getUri().substr(_request->getUri().find_last_of('.') + 1)];
 		else
-			_headers["Content-Type"] = "text/plain";
+			_headers["Content-Type"] = "octet-stream";
 	}
+	else if (_file.fail())
+		throw Response::ResponseException(HTTP_INTERNAL_SERVER_ERROR);
 	else
 		throw Response::ResponseException(HTTP_NOT_FOUND);
+	char dt[30];
+	time_t tm = fileStat.st_mtime;
+	strftime(dt, 30, "%a, %d %b %Y %H:%M:%S %Z", gmtime(&tm));
+	_headers["Last-Modified"] = std::string(dt);
 }
 
 void	Response::_processGetResponse(){
 	std::string resource = _location->getRoot() + _request->getUri();
-	
 	_readFile(resource);
+	if (_headers["Content-Type"] == "Dir"){
+		if (resource[resource.size() - 1] != '/'){ // redirections
+			// if (_location->hasRedirect()){
+			// 	_headers["Location"] = _location->getRedirectPage().second;
+			// 	throw Response::ResponseException(static_cast<e_statusCode>(_location->getRedirectPage().first));	
+			// }
+			_headers["Location"] = _request->getUri() + "/";
+			throw Response::ResponseException(HTTP_MOVED_PERMANENTLY);
+		}
+		// if (directory has index file)
+			// goto HERE;
+		// resource = _location.getAutoIndex();
+		if (_location->dirListingEnabled())
+			throw Response::ResponseException(HTTP_FORBIDDEN);
+		_file.close();
+		for (std::map<std::string, std::string>::iterator it = _headers.begin(); it != _headers.end(); it++)
+			_headers.erase(it);
+		_readFile(resource);
+		return ;
+	}
+	// HERE:
+	// if (_location->hasCgi() && _location->isCgi(_request->getUri().substr(_request->getUri().find_last_of('.') + 1)))
+		// RUN CGI;
 	_handleRange();
 }
 
 void	Response::_processPostResponse(){
 	std::string resource = _location->getRoot() + _request->getUri();
-	_readFile(resource);
-	_handleRange();
+	_writeFile(resource);
 }
 
 void	Response::_processDeleteResponse(){
 	std::string resource = _location->getRoot() + _request->getUri();
-	_readFile(resource);
-	_handleRange();
+	_deleteFile(resource);
 }
 
 void	Response::_handleRange(){
