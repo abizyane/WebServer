@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/10 21:43:16 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/10 22:01:05 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,6 +55,25 @@ void	Response::_buildResponse(){
 	time_t tm = time(0);
 	strftime(dt, 30, "%a, %d %b %Y %H:%M:%S %Z", gmtime(&tm));
 	_headers["Date"] = std::string(dt);
+	// if (_status >= 400){
+	// 	if (_file.is_open())
+	// 		_file.close();
+	// 	for (std::map<std::string, std::string>::iterator it = _headers.begin(); it != _headers.end(); it++)
+	// 		_headers.erase(it);
+	// 	std::srand(time(0));
+	// 	std::string tmpName = ".ResponseBody";
+	// 	for (int i = 0; i < 20; i++)
+	// 		tmpName += to_str(rand());
+	// 	_file.open(tmpName,std::ios::out || std::ios::in | std::ios::binary);
+	// 	if (_file.is_open()){
+	// 		std::string errPage = _location->getErrPage(static_cast<int>(_status), "ErrorPage.html");
+	// 		_file.write(errPage.c_str(), errPage.size());
+	// 		_headers["Content-Length"] = to_str(errPage.size());
+	// 		_headers["Content-Type"] = "text/html";
+	// 	}
+	// 	else if (_file.fail())
+	// 		throw Response::ResponseException(HTTP_INTERNAL_SERVER_ERROR);
+	// }
 	for (std::map<std::string, std::string>::iterator it = _headers.begin(); it != _headers.end(); it++)
 		_response += it->first + ": " + it->second + "\r\n";
 	_response += "\r\n";
