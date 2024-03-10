@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/10 20:48:39 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/10 21:43:16 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,34 +60,8 @@ void	Response::_buildResponse(){
 	_response += "\r\n";
 }
 
-void	Response::_writeFile(std::string resource){
-	//TODO: upload the body of the request to the server location as a file
-	std::string path;
-	std::string file(resource);
-	struct stat st;
-	if (resource.find_last_of('/') != std::string::npos){
-		path = resource.substr(0, resource.find_last_of('/'));
-		resource.erase(0, resource.find_last_of('/') + 1);
-		if (resource != "")
-			file = resource;
-		else
-			throw Response::ResponseException(HTTP_BAD_REQUEST); // should verify this case "POST /path/ "
-	}
-	if (path != "" && stat(path.c_str(), &st) == -1)
-			mkdir(path.c_str(), 0777);
-	resource = path + "/" + file;
-	_file.open(resource, std::ios::out | std::ios::binary);
-	if (_file.is_open()){
-		_file.write(_request->getBody().data(), _request->getBody().size());
-		_file.close();
-	}
-	else
-		throw Response::ResponseException(HTTP_INTERNAL_SERVER_ERROR);
-	_status = HTTP_CREATED;
-}
 
 void	Response::_deleteFile(std::string resource){
-	//TODO: delete the file from the server location
 	struct stat st;
 	if (stat(resource.c_str(), &st) == -1)
 		throw Response::ResponseException(HTTP_NOT_FOUND);
@@ -103,8 +77,8 @@ void	Response::_readFile(std::string resource){
 	struct stat fileStat;
 	_file.open(resource.c_str(), std::ios::in | std::ios::binary | std::ios::out);
 	stat(resource.c_str(), &fileStat);
-	if (!(fileStat.st_mode & S_IRWXU))
-		throw Response::ResponseException(HTTP_FORBIDDEN);
+	// if (!(fileStat.st_mode & S_IRWXU))
+	// 	throw Response::ResponseException(HTTP_FORBIDDEN);
 	if (_file.is_open()){
 		size_t size = static_cast<size_t>(fileStat.st_size);
 		_headers["Content-Length"] = to_str(size);
@@ -120,20 +94,23 @@ void	Response::_readFile(std::string resource){
 	else
 		throw Response::ResponseException(HTTP_NOT_FOUND);
 	char dt[30];
-	time_t tm = fileStat.st_mtime;
-	strftime(dt, 30, "%a, %d %b %Y %H:%M:%S %Z", gmtime(&tm));
+	strftime(dt, 30, "%a, %d %b %Y %H:%M:%S %Z", gmtime(&fileStat.st_mtime));
 	_headers["Last-Modified"] = std::string(dt);
 }
 
 void	Response::_processGetResponse(){
+	if (!_location)
+		throw Response::ResponseException(HTTP_NOT_FOUND);
+	// else if (_location->hasRedirect()){
+		// _headers["Location"] = _location->getRedirectPage().second;
+		// throw Response::ResponseException(static_cast<e_statusCode>(_location->getRedirectPage().first));	
+	// }
+	if (!_location->methodIsAllowed(_request->getMethod()))
+		throw Response::ResponseException(HTTP_METHOD_NOT_ALLOWED);
 	std::string resource = _location->getRoot() + _request->getUri();
 	_readFile(resource);
 	if (_headers["Content-Type"] == "Dir"){
 		if (resource[resource.size() - 1] != '/'){ // redirections
-			// if (_location->hasRedirect()){
-			// 	_headers["Location"] = _location->getRedirectPage().second;
-			// 	throw Response::ResponseException(static_cast<e_statusCode>(_location->getRedirectPage().first));	
-			// }
 			_headers["Location"] = _request->getUri() + "/";
 			throw Response::ResponseException(HTTP_MOVED_PERMANENTLY);
 		}
@@ -154,9 +131,76 @@ void	Response::_processGetResponse(){
 	_handleRange();
 }
 
+void	Response::_writeFile(std::string resource){
+	std::string path;
+	std::string file(resource);
+	struct stat st;
+	if (_location->hasUpload()){
+		if (resource.find_last_of('/') != std::string::npos){
+			path = resource.substr(0, resource.find_last_of('/'));
+			resource.erase(0, resource.find_last_of('/') + 1);
+			if (resource != "")
+				file = resource;
+		}
+		if (path != "" && stat(path.c_str(), &st) == -1)
+				mkdir(path.c_str(), 0777);
+		resource = path + "/" + file;
+		_file.open(resource,std::ios::in | std::ios::out | std::ios::binary);
+		if (_file.is_open()){
+			_file.write(_request->getBody().data(), _request->getBody().size());
+			_file.close();
+		}
+		else
+			throw Response::ResponseException(HTTP_INTERNAL_SERVER_ERROR);
+		_headers["Content-Length"] = to_str(_request->getBody().size());
+		if (_request->getUri().find_last_of('.') != std::string::npos){
+			_headers["Content-Type"] = _mimeMap[_request->getUri().substr(_request->getUri().find_last_of('.') + 1)];
+			if (_headers["Content-Type"] == "")
+				_headers["Content-Type"] = "octet-stream";	
+		}
+		else
+			_headers["Content-Type"] = "octet-stream";
+		char dt[30];
+		strftime(dt, 30, "%a, %d %b %Y %H:%M:%S %Z", gmtime(&st.st_mtime));
+		_headers["Last-Modified"] = std::string(dt);
+		_status = HTTP_CREATED;
+		return ;
+	}
+	_file.open(resource,std::ios::in | std::ios::out | std::ios::binary);
+	if (_file.fail())
+		throw Response::ResponseException(HTTP_INTERNAL_SERVER_ERROR);
+	else if (!_file.is_open())
+		throw Response::ResponseException(HTTP_NOT_FOUND);
+	if (S_ISDIR(st.st_mode))
+		_headers["Content-Type"] = "Dir";
+}
+
+
 void	Response::_processPostResponse(){
+	if (!_location)
+		throw Response::ResponseException(HTTP_NOT_FOUND);
+	// else if (_location->hasRedirect()){
+	// 	_headers["Location"] = _location->getRedirectPage().second;
+	// 	throw Response::ResponseException(static_cast<e_statusCode>(_location->getRedirectPage().first));	
+	// }
+	if (!_location->methodIsAllowed(_request->getMethod()))
+		throw Response::ResponseException(HTTP_METHOD_NOT_ALLOWED);
 	std::string resource = _location->getRoot() + _request->getUri();
-	_writeFile(resource);
+	_writeFile(_location->getUploadStore() + _request->getUri());
+	if (_status != HTTP_CREATED){
+		if (_headers["Content-Type"] == "Dir"){
+			_headers.erase("Content-Type");
+			if (resource[resource.size() - 1] != '/'){ // redirections
+				_headers["Location"] = _request->getUri() + "/";
+				throw Response::ResponseException(HTTP_MOVED_PERMANENTLY);
+			}
+			if (!_location->dirListingEnabled()) // if directory doesn't have index file
+				throw Response::ResponseException(HTTP_FORBIDDEN);
+		}
+		_headers.erase("Content-Type");
+		// if (_location->hasCgi() && _location->isCgi(_request->getUri().substr(_request->getUri().find_last_of('.') + 1)))
+		// 	RUN CGI;
+	}
 }
 
 void	Response::_processDeleteResponse(){

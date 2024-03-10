@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:07:10 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/10 17:16:00 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/10 21:38:51 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,6 @@ class Response {
 		e_statusCode						_status;
 		e_state								_state;
 		size_t								_bodyIndex;
-		// bool								_hasBody = true;
 
 		std::map<std::string, std::string>  _headers;
 		std::fstream						_file;
