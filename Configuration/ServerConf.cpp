@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConf.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: ZakariaElbouzkri <elbouzkri9@gmail.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 12:06:59 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/11 12:03:37 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/11 16:59:11 by ZakariaElbo      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,12 +105,12 @@ std::string		ServerConf::getErrPage( int code, const std::string& defaultPag )
 	std::string ans;
 	std::map<int, std::string>::iterator it = _errorPage->find(code);
 	if (it != _errorPage->end()) {
-		std::string path = ((this->_root == NULL) ? "" : *this->_root) + it->second;
+		std::string path = ((this->_root == NULL) ? "/" :normPath(*this->_root) + "/") + it->second;
 		std::ifstream	file(path.c_str(), std::ios::in | std::ios::binary);
 		if (file.is_open() && std::getline(file, ans, '\0'))
 			return ans;
 	}
-	return ans;
+	return defaultPag;
 }
 
 void	ServerConf::passDirectiveToRoutes( void )

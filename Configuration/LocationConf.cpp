@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   LocationConf.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: ZakariaElbouzkri <elbouzkri9@gmail.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 11:36:53 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/11 12:14:15 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/11 16:58:49 by ZakariaElbo      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,11 +110,12 @@ std::string		LocationConf::getErrPage( int code, const std::string& defaultPag )
 	std::string ans;
 	std::map<int, std::string>::iterator it = _errorPage->find(code);
 	if (it != _errorPage->end()) {
-		std::ifstream	file(it->second.c_str());
+		std::string path = ((this->_root == NULL) ? "/" :normPath(*this->_root) + "/") + it->second;
+		std::ifstream	file(path.c_str(), std::ios::in | std::ios::binary);
 		if (file.is_open() && std::getline(file, ans, '\0'))
 			return ans;
 	}
-	return ans;
+	return defaultPag;
 }
 
 bool	LocationConf::methodIsAllowed( const std::string& method) const

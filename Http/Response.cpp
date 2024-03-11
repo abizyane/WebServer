@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: ZakariaElbouzkri <elbouzkri9@gmail.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/11 16:01:18 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/11 16:35:00 by ZakariaElbo      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,7 @@ void	Response::_buildResponse(){
 		std::srand(time(0));
 		for (int i = 0; i < 20; i++)
 			_responsefileName += to_str(rand());
-		_file.open(_responsefileName,std::ios::out | std::ios::trunc | std::ios::binary | std::ios::in);
+		_file.open(_responsefileName.c_str(),std::ios::out | std::ios::trunc | std::ios::binary | std::ios::in);
 		std::string errPage;
 		if (_file.is_open()){
 			if (_location)
@@ -76,7 +76,7 @@ void	Response::_buildResponse(){
 			_headers["Content-Length"] = to_str(errPage.size());
 			_headers["Content-Type"] = "text/html";
 			_file.close();
-			_file.open(_responsefileName,std::ios::in | std::ios::out | std::ios::binary);
+			_file.open(_responsefileName.c_str(), std::ios::in | std::ios::out | std::ios::binary);
 		}
 		else{
 			_response.clear();
@@ -161,7 +161,7 @@ void	Response::_writeFile(std::string resource){
 		if (path != "" && stat(path.c_str(), &st) == -1)
 				mkdir(path.c_str(), 0777);
 		resource = path + "/" + file;
-		_file.open(_responsefileName,std::ios::out | std::ios::trunc | std::ios::binary | std::ios::in);
+		_file.open(_responsefileName.c_str(),std::ios::out | std::ios::trunc | std::ios::binary | std::ios::in);
 		if (_file.is_open()){
 			_file.write(_request->getBody().data(), _request->getBody().size());
 			_file.close();
@@ -182,7 +182,7 @@ void	Response::_writeFile(std::string resource){
 		_status = HTTP_CREATED;
 		return ;
 	}
-	_file.open(resource,std::ios::in | std::ios::out | std::ios::binary);
+	_file.open(resource.c_str(), std::ios::in | std::ios::out | std::ios::binary);
 	if (access(resource.c_str(), F_OK))
 		throw Response::ResponseException(HTTP_NOT_FOUND);
 	if (_file.fail() || !_file.is_open())
