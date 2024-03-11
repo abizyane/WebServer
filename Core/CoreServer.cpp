@@ -6,7 +6,7 @@
 /*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/08 02:35:06 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/10 00:19:09 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/03/11 03:00:17 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,7 +77,6 @@ void	CoreServer::init( void ) {
 			std::cout << strTime() << slog(" faild to setup server on [%s:%d]", HOST, *it) << std::endl;
 			sleep(1);
 		}
-
 	}
 }
 
@@ -106,6 +105,7 @@ void	CoreServer::_manageClients( Server* server )
 				continue;
 			} else {
 				client->readRequest(buff, ret);
+				continue ;
 			}
 		}
 		if (client->sendResponse()) {

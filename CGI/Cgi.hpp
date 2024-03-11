@@ -6,7 +6,7 @@
 /*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/08 20:37:01 by nakebli           #+#    #+#             */
-/*   Updated: 2024/03/10 05:37:48 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/03/11 09:18:11 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,19 +24,20 @@
 class Cgi
 {
     private:
-        std::string     _cgiRespo_fileName;
         std::string     _body_file;
         char**          _cgi_argv;
-        ProcessRequest  *_processor;
-        Selector        *_selector;
-
+        ProcessRequest* _processor;
+        Selector*       _selector;
+        pid_t           pid;
+        
         void    setArguments( void );
 
     public:
+        std::string     _cgiRespo_fileName;
         Cgi( ProcessRequest* processor, Selector *selector );
         ~Cgi( void );
 
         void    init();
-        void    execute();
-        
+        void    execute( int& fd );
+        // std::string    readFile( void );
 };

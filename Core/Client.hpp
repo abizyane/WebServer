@@ -19,6 +19,7 @@ class	Client
 		int				fd[2];
 		ProcessRequest	_processor;
 		ssize_t			_bytesSent;
+		Cgi				*_cgi;
 
 	public:
 		Client( Selector& _selector, int sock, sockaddr_in info );
@@ -43,9 +44,9 @@ class	Client
 
 		inline void	readRequest( char *buffer, int size ) {
 			_processor.parseLine(buffer, size);
-			// Cgi cgi(&_processor, NULL);
-			// cgi.init();
-			// cgi.execute();
+			_cgi = new Cgi(&_processor, NULL);
+			_cgi->init();
+			_cgi->execute( fd[0] );
 		}
 
 		friend std::ostream&	operator<<( std::ostream& os, const Client& rhs );
