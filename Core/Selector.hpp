@@ -25,7 +25,7 @@ class	Selector
 			FD_ZERO(&rfds);
 			FD_ZERO(&wfds);
 			timeout.tv_sec = time_sec;
-			timeout.tv_sec = 0;
+			timeout.tv_usec = 0;
 		}
 		~Selector( void ) {};
 

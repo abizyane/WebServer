@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CoreServer.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: ZakariaElbouzkri <elbouzkri9@gmail.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/08 02:35:06 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/09 17:08:45 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/11 16:45:27 by ZakariaElbo      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -137,7 +137,7 @@ void	CoreServer::run( void )
 		
 		for (size_t i = 0; i < _servers.size(); i++) {
 			Server* server = _servers[i];
-			if (_selector.isReadable(server->fileno()) &&  maxfds < 300) {
+			if (_selector.isReadable(server->fileno()) &&  maxfds < 1000) {
 				try {
 					_acceptNewClient(server);
 				} catch (std::exception & e) {
