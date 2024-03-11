@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   LocationConf.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 11:35:24 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/24 17:10:59 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/03/11 12:13:53 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,9 @@ class	LocationConf : public HTTP
 		bool	hasRedirect( void ) const;
 		bool	hasCgi( void ) const;
 		bool	hasUpload( void ) const;
+		bool	hasIndex( void ) const;
 
+		
 		bool				isCgi( const std::string& extention ); // .py
 		std::string			getRoot( void ) const;
 		std::string			getUploadStore( void ) const;
@@ -54,6 +56,7 @@ class	LocationConf : public HTTP
 		bool				dirListingEnabled( void ) const; // autoIndex
 		size_t				getClientBodySize( void ) const;
 		std::pair<int, std::string>	getRedirectPage( void ) const;
+		const std::vector<std::string>&	getIndex( void ) const;
 
 		// return 301 facebook.com/home
 
