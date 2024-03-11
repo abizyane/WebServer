@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   LocationConf.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ZakariaElbouzkri <elbouzkri9@gmail.com>    +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 11:36:53 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/08 10:26:06 by ZakariaElbo      ###   ########.fr       */
+/*   Updated: 2024/03/11 12:14:15 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -190,6 +190,19 @@ void	LocationConf::passDirectiveToRoutes( void )
 	}
 }
 
+bool	LocationConf::hasIndex( void ) const
+{
+	return _index != NULL;
+}
+
+std::pair<int, std::string>	LocationConf::getRedirectPage( void ) const 
+{
+	return *_redirect;
+}
+const std::vector<std::string>&	LocationConf::getIndex( void ) const
+{
+	return *_index;
+}
 
 LocationConf*	LocationConf::getUri( std::string uri ) const
 {

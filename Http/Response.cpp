@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/10 22:01:05 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/11 12:49:04 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,9 +20,9 @@ Response::Response(IRequest &request, ProcessRequest& parse, int port): _request
 	_status = _parse->getStatusCode();
 	Response::initMaps();
 	if (_request != NULL) {
-		ServerConf* server = MainConf::getConf()->getServerByHostPort(port, _request->getHeaders()["Host"]);
-		if (server != NULL)
-			_location = server->getUri(_request->getUri());
+		_server = MainConf::getConf()->getServerByHostPort(port, _request->getHeaders()["Host"]);
+		if (_server != NULL)
+			_location = _server->getUri(_request->getUri());
 	}
 	_prepareResponse();
 }
@@ -55,50 +55,43 @@ void	Response::_buildResponse(){
 	time_t tm = time(0);
 	strftime(dt, 30, "%a, %d %b %Y %H:%M:%S %Z", gmtime(&tm));
 	_headers["Date"] = std::string(dt);
-	// if (_status >= 400){
-	// 	if (_file.is_open())
-	// 		_file.close();
-	// 	for (std::map<std::string, std::string>::iterator it = _headers.begin(); it != _headers.end(); it++)
-	// 		_headers.erase(it);
-	// 	std::srand(time(0));
-	// 	std::string tmpName = ".ResponseBody";
-	// 	for (int i = 0; i < 20; i++)
-	// 		tmpName += to_str(rand());
-	// 	_file.open(tmpName,std::ios::out || std::ios::in | std::ios::binary);
-	// 	if (_file.is_open()){
-	// 		std::string errPage = _location->getErrPage(static_cast<int>(_status), "ErrorPage.html");
-	// 		_file.write(errPage.c_str(), errPage.size());
-	// 		_headers["Content-Length"] = to_str(errPage.size());
-	// 		_headers["Content-Type"] = "text/html";
-	// 	}
-	// 	else if (_file.fail())
-	// 		throw Response::ResponseException(HTTP_INTERNAL_SERVER_ERROR);
-	// }
+	if (_status >= 400){
+		if (_file.is_open())
+			_file.close();
+		for (std::map<std::string, std::string>::iterator it = _headers.begin(); it != _headers.end(); it++)
+			_headers.erase(it);
+		std::srand(time(0));
+		std::string tmpName = ".ResponseBody";
+		for (int i = 0; i < 20; i++)
+			tmpName += to_str(rand());
+		_file.open(tmpName,std::ios::out | std::ios::in | std::ios::binary);
+		std::string errPage;
+		if (_file.is_open()){
+			if (_location)
+				errPage = _location->getErrPage(static_cast<int>(_status), DefaultPages::getPage(_status));
+			else
+				errPage = _server->getErrPage(static_cast<int>(_status), DefaultPages::getPage(_status));
+			_file.write(errPage.c_str(), errPage.size());
+			_headers["Content-Length"] = to_str(errPage.size());
+			_headers["Content-Type"] = "text/html";
+		}
+		else if (_file.fail())
+			throw Response::ResponseException(HTTP_INTERNAL_SERVER_ERROR);
+	}
 	for (std::map<std::string, std::string>::iterator it = _headers.begin(); it != _headers.end(); it++)
 		_response += it->first + ": " + it->second + "\r\n";
 	_response += "\r\n";
-}
-
-
-void	Response::_deleteFile(std::string resource){
-	struct stat st;
-	if (stat(resource.c_str(), &st) == -1)
-		throw Response::ResponseException(HTTP_NOT_FOUND);
-
-	if (remove(resource.c_str()) != 0)
-		throw Response::ResponseException(HTTP_INTERNAL_SERVER_ERROR);
-	else if (!(st.st_mode & S_IRWXU))
-		throw Response::ResponseException(HTTP_FORBIDDEN);
-	_status = HTTP_NO_CONTENT;
 }
 
 void	Response::_readFile(std::string resource){
 	struct stat fileStat;
 	_file.open(resource.c_str(), std::ios::in | std::ios::binary | std::ios::out);
 	stat(resource.c_str(), &fileStat);
-	// if (!(fileStat.st_mode & S_IRWXU))
-	// 	throw Response::ResponseException(HTTP_FORBIDDEN);
-	if (_file.is_open()){
+	if (!access(resource.c_str(), F_OK))
+		throw Response::ResponseException(HTTP_NOT_FOUND);
+	if (fileStat.st_mode & S_IRUSR)
+		throw Response::ResponseException(HTTP_FORBIDDEN);
+	else if (_file.is_open()){
 		size_t size = static_cast<size_t>(fileStat.st_size);
 		_headers["Content-Length"] = to_str(size);
 		if (S_ISDIR(fileStat.st_mode))
@@ -107,47 +100,53 @@ void	Response::_readFile(std::string resource){
 			_headers["Content-Type"] = _mimeMap[_request->getUri().substr(_request->getUri().find_last_of('.') + 1)];
 		else
 			_headers["Content-Type"] = "octet-stream";
+		char dt[30];
+		strftime(dt, 30, "%a, %d %b %Y %H:%M:%S %Z", gmtime(&fileStat.st_mtime));
+		_headers["Last-Modified"] = std::string(dt);
 	}
-	else if (_file.fail())
-		throw Response::ResponseException(HTTP_INTERNAL_SERVER_ERROR);
 	else
-		throw Response::ResponseException(HTTP_NOT_FOUND);
-	char dt[30];
-	strftime(dt, 30, "%a, %d %b %Y %H:%M:%S %Z", gmtime(&fileStat.st_mtime));
-	_headers["Last-Modified"] = std::string(dt);
+		throw Response::ResponseException(HTTP_INTERNAL_SERVER_ERROR);
 }
 
 void	Response::_processGetResponse(){
 	if (!_location)
 		throw Response::ResponseException(HTTP_NOT_FOUND);
-	// else if (_location->hasRedirect()){
-		// _headers["Location"] = _location->getRedirectPage().second;
-		// throw Response::ResponseException(static_cast<e_statusCode>(_location->getRedirectPage().first));	
-	// }
+	else if (_location->hasRedirect()){
+		_headers["Location"] = _location->getRedirectPage().second;
+		throw Response::ResponseException(static_cast<e_statusCode>(_location->getRedirectPage().first));	
+	}
 	if (!_location->methodIsAllowed(_request->getMethod()))
 		throw Response::ResponseException(HTTP_METHOD_NOT_ALLOWED);
 	std::string resource = _location->getRoot() + _request->getUri();
 	_readFile(resource);
 	if (_headers["Content-Type"] == "Dir"){
-		if (resource[resource.size() - 1] != '/'){ // redirections
+		if (resource[resource.size() - 1] != '/'){
 			_headers["Location"] = _request->getUri() + "/";
 			throw Response::ResponseException(HTTP_MOVED_PERMANENTLY);
 		}
-		// if (directory has index file)
-			// goto HERE;
-		// resource = _location.getAutoIndex();
+		if (_location->hasIndex()){
+			std::vector<std::string>	indexes = _location->getIndex();
+			for (size_t i = 0; i < indexes.size(); i++){
+				std::string	file = _location->getRoot() + indexes[i];
+				if (!access(file.c_str(), F_OK)){
+					_readFile(_location->getRoot() + indexes[i]);
+					goto HERE;
+				}	
+			}
+		}
 		if (_location->dirListingEnabled())
 			throw Response::ResponseException(HTTP_FORBIDDEN);
+		// resource = _location.getAutoIndex();
 		_file.close();
 		for (std::map<std::string, std::string>::iterator it = _headers.begin(); it != _headers.end(); it++)
 			_headers.erase(it);
 		_readFile(resource);
-		return ;
+		return;
 	}
-	// HERE:
-	// if (_location->hasCgi() && _location->isCgi(_request->getUri().substr(_request->getUri().find_last_of('.') + 1)))
-		// RUN CGI;
+	HERE:
 	_handleRange();
+	// if (_location->hasCgi() && _location->isCgi(_request->getUri().substr(_request->getUri().find_last_of('.') + 1)))
+	// 	RUN CGI;
 }
 
 void	Response::_writeFile(std::string resource){
@@ -198,10 +197,10 @@ void	Response::_writeFile(std::string resource){
 void	Response::_processPostResponse(){
 	if (!_location)
 		throw Response::ResponseException(HTTP_NOT_FOUND);
-	// else if (_location->hasRedirect()){
-	// 	_headers["Location"] = _location->getRedirectPage().second;
-	// 	throw Response::ResponseException(static_cast<e_statusCode>(_location->getRedirectPage().first));	
-	// }
+	else if (_location->hasRedirect()){
+		_headers["Location"] = _location->getRedirectPage().second;
+		throw Response::ResponseException(static_cast<e_statusCode>(_location->getRedirectPage().first));	
+	}
 	if (!_location->methodIsAllowed(_request->getMethod()))
 		throw Response::ResponseException(HTTP_METHOD_NOT_ALLOWED);
 	std::string resource = _location->getRoot() + _request->getUri();
@@ -222,9 +221,32 @@ void	Response::_processPostResponse(){
 	}
 }
 
+void	Response::_deleteFile(std::string resource){
+	struct stat st;
+	if (stat(resource.c_str(), &st) == -1)
+		throw Response::ResponseException(HTTP_NOT_FOUND);
+
+	if (remove(resource.c_str()) != 0)
+		throw Response::ResponseException(HTTP_INTERNAL_SERVER_ERROR);
+	else if (!(st.st_mode & S_IRWXU))
+		throw Response::ResponseException(HTTP_FORBIDDEN);
+	_status = HTTP_NO_CONTENT;
+}
+
 void	Response::_processDeleteResponse(){
 	std::string resource = _location->getRoot() + _request->getUri();
 	_deleteFile(resource);
+
+
+
+
+
+
+
+
+
+
+	
 }
 
 void	Response::_handleRange(){
