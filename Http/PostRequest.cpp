@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:03:16 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/10 17:11:43 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/11 15:27:01 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,8 +134,7 @@ e_statusCode	PostRequest::parseBody(std::string &line){
 }
 
 PostRequest::~PostRequest( void ){
-	if (_body.is_open()){
+	if (_body.is_open())
 		_body.close();
-		std::remove(_fileName.c_str());
-	}
+	std::remove(_fileName.c_str());
 }

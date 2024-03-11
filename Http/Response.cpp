@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/11 12:49:04 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/11 16:01:18 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@ std::map<e_statusCode, std::string> Response::_statusMap;
 
 Response::Response(IRequest &request, ProcessRequest& parse, int port): _request(&request), _parse(&parse), _good(false), _state(RESPONSE){
 	_bodyIndex = 0;
+	_responsefileName = ".ResponseBody";
 	_status = _parse->getStatusCode();
 	Response::initMaps();
 	if (_request != NULL) {
@@ -47,6 +48,7 @@ e_statusCode    Response::ResponseException::getStatus( void ){
 }
 
 void	Response::_buildResponse(){
+	TRYAGAIN:
 	_response += "HTTP/1.1 ";
 	_response += _statusMap[_status] + "\r\n";
 
@@ -61,10 +63,9 @@ void	Response::_buildResponse(){
 		for (std::map<std::string, std::string>::iterator it = _headers.begin(); it != _headers.end(); it++)
 			_headers.erase(it);
 		std::srand(time(0));
-		std::string tmpName = ".ResponseBody";
 		for (int i = 0; i < 20; i++)
-			tmpName += to_str(rand());
-		_file.open(tmpName,std::ios::out | std::ios::in | std::ios::binary);
+			_responsefileName += to_str(rand());
+		_file.open(_responsefileName,std::ios::out | std::ios::trunc | std::ios::binary | std::ios::in);
 		std::string errPage;
 		if (_file.is_open()){
 			if (_location)
@@ -74,9 +75,14 @@ void	Response::_buildResponse(){
 			_file.write(errPage.c_str(), errPage.size());
 			_headers["Content-Length"] = to_str(errPage.size());
 			_headers["Content-Type"] = "text/html";
+			_file.close();
+			_file.open(_responsefileName,std::ios::in | std::ios::out | std::ios::binary);
 		}
-		else if (_file.fail())
-			throw Response::ResponseException(HTTP_INTERNAL_SERVER_ERROR);
+		else{
+			_response.clear();
+			_status = HTTP_INTERNAL_SERVER_ERROR;
+			goto TRYAGAIN;
+		}
 	}
 	for (std::map<std::string, std::string>::iterator it = _headers.begin(); it != _headers.end(); it++)
 		_response += it->first + ": " + it->second + "\r\n";
@@ -87,11 +93,11 @@ void	Response::_readFile(std::string resource){
 	struct stat fileStat;
 	_file.open(resource.c_str(), std::ios::in | std::ios::binary | std::ios::out);
 	stat(resource.c_str(), &fileStat);
-	if (!access(resource.c_str(), F_OK))
+	if (access(resource.c_str(), F_OK))
 		throw Response::ResponseException(HTTP_NOT_FOUND);
-	if (fileStat.st_mode & S_IRUSR)
+	if (!(fileStat.st_mode & S_IRUSR))
 		throw Response::ResponseException(HTTP_FORBIDDEN);
-	else if (_file.is_open()){
+	 if (_file.is_open()){
 		size_t size = static_cast<size_t>(fileStat.st_size);
 		_headers["Content-Length"] = to_str(size);
 		if (S_ISDIR(fileStat.st_mode))
@@ -109,14 +115,6 @@ void	Response::_readFile(std::string resource){
 }
 
 void	Response::_processGetResponse(){
-	if (!_location)
-		throw Response::ResponseException(HTTP_NOT_FOUND);
-	else if (_location->hasRedirect()){
-		_headers["Location"] = _location->getRedirectPage().second;
-		throw Response::ResponseException(static_cast<e_statusCode>(_location->getRedirectPage().first));	
-	}
-	if (!_location->methodIsAllowed(_request->getMethod()))
-		throw Response::ResponseException(HTTP_METHOD_NOT_ALLOWED);
 	std::string resource = _location->getRoot() + _request->getUri();
 	_readFile(resource);
 	if (_headers["Content-Type"] == "Dir"){
@@ -127,9 +125,9 @@ void	Response::_processGetResponse(){
 		if (_location->hasIndex()){
 			std::vector<std::string>	indexes = _location->getIndex();
 			for (size_t i = 0; i < indexes.size(); i++){
-				std::string	file = _location->getRoot() + indexes[i];
-				if (!access(file.c_str(), F_OK)){
-					_readFile(_location->getRoot() + indexes[i]);
+				resource = _location->getRoot() + indexes[i];
+				if (access(resource.c_str(), F_OK)){
+					_readFile(resource);
 					goto HERE;
 				}	
 			}
@@ -145,7 +143,7 @@ void	Response::_processGetResponse(){
 	}
 	HERE:
 	_handleRange();
-	// if (_location->hasCgi() && _location->isCgi(_request->getUri().substr(_request->getUri().find_last_of('.') + 1)))
+	// if (_location->hasCgi() && _location->isCgi(resource.substr(resource.find_last_of('.') + 1)))
 	// 	RUN CGI;
 }
 
@@ -163,7 +161,7 @@ void	Response::_writeFile(std::string resource){
 		if (path != "" && stat(path.c_str(), &st) == -1)
 				mkdir(path.c_str(), 0777);
 		resource = path + "/" + file;
-		_file.open(resource,std::ios::in | std::ios::out | std::ios::binary);
+		_file.open(_responsefileName,std::ios::out | std::ios::trunc | std::ios::binary | std::ios::in);
 		if (_file.is_open()){
 			_file.write(_request->getBody().data(), _request->getBody().size());
 			_file.close();
@@ -185,39 +183,43 @@ void	Response::_writeFile(std::string resource){
 		return ;
 	}
 	_file.open(resource,std::ios::in | std::ios::out | std::ios::binary);
-	if (_file.fail())
-		throw Response::ResponseException(HTTP_INTERNAL_SERVER_ERROR);
-	else if (!_file.is_open())
+	if (access(resource.c_str(), F_OK))
 		throw Response::ResponseException(HTTP_NOT_FOUND);
+	if (_file.fail() || !_file.is_open())
+		throw Response::ResponseException(HTTP_INTERNAL_SERVER_ERROR);
 	if (S_ISDIR(st.st_mode))
 		_headers["Content-Type"] = "Dir";
 }
 
 
 void	Response::_processPostResponse(){
-	if (!_location)
-		throw Response::ResponseException(HTTP_NOT_FOUND);
-	else if (_location->hasRedirect()){
-		_headers["Location"] = _location->getRedirectPage().second;
-		throw Response::ResponseException(static_cast<e_statusCode>(_location->getRedirectPage().first));	
-	}
-	if (!_location->methodIsAllowed(_request->getMethod()))
-		throw Response::ResponseException(HTTP_METHOD_NOT_ALLOWED);
-	std::string resource = _location->getRoot() + _request->getUri();
-	_writeFile(_location->getUploadStore() + _request->getUri());
+	std::string resource = _location->getRoot() + _location->getUploadStore() + _request->getUri();
+	_writeFile(resource);
 	if (_status != HTTP_CREATED){
 		if (_headers["Content-Type"] == "Dir"){
 			_headers.erase("Content-Type");
-			if (resource[resource.size() - 1] != '/'){ // redirections
+			if (resource[resource.size() - 1] != '/'){
 				_headers["Location"] = _request->getUri() + "/";
 				throw Response::ResponseException(HTTP_MOVED_PERMANENTLY);
 			}
-			if (!_location->dirListingEnabled()) // if directory doesn't have index file
+			if (!_location->hasIndex())
 				throw Response::ResponseException(HTTP_FORBIDDEN);
+			std::vector<std::string>	indexes = _location->getIndex();
+			for (size_t i = 0; i < indexes.size(); i++){
+				std::string	file = _location->getRoot() + indexes[i];
+				if (access(file.c_str(), F_OK)){
+					resource = _location->getRoot() + indexes[i];
+					break;
+				}
+			}
 		}
 		_headers.erase("Content-Type");
-		// if (_location->hasCgi() && _location->isCgi(_request->getUri().substr(_request->getUri().find_last_of('.') + 1)))
+		// if (_location->hasCgi() && _location->isCgi(resource.substr(resource.find_last_of('.') + 1)))
 		// 	RUN CGI;
+		// else if (!_location->hasCgi())
+		// 	throw Response::ResponseException(HTTP_FORBIDDEN);
+		// else
+		// 	throw Response::ResponseException(HTTP_INTERNAL_SERVER_ERROR);
 	}
 }
 
@@ -234,19 +236,7 @@ void	Response::_deleteFile(std::string resource){
 }
 
 void	Response::_processDeleteResponse(){
-	std::string resource = _location->getRoot() + _request->getUri();
-	_deleteFile(resource);
-
-
-
-
-
-
-
-
-
-
-	
+	_processGetResponse();
 }
 
 void	Response::_handleRange(){
@@ -295,8 +285,10 @@ std::string    Response::GetResponse(size_t lastSent){
 			}
 			if (_response.size() > 0 && _bodyIndex < index)
 				response = _response.substr(0, index - _bodyIndex);
-			else
+			else{
 				_state = DONE;
+				std::remove(_responsefileName.c_str());
+			}
 			break;
 		default:
 			break;
@@ -307,6 +299,14 @@ std::string    Response::GetResponse(size_t lastSent){
 void    Response::_prepareResponse(){
 	try{
 		if (_status == HTTP_OK){
+			if (!_location)
+				throw Response::ResponseException(HTTP_NOT_FOUND);
+			else if (_location->hasRedirect()){
+				_headers["Location"] = _location->getRedirectPage().second;
+				throw Response::ResponseException(static_cast<e_statusCode>(_location->getRedirectPage().first));	
+			}
+			// if (!_location->methodIsAllowed(_request->getMethod()))
+			// 	throw Response::ResponseException(HTTP_METHOD_NOT_ALLOWED);
 			std::string  methods[3] = {"GET", "POST", "DELETE"};
 			for (int i = 0; i < 3; i++)
 				if (_request->getMethod() == methods[i])

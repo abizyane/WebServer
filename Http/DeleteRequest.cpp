@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:04:42 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/10 17:11:30 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/11 15:26:53 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,9 +139,8 @@ e_statusCode	DeleteRequest::parseBody(std::string &line){ // TODO: i think that 
 }
 
 DeleteRequest::~DeleteRequest( void ){
-	if (_body.is_open()){
+	if (_body.is_open())
 		_body.close();
-		std::remove(_fileName.c_str());
-	}
+	std::remove(_fileName.c_str());
 }
 
