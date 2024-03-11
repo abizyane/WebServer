@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:07:10 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/11 12:48:56 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/11 15:28:44 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ class Response {
 
 		std::map<std::string, std::string>  _headers;
 		std::fstream						_file;
+		std::string							_responsefileName;
 		std::string							_response;
 		
 		void								_buildResponse( void );
