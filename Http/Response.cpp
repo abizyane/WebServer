@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ZakariaElbouzkri <elbouzkri9@gmail.com>    +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/11 16:35:00 by ZakariaElbo      ###   ########.fr       */
+/*   Updated: 2024/03/11 18:38:10 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,8 +75,7 @@ void	Response::_buildResponse(){
 			_file.write(errPage.c_str(), errPage.size());
 			_headers["Content-Length"] = to_str(errPage.size());
 			_headers["Content-Type"] = "text/html";
-			_file.close();
-			_file.open(_responsefileName.c_str(), std::ios::in | std::ios::out | std::ios::binary);
+			_file.seekg(0, std::ios::beg);
 		}
 		else{
 			_response.clear();
@@ -91,18 +90,20 @@ void	Response::_buildResponse(){
 
 void	Response::_readFile(std::string resource){
 	struct stat fileStat;
-	_file.open(resource.c_str(), std::ios::in | std::ios::binary | std::ios::out);
-	stat(resource.c_str(), &fileStat);
 	if (access(resource.c_str(), F_OK))
 		throw Response::ResponseException(HTTP_NOT_FOUND);
+	stat(resource.c_str(), &fileStat);
 	if (!(fileStat.st_mode & S_IRUSR))
 		throw Response::ResponseException(HTTP_FORBIDDEN);
+	if (S_ISDIR(fileStat.st_mode)){
+		_headers["Content-Type"] = "Dir";
+		return;
+	}
+	_file.open(resource.c_str(), std::ios::in | std::ios::binary | std::ios::out);
 	 if (_file.is_open()){
 		size_t size = static_cast<size_t>(fileStat.st_size);
 		_headers["Content-Length"] = to_str(size);
-		if (S_ISDIR(fileStat.st_mode))
-			_headers["Content-Type"] = "Dir";
-		else if (_request->getUri().find_last_of('.') != std::string::npos)
+		if (_request->getUri().find_last_of('.') != std::string::npos)
 			_headers["Content-Type"] = _mimeMap[_request->getUri().substr(_request->getUri().find_last_of('.') + 1)];
 		else
 			_headers["Content-Type"] = "octet-stream";
@@ -115,18 +116,21 @@ void	Response::_readFile(std::string resource){
 }
 
 void	Response::_processGetResponse(){
-	std::string resource = _location->getRoot() + _request->getUri();
-	_readFile(resource);
+	bool hasslash = _request->getUri().back() == '/';
+	std::string resource = _location->getRoot() + normPath(_request->getUri());
+	if (hasslash)
+		resource += "/";
+	_readFile(normPath(resource));
 	if (_headers["Content-Type"] == "Dir"){
-		if (resource[resource.size() - 1] != '/'){
+		if (resource.back() != '/'){
 			_headers["Location"] = _request->getUri() + "/";
 			throw Response::ResponseException(HTTP_MOVED_PERMANENTLY);
 		}
 		if (_location->hasIndex()){
 			std::vector<std::string>	indexes = _location->getIndex();
 			for (size_t i = 0; i < indexes.size(); i++){
-				resource = _location->getRoot() + indexes[i];
-				if (access(resource.c_str(), F_OK)){
+				resource = _location->getRoot() + "/" + normPath(indexes[i]);
+				if (!access(resource.c_str(), F_OK)){
 					_readFile(resource);
 					goto HERE;
 				}	
@@ -193,7 +197,10 @@ void	Response::_writeFile(std::string resource){
 
 
 void	Response::_processPostResponse(){
-	std::string resource = _location->getRoot() + _location->getUploadStore() + _request->getUri();
+	bool hasslash = _request->getUri().back() == '/';
+	std::string resource = _location->getRoot() + normPath(_location->getUploadStore()) + normPath(_request->getUri());
+	if (hasslash)
+		resource += "/";
 	_writeFile(resource);
 	if (_status != HTTP_CREATED){
 		if (_headers["Content-Type"] == "Dir"){
@@ -206,8 +213,8 @@ void	Response::_processPostResponse(){
 				throw Response::ResponseException(HTTP_FORBIDDEN);
 			std::vector<std::string>	indexes = _location->getIndex();
 			for (size_t i = 0; i < indexes.size(); i++){
-				std::string	file = _location->getRoot() + indexes[i];
-				if (access(file.c_str(), F_OK)){
+				std::string	file = _location->getRoot() + "/" + indexes[i];
+				if (!access(file.c_str(), F_OK)){
 					resource = _location->getRoot() + indexes[i];
 					break;
 				}
