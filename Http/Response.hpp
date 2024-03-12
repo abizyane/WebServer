@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: ZakariaElbouzkri <elbouzkri9@gmail.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:07:10 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/11 15:28:44 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/12 02:35:15 by ZakariaElbo      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,10 @@
 #include "../Configuration/LocationConf.hpp"
 #include "DefaultPages.hpp"
 #include <sys/stat.h>
+#include <dirent.h>
+#include <ctime>
+
+std::string	autoIndex( const std::string& dirName );
 
 typedef enum {
 	ERROR,
@@ -76,5 +80,4 @@ class Response {
 		std::string		GetResponse(size_t lastSent);
     
 		~Response();
-
 };

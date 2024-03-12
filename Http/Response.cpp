@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: ZakariaElbouzkri <elbouzkri9@gmail.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/11 18:38:10 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/12 02:34:33 by ZakariaElbo      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -343,3 +343,46 @@ Response::~Response(){
 		_file.close();
 }
 
+
+std::string	autoIndex( const std::string& dirName )
+{
+	std::string	htmlPage;
+
+	// add response body
+	htmlPage += "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">";
+	htmlPage += "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css\" integrity=\"sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\" />\n";
+	htmlPage += "<title>read" + dirName + "</title><style> .fa-file { color: #85c3ec; padding-right: 15px;}a {text-decoration: none; color: #094f7e;} ";
+	htmlPage += "i { color: #bea307; padding-right: 10px; } table { border-collapse: collapse; } th, td { padding: 10px 20px ; text-align: left; } ";
+	htmlPage += "th { background-color: #ffffff; }		\n";
+	htmlPage += "tr:nth-child(even) { background-color: #f8f7f7; } tr:hover { background-color: #ddd; }	td {cursor: pointer;} </style> </head> ";
+	DIR*		dir;
+	if ((dir = opendir(dirName.c_str())) != NULL) {
+	
+		htmlPage += "<body><h1>Index of [ " + dirName + " ]: </h1><hr><h2 style=\"padding: 10px;\"><i class=\"fa-solid fa-folder\"></i> parent dir: <a href=\"" + dirName + "/..\"> ..... </a> </h2><table><tr><th>Name</th><th>Last Modified</th><th>Size</th></tr>";
+		struct dirent*	ent;
+		while ((ent = readdir(dir)) != NULL) {
+			std::string	fileName = ent->d_name;
+			if (fileName == "." || fileName == "..")
+				continue;
+			std::string	filePath = dirName + "/" + fileName;
+			struct stat statbuff;
+			if (stat(filePath.c_str(), &statbuff) != -1) {
+				char buffer[30];
+				int ret = std::strftime(buffer, 30, "%Y-%m-%d %H:%M:%S", std::localtime(&statbuff.st_mtime));
+				std::string	lastModified = buffer;
+				std::string	fileSize = std::to_string(statbuff.st_size);
+				if (S_ISDIR(statbuff.st_mode)) {
+					htmlPage += "<tr><td><a href=\"" + fileName + " \"><i class=\"fa-solid fa-folder\"></i> " + fileName + "</a></td>";
+				} else {
+					htmlPage += "<tr><td><a href=\"" + fileName + " \"><i class=\"fa-solid fa-file\"></i> " + fileName + "</a></td>";
+				}
+				htmlPage += "<td>" + lastModified + "</td><td>" + fileSize + "</td></tr>";
+			}
+		}
+		closedir(dir);
+	} else {
+		htmlPage += "<h1>Error couldn't opreaden the directory : " + dirName  + "</h1>";
+	}
+	htmlPage += "</table></body></html>";
+	return htmlPage;
+}
