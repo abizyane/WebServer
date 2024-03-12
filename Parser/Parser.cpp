@@ -105,6 +105,7 @@ void	Parser::_parseErrorPage(HTTP& httpConf)
 
 void	Parser::_parseMethods(HTTP& httpConf)
 {
+	bool	isAllow = _currTok == Token::ALLOW;
 	_advance(_currTok);
 	std::deque<std::string>	methods;
 	while (_currTok == Token::WORD)
@@ -118,7 +119,11 @@ void	Parser::_parseMethods(HTTP& httpConf)
 		std::string	directive = (*it);
 		if (httpConf.hasDirective(directive))
 			_duplicateError(directive);
-		httpConf.addIndex(*it);
+		if (isAllow) {
+			httpConf.allowMethod(*it);
+		} else {
+			httpConf.denyMethod(*it);
+		}
 		httpConf.markDirective(directive);
 	}
 	_advance(Token::SEMICOLEN);
@@ -303,7 +308,7 @@ void	Parser::_parseCgi( LocationConf& location )
 		std::string	directive = "cgi:" + (*it);
 		if (location.hasDirective(directive))
 			_duplicateError(directive);
-		location.addIndex(*it);
+		location.addExtention(*it);
 		location.markDirective(directive);
 	}
 	_advance(Token::SEMICOLEN);
