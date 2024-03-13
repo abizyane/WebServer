@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ZakariaElbouzkri <elbouzkri9@gmail.com>    +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/12 02:34:33 by ZakariaElbo      ###   ########.fr       */
+/*   Updated: 2024/03/12 23:58:08 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,10 +116,7 @@ void	Response::_readFile(std::string resource){
 }
 
 void	Response::_processGetResponse(){
-	bool hasslash = _request->getUri().back() == '/';
-	std::string resource = _location->getRoot() + normPath(_request->getUri());
-	if (hasslash)
-		resource += "/";
+	std::string resource = normPath(_location->getRoot() + normPath(_request->getUri()));
 	_readFile(normPath(resource));
 	if (_headers["Content-Type"] == "Dir"){
 		if (resource.back() != '/'){
@@ -133,19 +130,22 @@ void	Response::_processGetResponse(){
 				if (!access(resource.c_str(), F_OK)){
 					_readFile(resource);
 					goto HERE;
-				}	
+				}
 			}
 		}
-		if (_location->dirListingEnabled())
+		if (!_location->dirListingEnabled())
 			throw Response::ResponseException(HTTP_FORBIDDEN);
-		// resource = _location.getAutoIndex();
+		resource = autoIndex(normPath(resource));
 		_file.close();
-		for (std::map<std::string, std::string>::iterator it = _headers.begin(); it != _headers.end(); it++)
-			_headers.erase(it);
+		std::map<std::string, std::string>::iterator it = _headers.begin();
+		while (it != _headers.end())
+			it = _headers.erase(it);
 		_readFile(resource);
 		return;
 	}
 	HERE:
+	if (_headers["Content-Type"] == "Dir")
+		_headers.erase("Content-Type");
 	_handleRange();
 	// if (_location->hasCgi() && _location->isCgi(resource.substr(resource.find_last_of('.') + 1)))
 	// 	RUN CGI;
@@ -308,12 +308,14 @@ void    Response::_prepareResponse(){
 		if (_status == HTTP_OK){
 			if (!_location)
 				throw Response::ResponseException(HTTP_NOT_FOUND);
+			// if (_request->getBody().size() > _location->getClientBodySize())
+			// 	throw Response::ResponseException(HTTP_REQUEST_ENTITY_TOO_LARGE);
 			else if (_location->hasRedirect()){
 				_headers["Location"] = _location->getRedirectPage().second;
 				throw Response::ResponseException(static_cast<e_statusCode>(_location->getRedirectPage().first));	
 			}
-			// if (!_location->methodIsAllowed(_request->getMethod()))
-			// 	throw Response::ResponseException(HTTP_METHOD_NOT_ALLOWED);
+			if (!_location->methodIsAllowed(_request->getMethod()))
+				throw Response::ResponseException(HTTP_METHOD_NOT_ALLOWED);
 			std::string  methods[3] = {"GET", "POST", "DELETE"};
 			for (int i = 0; i < 3; i++)
 				if (_request->getMethod() == methods[i])
@@ -344,7 +346,7 @@ Response::~Response(){
 }
 
 
-std::string	autoIndex( const std::string& dirName )
+std::string	Response::autoIndex( const std::string& dirName )
 {
 	std::string	htmlPage;
 
@@ -368,7 +370,7 @@ std::string	autoIndex( const std::string& dirName )
 			struct stat statbuff;
 			if (stat(filePath.c_str(), &statbuff) != -1) {
 				char buffer[30];
-				int ret = std::strftime(buffer, 30, "%Y-%m-%d %H:%M:%S", std::localtime(&statbuff.st_mtime));
+				strftime(buffer, 30, "%a, %d %b %Y %H:%M:%S %Z", gmtime(&statbuff.st_mtime));
 				std::string	lastModified = buffer;
 				std::string	fileSize = std::to_string(statbuff.st_size);
 				if (S_ISDIR(statbuff.st_mode)) {
@@ -384,5 +386,9 @@ std::string	autoIndex( const std::string& dirName )
 		htmlPage += "<h1>Error couldn't opreaden the directory : " + dirName  + "</h1>";
 	}
 	htmlPage += "</table></body></html>";
-	return htmlPage;
+	_responsefileName = dirName + "/.autoindex.html";
+	_file.open(_responsefileName, std::ios::out | std::ios::trunc | std::ios::binary | std::ios::in);
+	_file << htmlPage;
+	_file.close();
+	return _responsefileName;
 }

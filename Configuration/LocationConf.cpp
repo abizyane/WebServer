@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   LocationConf.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ZakariaElbouzkri <elbouzkri9@gmail.com>    +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 11:36:53 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/11 16:58:49 by ZakariaElbo      ###   ########.fr       */
+/*   Updated: 2024/03/13 00:04:28 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -172,8 +172,10 @@ void	LocationConf::passDirectiveToRoutes( void )
 		if (this->_allowed != NULL) {
 			std::set<std::string>::iterator it = _allowed->begin();
 			std::set<std::string>::iterator ite = _allowed->end();
-			for (; it != ite; it++)
-				first->second->allowMethod(*it);
+			for (; it != ite; it++) {
+				if (first->second->hasDirective(*it) == false)
+					first->second->allowMethod(*it);
+			}
 		}
 		if (this->_index != NULL) {
 			std::vector<std::string>::iterator it = _index->begin();
