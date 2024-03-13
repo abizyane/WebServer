@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   MainConf.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 12:19:15 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/08 02:57:42 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/03/13 00:05:41 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,8 +106,10 @@ void	MainConf::passDirectiveToServers( void ) {
 		if (this->_allowed != NULL) {
 			std::set<std::string>::iterator it = _allowed->begin();
 			std::set<std::string>::iterator ite = _allowed->end();
-			for (; it != ite; it++)
-				_servers[idx]->allowMethod(*it);
+			for (; it != ite; it++) {
+				if (_servers[idx]->hasDirective(*it) == false)
+					_servers[idx]->allowMethod(*it);
+			}
 		}
 		if (this->_index != NULL) {
 			std::vector<std::string>::iterator it = _index->begin();

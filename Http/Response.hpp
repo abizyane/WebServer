@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ZakariaElbouzkri <elbouzkri9@gmail.com>    +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:07:10 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/12 02:35:15 by ZakariaElbo      ###   ########.fr       */
+/*   Updated: 2024/03/12 23:48:02 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,7 @@ class Response {
 		void								_writeFile(std::string resource);
 		void								_deleteFile(std::string resource);
 		void								_handleRange( void );
+		std::string							autoIndex( const std::string& dirName );
 
 	public :
 		Response(IRequest& request, ProcessRequest& parse, int port);
