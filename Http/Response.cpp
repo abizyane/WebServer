@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/14 01:20:28 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/14 18:18:23 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,8 +25,10 @@ Response::Response(IRequest &request, ProcessRequest& parse, int port): _request
 		if (_server != NULL)
 			_location = _server->getUri(_request->getUri());
 	}
-	else
+	else{
 		_server = MainConf::getConf()->getServerByHostPort(port, "");
+		_location = NULL;
+	}
 	_prepareResponse();
 }
 
@@ -82,7 +84,7 @@ void	Response::_buildResponse(){
 		}
 		else{
 			_response.clear();
-			_status = HTTP_INTERNAL_SERVER_ERROR;
+			_status = HTTP_NOT_FOUND;
 			goto TRYAGAIN;
 		}
 	}
@@ -170,9 +172,9 @@ void	Response::_writeFile(std::string resource){
 		std::time_t currentTime = std::time(0);
 		char timestamp[100];
 		std::strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", std::localtime(&currentTime));
-		// if (_request->getHeaders().find("Content-Disposition") != _request->getHeaders().end())
-		// 	fileName = resource + "/" + _request->getHeaders()["Content-Disposition"].substr(_request->getHeaders()["Content-Disposition"].find("filename=") + 10);
-		// else
+		if (_request->getHeaders()["Content-Disposition"] != "")
+			fileName = resource + "/" + _request->getHeaders()["Content-Disposition"].substr(_request->getHeaders()["Content-Disposition"].find("filename=") + 10);
+		else
 			fileName += resource + "/" + timestamp + "." + _request->getHeaders()["Content-Type"].substr(_request->getHeaders()["Content-Type"].find("/") + 1);
 		_file.open(normPath(fileName).c_str(),std::ios::out | std::ios::trunc | std::ios::binary | std::ios::in);
 		if (_file.is_open()){
@@ -182,10 +184,12 @@ void	Response::_writeFile(std::string resource){
 		else
 			throw Response::ResponseException(HTTP_INTERNAL_SERVER_ERROR);
 		_headers["Content-Length"] = to_str(_request->getBody().size());
-		if (_request->getUri().find_last_of('.') != std::string::npos){
+		if (_request->getHeaders()["Content-Type"] != "")
+			_headers["Content-Type"] = _request->getHeaders()["Content-Type"];
+		else if (_request->getUri().find_last_of('.') != std::string::npos){
 			_headers["Content-Type"] = _mimeMap[_request->getUri().substr(_request->getUri().find_last_of('.') + 1)];
 			if (_headers["Content-Type"] == "")
-				_headers["Content-Type"] = "octet-stream";	
+				_headers["Content-Type"] = "octet-stream";
 		}
 		else
 			_headers["Content-Type"] = "octet-stream";
@@ -298,8 +302,6 @@ std::string    Response::GetResponse(size_t lastSent){
 		case RESPONSE:
 			response = _response.substr(0, _response.find("\r\n\r\n") + 4);
 			_state = BODY;
-			// if (!_hasBody)
-			// 	_state = DONE;
 			_bodyIndex -= response.size();
 			break;
 		case BODY:
