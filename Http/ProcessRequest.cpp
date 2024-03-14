@@ -161,6 +161,30 @@ void	ProcessRequest::_parseRequestLine(std::string &requestLine){
 	_state = Headers;
 }
 
+bool	ProcessRequest::sent( void ){
+	int	i = _response->sent();
+	switch (i){
+		case 0:
+			return false;
+		case 1:
+			return true;
+		default:
+			_resetProcessor();
+	}	
+	return false;
+}
+
+void	ProcessRequest::_resetProcessor( void ){
+	_state = RequestLine;
+	_status = HTTP_OK;
+	_requestBuffer.clear();
+	_good = false;
+	delete _request;
+	_request = NULL;
+	delete _response;
+	_response = NULL;
+}
+
 ProcessRequest::~ProcessRequest(){
 	delete _request;
 	delete _response;
