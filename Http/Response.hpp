@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:07:10 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/13 16:09:46 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/14 23:15:31 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,13 +58,15 @@ class Response {
 		void								_writeFile(std::string resource);
 		void								_deleteFile(std::string resource);
 		void								_handleRange( void );
-		std::string							autoIndex( const std::string& dirName );
+		std::string							_autoIndex( const std::string& dirName );
+		// void								_setHeaders( void );
+
 
 	public :
 		Response(IRequest& request, ProcessRequest& parse, int port);
         static void							initMaps( void );
 		bool			good( void );
-		bool			sent( void );
+		int				sent( void );
 
 		IRequest*		getRequest( void );
 

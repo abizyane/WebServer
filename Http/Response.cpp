@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/14 18:18:23 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/14 23:17:38 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,8 +36,12 @@ bool    Response::good(){
 	return _good;
 }
 
-bool    Response::sent(){
-	return _state == DONE;
+int    Response::sent(){
+	if (_state == DONE && _request->getHeaders()["Connection"] == "keep-alive")
+		return 2;
+	else if (_state == DONE)
+		return 1;
+	return 0;
 }
 
 Response::ResponseException::ResponseException(e_statusCode status): __status(status){
@@ -64,9 +68,7 @@ void	Response::_buildResponse(){
 	if (_status >= 400){
 		if (_file.is_open())
 			_file.close();
-		std::map<std::string, std::string>::iterator it = _headers.begin();
-		while (it != _headers.end())
-			it = _headers.erase(it);
+		_headers.clear();
 		std::srand(time(0));
 		for (int i = 0; i < 5; i++)
 			_responsefileName += to_str(rand() % 10);
@@ -146,11 +148,9 @@ void	Response::_processGetResponse(){
 			throw Response::ResponseException(HTTP_FORBIDDEN);
 		if (resource.back() == '/')
 			resource.pop_back();
-		resource = autoIndex(normPath(resource));
+		resource = _autoIndex(normPath(resource));
 		_file.close();
-		std::map<std::string, std::string>::iterator it = _headers.begin();
-		while (it != _headers.end())
-			it = _headers.erase(it);
+		_headers.clear();
 		_readFile(resource);
 		return;
 	}
@@ -175,7 +175,7 @@ void	Response::_writeFile(std::string resource){
 		if (_request->getHeaders()["Content-Disposition"] != "")
 			fileName = resource + "/" + _request->getHeaders()["Content-Disposition"].substr(_request->getHeaders()["Content-Disposition"].find("filename=") + 10);
 		else
-			fileName += resource + "/" + timestamp + "." + _request->getHeaders()["Content-Type"].substr(_request->getHeaders()["Content-Type"].find("/") + 1);
+			fileName = resource + "/" + timestamp + "." + _request->getHeaders()["Content-Type"].substr(_request->getHeaders()["Content-Type"].find("/") + 1);
 		_file.open(normPath(fileName).c_str(),std::ios::out | std::ios::trunc | std::ios::binary | std::ios::in);
 		if (_file.is_open()){
 			_file.write(_request->getBody().data(), _request->getBody().size());
@@ -188,8 +188,8 @@ void	Response::_writeFile(std::string resource){
 			_headers["Content-Type"] = _request->getHeaders()["Content-Type"];
 		else if (_request->getUri().find_last_of('.') != std::string::npos){
 			_headers["Content-Type"] = _mimeMap[_request->getUri().substr(_request->getUri().find_last_of('.') + 1)];
-			if (_headers["Content-Type"] == "")
-				_headers["Content-Type"] = "octet-stream";
+		if (_headers["Content-Type"] == "")
+			_headers["Content-Type"] = "octet-stream";
 		}
 		else
 			_headers["Content-Type"] = "octet-stream";
@@ -369,7 +369,7 @@ Response::~Response(){
 }
 
 
-std::string	Response::autoIndex( const std::string& dirName )
+std::string	Response::_autoIndex( const std::string& dirName )
 {
 	std::string	htmlPage;
 

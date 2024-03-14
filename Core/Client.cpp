@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/08 02:39:26 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/09 19:24:19 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/14 23:19:57 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ bool		Client::sendResponse( void ) {
 		_bytesSent = ::send(sock, response.c_str(), response.size(), 0);
 		if (_bytesSent == -1)
 			_bytesSent = 0;
-		return (_processor.getResponse()->sent());
+		return (_processor.sent());
 	}
 	return false;
 }
