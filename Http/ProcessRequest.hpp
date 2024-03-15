@@ -12,6 +12,8 @@
 
 #pragma once
 
+#include <sys/socket.h>
+#include <arpa/inet.h>
 #include <iostream>
 #include <vector>
 #include <map>
@@ -36,7 +38,7 @@ typedef enum {
 class ProcessRequest {
 	private:
 		std::string 	_requestBuffer;
-		int				_port;
+		sockaddr_in		_info;
 		e_parseState	_state;
 		e_statusCode	_status;
 		IRequest*		_request;
@@ -46,7 +48,7 @@ class ProcessRequest {
 		void			_parseRequestLine(std::string&	requestLine);
 
 	public:
-		ProcessRequest(int port);
+		ProcessRequest( sockaddr_in info );
 
 		void			parseLine(char *buffer, int size);
 		bool			good( void );
@@ -58,6 +60,7 @@ class ProcessRequest {
 
 		void			setParseState(e_parseState state);
 		void			setGood(bool good);
+		sockaddr_in		getInfo();
 
 		~ProcessRequest();
 };

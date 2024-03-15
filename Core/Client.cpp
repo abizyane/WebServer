@@ -6,14 +6,14 @@
 /*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/08 02:39:26 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/11 00:47:53 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/03/13 20:32:31 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Client.hpp"
 
 Client::Client( Selector& _selector, int sock, sockaddr_in info )
-: _selector(_selector), sock(sock), info(info), _processor(htons(info.sin_port)) {
+: _selector(_selector), sock(sock), info(info), _processor(info) {
 	_selector.set(sock, Selector::WR_SET | Selector::RD_SET);
 	fd[0] = fd[1] = -1;
 	_bytesSent = 0;
