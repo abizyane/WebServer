@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: ZakariaElbouzkri <elbouzkri9@gmail.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/14 23:17:38 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/15 06:48:59 by ZakariaElbo      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,8 +36,8 @@ bool    Response::good(){
 	return _good;
 }
 
-int    Response::sent(){
-	if (_state == DONE && _request->getHeaders()["Connection"] == "keep-alive")
+int    Response::sent() {
+	if (_request && _state == DONE && _request->getHeaders()["Connection"] == "keep-alive")
 		return 2;
 	else if (_state == DONE)
 		return 1;
