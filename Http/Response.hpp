@@ -6,7 +6,7 @@
 /*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:07:10 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/10 01:09:11 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/03/14 02:20:51 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ class Response {
 		e_statusCode						_status;
 		e_state								_state;
 		size_t								_bodyIndex;
-		
+
 		std::map<std::string, std::string>  _headers;
 		std::fstream						_file;
 		std::string							_response;

@@ -12,7 +12,7 @@
 
 #include "ProcessRequest.hpp"
 
-ProcessRequest::ProcessRequest(int port) :_port(port), _state(RequestLine), _status(HTTP_OK),
+ProcessRequest::ProcessRequest(sockaddr_in info) :_info(info), _state(RequestLine), _status(HTTP_OK),
 	_request(NULL), _response(NULL), _good(false){
 }
 
@@ -118,7 +118,7 @@ void	ProcessRequest::parseLine(char *buffer, int size){
 		_status = _request->parseBody(_requestBuffer);
 
 	if (_state == Error || _state == Done){
-		_response = new Response(*_request, *this, _port);
+		_response = new Response(*_request, *this, htons(_info.sin_port));
 		_good = true;
 	}
 }
@@ -164,4 +164,11 @@ void	ProcessRequest::_parseRequestLine(std::string &requestLine){
 ProcessRequest::~ProcessRequest(){
 	delete _request;
 	delete _response;
+}
+
+
+// ===== added .
+
+sockaddr_in		ProcessRequest::getInfo(){
+	return	_info;
 }
