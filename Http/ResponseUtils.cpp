@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/01 18:15:20 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/07 16:55:21 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/16 00:34:18 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,4 +105,25 @@ void	Response::initMaps(){
 
 		initialized = true;
 	}
+}
+
+std::string		getExtension(const std::string &fileName){
+	size_t		pos = fileName.find_last_of(".");
+	if (pos == std::string::npos)
+		return "";
+	return fileName.substr(pos + 1);
+}
+
+void	Response::_openFile(std::string &fileName, int param){
+	if (param == 0){
+		if (access(fileName.c_str(), F_OK) == -1)
+			throw ResponseException(HTTP_NOT_FOUND);
+		if (access(fileName.c_str(), R_OK) == -1)
+			throw ResponseException(HTTP_FORBIDDEN);
+		_file.open(fileName, std::ios::in | std::ios::binary | std::ios::out);	
+	}
+	else
+		_file.open(fileName,std::ios::in | std::ios::out | std::ios::binary | std::ios::trunc);
+	if (!_file.is_open())
+		throw ResponseException(HTTP_INTERNAL_SERVER_ERROR);
 }

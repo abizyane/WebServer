@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ZakariaElbouzkri <elbouzkri9@gmail.com>    +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/15 06:48:59 by ZakariaElbo      ###   ########.fr       */
+/*   Updated: 2024/03/16 00:47:09 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,15 +56,9 @@ e_statusCode    Response::ResponseException::getStatus( void ){
 }
 
 void	Response::_buildResponse(){
-	TRYAGAIN:
 	_response += "HTTP/1.1 ";
 	_response += _statusMap[_status] + "\r\n";
-
-	_headers["Server"] = "Nginx++/1.0.0 (Unix)";
-	char dt[30];
-	time_t tm = time(0);
-	strftime(dt, 30, "%a, %d %b %Y %H:%M:%S %Z", gmtime(&tm));
-	_headers["Date"] = std::string(dt);
+	
 	if (_status >= 400){
 		if (_file.is_open())
 			_file.close();
@@ -72,24 +66,22 @@ void	Response::_buildResponse(){
 		std::srand(time(0));
 		for (int i = 0; i < 5; i++)
 			_responsefileName += to_str(rand() % 10);
-		_file.open(_responsefileName.c_str(),std::ios::out | std::ios::trunc | std::ios::binary | std::ios::in);
+		_openFile(_responsefileName, 1);
 		std::string errPage;
-		if (_file.is_open()){
-			if (_location)
-				errPage = _location->getErrPage(static_cast<int>(_status), DefaultPages::getPage(_status));
-			else
-				errPage = _server->getErrPage(static_cast<int>(_status), DefaultPages::getPage(_status));		
-			_file.write(errPage.c_str(), errPage.size());
-			_headers["Content-Length"] = to_str(errPage.size());
-			_headers["Content-Type"] = "text/html";
-			_file.seekg(0, std::ios::beg);
-		}
-		else{
-			_response.clear();
-			_status = HTTP_NOT_FOUND;
-			goto TRYAGAIN;
-		}
+		if (_location)
+			errPage = _location->getErrPage(static_cast<int>(_status), DefaultPages::getPage(_status));
+		else
+			errPage = _server->getErrPage(static_cast<int>(_status), DefaultPages::getPage(_status));		
+		_file.write(errPage.c_str(), errPage.size());
+		_headers["Content-Length"] = to_str(errPage.size());
+		_headers["Content-Type"] = "text/html";
+		_file.seekg(0, std::ios::beg);
 	}
+	_headers["Server"] = "Nginx++/1.0.0 (Unix)";
+	char dt[30];
+	time_t tm = time(0);
+	strftime(dt, 30, "%a, %d %b %Y %H:%M:%S %Z", gmtime(&tm));
+	_headers["Date"] = std::string(dt);
 	for (std::map<std::string, std::string>::iterator it = _headers.begin(); it != _headers.end(); it++)
 		_response += it->first + ": " + it->second + "\r\n";
 	_response += "\r\n";
@@ -97,37 +89,29 @@ void	Response::_buildResponse(){
 
 void	Response::_readFile(std::string resource){
 	struct stat fileStat;
-
-	if (access(resource.c_str(), F_OK))
-		throw Response::ResponseException(HTTP_NOT_FOUND);
 	stat(resource.c_str(), &fileStat);
-	if (!(fileStat.st_mode & S_IRUSR))
-		throw Response::ResponseException(HTTP_FORBIDDEN);
 	if (S_ISDIR(fileStat.st_mode)){
 		_headers["Content-Type"] = "Dir";
 		return;
 	}
-	_file.open(resource.c_str(), std::ios::in | std::ios::binary | std::ios::out);
-	 if (_file.is_open()){
-		size_t size = static_cast<size_t>(fileStat.st_size);
-		_headers["Content-Length"] = to_str(size);
-		if (_request->getUri().find_last_of('.') != std::string::npos)
-			_headers["Content-Type"] = _mimeMap[_request->getUri().substr(_request->getUri().find_last_of('.') + 1)];
-		else
-			_headers["Content-Type"] = "octet-stream";
-		char dt[30];
-		strftime(dt, 30, "%a, %d %b %Y %H:%M:%S %Z", gmtime(&fileStat.st_mtime));
-		_headers["Last-Modified"] = std::string(dt);
-	}
+	_openFile(resource, 0);
+	size_t size = static_cast<size_t>(fileStat.st_size);
+	_headers["Content-Length"] = to_str(size);
+	std::string ext = getExtension(_request->getUri());
+	if (ext != "" && _mimeMap[ext] != "")
+		_headers["Content-Type"] = _mimeMap[ext];
 	else
-		throw Response::ResponseException(HTTP_INTERNAL_SERVER_ERROR);
+		_headers["Content-Type"] = "octet-stream";
+	char dt[30];
+	strftime(dt, 30, "%a, %d %b %Y %H:%M:%S %Z", gmtime(&fileStat.st_mtime));
+	_headers["Last-Modified"] = std::string(dt);
 }
 
 void	Response::_processGetResponse(){
 	if (!_location->methodIsAllowed(_request->getMethod()))
 		throw Response::ResponseException(HTTP_METHOD_NOT_ALLOWED);
 	std::string resource = normPath(_location->getRoot() + normPath(_request->getUri()));
-	_readFile(normPath(resource));
+	_readFile(resource);
 	if (_headers["Content-Type"] == "Dir"){
 		_headers.erase("Content-Type");
 		if (_request->getUri().back() != '/'){
@@ -149,7 +133,6 @@ void	Response::_processGetResponse(){
 		if (resource.back() == '/')
 			resource.pop_back();
 		resource = _autoIndex(normPath(resource));
-		_file.close();
 		_headers.clear();
 		_readFile(resource);
 		return;
@@ -204,6 +187,7 @@ void	Response::_writeFile(std::string resource){
 		throw Response::ResponseException(HTTP_NOT_FOUND);
 	if (_file.fail() || !_file.is_open())
 		throw Response::ResponseException(HTTP_INTERNAL_SERVER_ERROR);
+	
 	if (S_ISDIR(st.st_mode))
 		_headers["Content-Type"] = "Dir";
 }
@@ -332,9 +316,8 @@ void    Response::_prepareResponse(){
 		if (_status == HTTP_OK){
 			if (!_location)
 				throw Response::ResponseException(HTTP_NOT_FOUND);
-			// if (_request->getBody().size() > _location->getClientBodySize())
+			// if (_request->getBody().size() > _location->getClientBodySize() * 1024)
 			// 	throw Response::ResponseException(HTTP_REQUEST_ENTITY_TOO_LARGE);
-			// else if (_request->getUri().size() > _location.)
 			else if (_location->hasRedirect()){
 				_headers["Location"] = _location->getRedirectPage().second;
 				throw Response::ResponseException(static_cast<e_statusCode>(_location->getRedirectPage().first));	
@@ -359,8 +342,16 @@ void    Response::_prepareResponse(){
 	catch (Response::ResponseException &e){
 		_status = e.getStatus();
 	}
-	_buildResponse();
-	_good = true;
+	TRYAGAIN:
+	try {
+		_buildResponse();
+		_good = true;
+	}
+	catch (Response::ResponseException &e){
+		_status = e.getStatus();
+		_response.clear();
+		goto TRYAGAIN;
+	}
 }
 
 Response::~Response(){
@@ -368,12 +359,9 @@ Response::~Response(){
 		_file.close();
 }
 
-
-std::string	Response::_autoIndex( const std::string& dirName )
-{
+std::string	Response::_autoIndex( const std::string& dirName ){
 	std::string	htmlPage;
 
-	// add response body
 	htmlPage += "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">";
 	htmlPage += "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css\" integrity=\"sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\" />\n";
 	htmlPage += "<title>read" + dirName + "</title><style> .fa-file { color: #85c3ec; padding-right: 15px;}a {text-decoration: none; color: #094f7e;} ";
@@ -382,8 +370,9 @@ std::string	Response::_autoIndex( const std::string& dirName )
 	htmlPage += "tr:nth-child(even) { background-color: #f8f7f7; } tr:hover { background-color: #ddd; }	td {cursor: pointer;} </style> </head> ";
 	DIR*		dir;
 	if ((dir = opendir(dirName.c_str())) != NULL) {
-	
-		htmlPage += "<body><h1>Index of [ " + dirName + " ]: </h1><hr><h2 style=\"padding: 10px;\"><i class=\"fa-solid fa-folder\"></i> parent dir: <a href=\"" + dirName + "/..\"> ..... </a> </h2><table><tr><th>Name</th><th>Last Modified</th><th>Size</th></tr>";
+		htmlPage += "<body><h1>Index of [ " + dirName + " ]: </h1><hr><h2 style=\"padding: 10px;\"><a href=\"../\"><i class=\"fa-solid fa-backward\"></i> parent dir ... </a> </h2><table><tr><th>Name</th><th>Last Modified</th><th>Size</th></tr>";
+
+		// htmlPage += "<body><h1>Index of [ " + dirName + " ]: </h1><hr><h2 style=\"padding: 10px;\"><i class=\"fa-solid fa-folder\"></i> parent dir: <a href=\"" + dirName + "/..\"> ..... </a> </h2><table><tr><th>Name</th><th>Last Modified</th><th>Size</th></tr>";
 		struct dirent*	ent;
 		while ((ent = readdir(dir)) != NULL) {
 			std::string	fileName = ent->d_name;
@@ -395,7 +384,7 @@ std::string	Response::_autoIndex( const std::string& dirName )
 				char buffer[30];
 				strftime(buffer, 30, "%a, %d %b %Y %H:%M:%S %Z", gmtime(&statbuff.st_mtime));
 				std::string	lastModified = buffer;
-				std::string	fileSize = std::to_string(statbuff.st_size);
+				std::string	fileSize = to_str(statbuff.st_size);
 				if (S_ISDIR(statbuff.st_mode)) {
 					htmlPage += "<tr><td><a href=\"" + fileName + " \"><i class=\"fa-solid fa-folder\"></i> " + fileName + "</a></td>";
 				} else {
@@ -410,7 +399,7 @@ std::string	Response::_autoIndex( const std::string& dirName )
 	}
 	htmlPage += "</table></body></html>";
 	_responsefileName = dirName + "/.autoindex.html";
-	_file.open(_responsefileName, std::ios::out | std::ios::trunc | std::ios::binary | std::ios::in);
+	_file.open(_responsefileName.c_str(), std::ios::out | std::ios::trunc | std::ios::binary | std::ios::in);
 	_file << htmlPage;
 	_file.close();
 	return _responsefileName;
