@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:07:10 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/14 23:15:31 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/16 00:07:38 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@ class Response {
 		void								_deleteFile(std::string resource);
 		void								_handleRange( void );
 		std::string							_autoIndex( const std::string& dirName );
-		// void								_setHeaders( void );
+		void								_openFile(std::string &fileName, int param);
 
 
 	public :
@@ -84,3 +84,5 @@ class Response {
     
 		~Response();
 };
+
+std::string		getExtension(const std::string &fileName);
