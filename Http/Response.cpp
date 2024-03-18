@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/18 18:25:02 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/18 23:08:05 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -146,21 +146,23 @@ void	Response::_processGetResponse(){
 void	Response::_getFileName(std::string &resource) {
 	std::time_t currentTime = std::time(0);
     char timestamp[100];
-	std::strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", std::localtime(&currentTime));
-	std::string	contentType = getExtension(_request->getUri());
-	
-	if (contentType == "" || _mimeMap[contentType] == "" ){
-		contentType = _request->getHeaders()["Content-Type"];
-		if (contentType != "")
+	std::strftime(timestamp, sizeof(timestamp), "%Y-%m-%d%H:%M:%S", std::localtime(&currentTime));
+	std::string	extension = getExtension(_request->getUri());
+	if (extension == "" || _mimeMap[extension] == "" ){
+		extension = _request->getHeaders()["Content-Type"];
+		if (extension != "")
 			for (std::map<std::string, std::string>::iterator it = _mimeMap.begin(); it != _mimeMap.end(); it++)
-				if (it->second == contentType){
-					contentType = it->first;
+				if (it->second == extension){
+					extension = it->first;
 					break;
 				}
 	}
-	resource += "/" + std::string(timestamp);    
-	if (contentType != "")
-		resource += "." + contentType;
+	resource += "/" + std::string(timestamp);
+	if (extension != "")
+		resource += "." + extension;
+	resource = normPath(resource);
+	if (extension != "" && _mimeMap[extension] == "") // TODO: this is not working very well
+		throw Response::ResponseException(HTTP_UNSUPPORTED_MEDIA_TYPE);
 	return;
 }
 
@@ -222,16 +224,12 @@ void	Response::_processPostResponse(){
 	else {
 		for (int i = 0; i < 5; i++)
 			_responsefileName += to_str(rand() % 10);
-		_file.open(_responsefileName.c_str(),std::ios::out | std::ios::trunc | std::ios::binary | std::ios::in);
-		if (_file.is_open()){
-			_file.write("File uploaded successfully", 24);
-			_file.close();
-			_headers["Content-Length"] = "24";
-			_headers["Content-Type"] = "text/plain";
-			_file.open(_responsefileName.c_str(), std::ios::in | std::ios::out | std::ios::binary);
-		}
-		else
-			throw Response::ResponseException(HTTP_INTERNAL_SERVER_ERROR);
+		_openFile(_responsefileName, 1);
+		_file.write("File uploaded successfully", 24);
+		_file.close();
+		_headers["Content-Length"] = "24";
+		_headers["Content-Type"] = "text/plain";
+		_file.open(_responsefileName.c_str(), std::ios::in | std::ios::out | std::ios::binary);
 	}
 	// if (!_location->hasCgi())
 	// 	throw Response::ResponseException(HTTP_FORBIDDEN);
@@ -283,7 +281,7 @@ void	Response::_handleRange(){
 
 std::string    Response::GetResponse(size_t lastSent){
 	std::string		response;
-	size_t index;
+	ssize_t index;
 	switch (_state){
 		case RESPONSE:
 			response = _response.substr(0, _response.find("\r\n\r\n") + 4);
