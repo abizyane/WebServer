@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   PostRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:03:16 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/18 02:08:25 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/03/18 02:54:58 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,18 +98,18 @@ e_statusCode	PostRequest::checkHeaders(void){
 }
 
 e_statusCode	PostRequest::parseBody(std::string &line) {
-	std::stringstream ss(line);
-	std::string	str;
 	size_t	bytesToWrite = 0;
 	try{
 		if (!_isChunked){
-			str = ss.str();
-			for (; _bodyIndex +bytesToWrite < _contentLength &&bytesToWrite < str.size();bytesToWrite++);
-			_body.write(str.c_str(),bytesToWrite);
-			_bodyIndex +=bytesToWrite;
-			if(_bodyIndex == _contentLength){
+			bytesToWrite = std::min(_contentLength, line.size());
+			if (bytesToWrite + _bodyIndex > _contentLength)
+				bytesToWrite = _contentLength - _bodyIndex;
+			_body.write(line.c_str(), bytesToWrite);
+			_bodyIndex += bytesToWrite;
+			line.erase(0, bytesToWrite);
+			if (_bodyIndex == _contentLength){
 				_parse.setParseState(Done);
-				_body.close();	
+				_body.close();
 			}
 		}
 		else {
@@ -141,7 +141,6 @@ e_statusCode	PostRequest::parseBody(std::string &line) {
 				    _bodyIndex = 0;
 					_gotChunkLen = false;
 				}
-				// usleep(100);
 			}
 		}
 	}catch(const std::exception &){

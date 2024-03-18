@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:05:34 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/10 17:12:15 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/18 02:58:22 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,8 @@ class	DeleteRequest : public IRequest{
 		size_t								_bodyIndex;
 		bool								_isChunked;
 		size_t								_contentLength;
+		bool								_gotChunkLen;
+		size_t								_chunkLen;
 		ProcessRequest&						_parse;
 		std::fstream						_body;
 		std::string							_fileName;
