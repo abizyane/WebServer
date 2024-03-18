@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   PostRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:03:16 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/17 22:04:08 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/18 02:08:25 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,15 +97,16 @@ e_statusCode	PostRequest::checkHeaders(void){
 	return HTTP_OK;
 }
 
-e_statusCode	PostRequest::parseBody(std::string &line){
+e_statusCode	PostRequest::parseBody(std::string &line) {
 	std::stringstream ss(line);
 	std::string	str;
 	size_t	bytesToWrite = 0;
 	try{
 		if (!_isChunked){
-			bytesToWrite = std::min(_contentLength, line.size());
-			_body.write(line.c_str(), bytesToWrite);
-			_bodyIndex += bytesToWrite;
+			str = ss.str();
+			for (; _bodyIndex +bytesToWrite < _contentLength &&bytesToWrite < str.size();bytesToWrite++);
+			_body.write(str.c_str(),bytesToWrite);
+			_bodyIndex +=bytesToWrite;
 			if(_bodyIndex == _contentLength){
 				_parse.setParseState(Done);
 				_body.close();	
@@ -113,8 +114,6 @@ e_statusCode	PostRequest::parseBody(std::string &line){
 		}
 		else {
 			while (line.size() > 0 && _parse.getParseState() != Done){
-				std::cout << "line: " << line << std::endl;
-				// std::cout << "chunkLen: " << _chunkLen << " _bodyIndex: " << _bodyIndex << std::endl;
 				if (!_gotChunkLen) {
 					if (line.substr(0, 2) == "\r\n")
 				        line.erase(0, 2);
@@ -131,18 +130,16 @@ e_statusCode	PostRequest::parseBody(std::string &line){
 				    break;
 				}
 				bytesToWrite = std::min(_chunkLen, line.size());
-				std::cout << "_chunkLen: " << _chunkLen << " _bodyIndex: " << _bodyIndex << " line.size: " << line.size() << std::endl;
-				std::cout << "bytesToWrite: " << bytesToWrite << std::endl;
 				if (_bodyIndex + bytesToWrite > _chunkLen)
 					bytesToWrite = _chunkLen - _bodyIndex;
 				_body.write(line.c_str(), bytesToWrite);
 				_bodyIndex += bytesToWrite;
 				line.erase(0, bytesToWrite);
-				if (_bodyIndex == _chunkLen) {
+				if (_bodyIndex >= _chunkLen) {
 					if (line.substr(0, 2) == "\r\n")
 				        line.erase(0, 2);
 				    _bodyIndex = 0;
-					_chunkLen = false;
+					_gotChunkLen = false;
 				}
 				// usleep(100);
 			}
@@ -151,7 +148,6 @@ e_statusCode	PostRequest::parseBody(std::string &line){
 		_parse.setParseState(Error);
 		return HTTP_BAD_REQUEST;
 	}
-	line.clear();
 	return HTTP_OK;
 }
 

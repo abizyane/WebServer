@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   PostRequest.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:03:23 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/17 21:59:55 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/18 01:28:39 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,8 @@ class	PostRequest : public IRequest{
 		bool								_gotChunkLen;
 		size_t								_contentLength;
 		ProcessRequest&						_parse;
+
+		std::stringstream					_ss;
 
 	public:
 		PostRequest(std::string &method, std::string &uri, ProcessRequest& parse);

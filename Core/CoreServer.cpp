@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CoreServer.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/08 02:35:06 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/14 23:27:31 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/18 01:13:50 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,7 +100,9 @@ void	CoreServer::_manageClients( Server* server )
 			int ret = ::recv(client->fileno(), buff, 1024, 0);
 			if (ret == -1) {
 				std::cout << strTime() << " recv() failed to read from client " << *client << std::endl; 
-			} else if (ret == 0) {
+			}
+
+			if (ret == 0) {
 				_purgeClient(server, it);
 				continue;
 			} else {
