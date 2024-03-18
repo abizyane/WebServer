@@ -48,3 +48,4 @@ brew-nginx.sh
 *.js
 *.php
 *.conf
+.DS_Store
