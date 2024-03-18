@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:03:16 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/14 01:25:53 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/17 22:04:08 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,8 @@ PostRequest::PostRequest(std::string &method, std::string &uri, ProcessRequest& 
 	_contentLength = 0;
 	_bodyIndex = 0;
 	_isChunked = false;
+	_chunkLen = 0;
+	_gotChunkLen = false;
 	_fileName = ".requestbody";
 }
 
@@ -98,32 +100,52 @@ e_statusCode	PostRequest::checkHeaders(void){
 e_statusCode	PostRequest::parseBody(std::string &line){
 	std::stringstream ss(line);
 	std::string	str;
-	size_t	i = 0;
+	size_t	bytesToWrite = 0;
 	try{
 		if (!_isChunked){
-			str = ss.str();
-			for (; _bodyIndex + i < _contentLength && i < str.size(); i++);
-			_body.write(str.c_str(), i);
-			_bodyIndex += i;
+			bytesToWrite = std::min(_contentLength, line.size());
+			_body.write(line.c_str(), bytesToWrite);
+			_bodyIndex += bytesToWrite;
 			if(_bodyIndex == _contentLength){
 				_parse.setParseState(Done);
 				_body.close();	
 			}
 		}
-		else{
-			std::getline(ss, str, '\n');
-			size_t	chunkLen = strtoll(str.c_str(), NULL, 16);
-			str.clear();
-			str = ss.str();
-			for (; _bodyIndex + i < chunkLen && i < str.size(); i++);
-			_body.write(str.c_str(), i);
-			_bodyIndex += i;
-			if (chunkLen == 0){
-				_parse.setParseState(Done);
-				_body.close();
+		else {
+			while (line.size() > 0 && _parse.getParseState() != Done){
+				std::cout << "line: " << line << std::endl;
+				// std::cout << "chunkLen: " << _chunkLen << " _bodyIndex: " << _bodyIndex << std::endl;
+				if (!_gotChunkLen) {
+					if (line.substr(0, 2) == "\r\n")
+				        line.erase(0, 2);
+				    size_t endOfChunkSize = line.find("\r\n");
+					if (endOfChunkSize == std::string::npos)
+						return HTTP_BAD_REQUEST;
+				    _chunkLen = strtoll(line.substr(0, endOfChunkSize).c_str(), NULL, 16);
+				    line.erase(0, endOfChunkSize + 2);
+					_gotChunkLen = true;		
+				}
+				if (_chunkLen == 0) {
+				    _parse.setParseState(Done);
+				    _body.close();
+				    break;
+				}
+				bytesToWrite = std::min(_chunkLen, line.size());
+				std::cout << "_chunkLen: " << _chunkLen << " _bodyIndex: " << _bodyIndex << " line.size: " << line.size() << std::endl;
+				std::cout << "bytesToWrite: " << bytesToWrite << std::endl;
+				if (_bodyIndex + bytesToWrite > _chunkLen)
+					bytesToWrite = _chunkLen - _bodyIndex;
+				_body.write(line.c_str(), bytesToWrite);
+				_bodyIndex += bytesToWrite;
+				line.erase(0, bytesToWrite);
+				if (_bodyIndex == _chunkLen) {
+					if (line.substr(0, 2) == "\r\n")
+				        line.erase(0, 2);
+				    _bodyIndex = 0;
+					_chunkLen = false;
+				}
+				// usleep(100);
 			}
-			else if (_bodyIndex == chunkLen)
-				_bodyIndex = 0;
 		}
 	}catch(const std::exception &){
 		_parse.setParseState(Error);

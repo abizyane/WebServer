@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:03:23 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/10 17:11:59 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/17 21:59:55 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,8 @@ class	PostRequest : public IRequest{
 		std::string							_fileName;
 		size_t								_bodyIndex;
 		bool								_isChunked;
+		size_t								_chunkLen;
+		bool								_gotChunkLen;
 		size_t								_contentLength;
 		ProcessRequest&						_parse;
 
