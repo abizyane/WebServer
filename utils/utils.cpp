@@ -6,7 +6,7 @@
 /*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/13 09:51:28 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/18 21:41:29 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/03/18 22:04:23 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,10 +27,12 @@
 std::string normPath(const std::string& path) {
 	std::string result;
 	std::stack<std::string> s;
-	s.push("/");
 
+	s.push("/");
 	for (size_t i = 0; i < path.size(); ++i) {
 		if (path[i] == '/') {
+            if (s.top() == ".")
+                s.pop();
 			if ((!s.empty() && s.top() == "/") || i + 1 == path.size())
 				continue;
 			else
@@ -40,7 +42,9 @@ std::string normPath(const std::string& path) {
 				if (s.size() > 1) // Avoid popping the root "/"
 					s.pop();
 				i++;
-			}
+			} else {
+                s.push(".");
+            }
 		} else {
 			std::string dir;
 			while (i < path.size() && path[i] != '/') {

@@ -6,7 +6,7 @@
 /*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 15:40:10 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/08 03:58:03 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/03/18 22:05:03 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,6 @@ int main()
 	try {
 		Parser	parser;
 		parser.parse();
-		std::cout << MainConf::getConf()->getServersConf()[0]->getUri("/home")->getRoot() << std::endl;
 	} catch (std::exception & e) {
 		std::cout << strTime() << " " << e.what() << std::endl;
 	}
