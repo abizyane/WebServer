@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/18 02:46:44 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/18 18:25:02 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ std::map<e_statusCode, std::string> Response::_statusMap;
 
 Response::Response(IRequest &request, ProcessRequest& parse, int port): _request(&request), _parse(&parse), _good(false), _state(RESPONSE){
 	_bodyIndex = 0;
-	_responsefileName = ".ResponseBody";
+	_responsefileName = "/tmp/.ResponseBody";
 	_status = _parse->getStatusCode();
 	Response::initMaps();
 	if (_request != NULL) {
@@ -143,7 +143,26 @@ void	Response::_processGetResponse(){
 	// 	RUN CGI;
 }
 
-
+void	Response::_getFileName(std::string &resource) {
+	std::time_t currentTime = std::time(0);
+    char timestamp[100];
+	std::strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", std::localtime(&currentTime));
+	std::string	contentType = getExtension(_request->getUri());
+	
+	if (contentType == "" || _mimeMap[contentType] == "" ){
+		contentType = _request->getHeaders()["Content-Type"];
+		if (contentType != "")
+			for (std::map<std::string, std::string>::iterator it = _mimeMap.begin(); it != _mimeMap.end(); it++)
+				if (it->second == contentType){
+					contentType = it->first;
+					break;
+				}
+	}
+	resource += "/" + std::string(timestamp);    
+	if (contentType != "")
+		resource += "." + contentType;
+	return;
+}
 
 void	Response::_writeFile(std::string resource){
 	struct stat st;
@@ -151,39 +170,26 @@ void	Response::_writeFile(std::string resource){
 	if (_location->hasUpload()){
 		if (resource != "" && stat(resource.c_str(), &st) == -1)
 				mkdir(resource.c_str(), 0777);
-		
-		std::time_t currentTime = std::time(0);
-		char timestamp[100];
-		std::strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", std::localtime(&currentTime));
-		if (_request->getHeaders()["Content-Disposition"] != "")
-			fileName = resource + "/" + _request->getHeaders()["Content-Disposition"].substr(_request->getHeaders()["Content-Disposition"].find("filename=") + 10);
-		else
-			fileName = resource + "/" + timestamp + "." + _request->getHeaders()["Content-Type"].substr(_request->getHeaders()["Content-Type"].find("/") + 1);
-		_openFile(fileName, 1);
+		_getFileName(resource);
+		_openFile(resource, 1);
 		_file.write(_request->getBody().data(), _request->getBody().size());
 		_file.close();
+		
 		_headers["Content-Length"] = to_str(_request->getBody().size());
 		if (_request->getHeaders()["Content-Type"] != "")
 			_headers["Content-Type"] = _request->getHeaders()["Content-Type"];
-		else if (_request->getUri().find_last_of('.') != std::string::npos){
-			_headers["Content-Type"] = _mimeMap[_request->getUri().substr(_request->getUri().find_last_of('.') + 1)];
-		if (_headers["Content-Type"] == "")
-			_headers["Content-Type"] = "octet-stream";
-		}
 		else
-			_headers["Content-Type"] = "octet-stream";
+			_headers["Content-Type"] = _mimeMap[getExtension(resource)];
+		if (_headers["Content-Type"] == "")
+			_headers["Content-Type"] = "application/octet-stream";
 		char dt[30];
 		strftime(dt, 30, "%a, %d %b %Y %H:%M:%S %Z", gmtime(&st.st_mtime));
 		_headers["Last-Modified"] = std::string(dt);
 		_status = HTTP_CREATED;
 		return ;
 	}
-	_file.open(resource.c_str(), std::ios::in | std::ios::out | std::ios::binary);
-	if (access(resource.c_str(), F_OK))
-		throw Response::ResponseException(HTTP_NOT_FOUND);
-	if (_file.fail() || !_file.is_open())
-		throw Response::ResponseException(HTTP_INTERNAL_SERVER_ERROR);
-	
+	_openFile(resource, 0);
+	stat(resource.c_str(), &st);
 	if (S_ISDIR(st.st_mode))
 		_headers["Content-Type"] = "Dir";
 }

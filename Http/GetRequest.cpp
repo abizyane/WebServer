@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 21:58:16 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/18 02:58:46 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/18 18:24:48 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ GetRequest::GetRequest(std::string &method, std::string &uri, ProcessRequest& pa
 	_bodyIndex = 0;
 	_chunkLen = 0;
 	_gotChunkLen = false;
-	_fileName = ".requestbody";
+	_fileName = "/tmp/.requestbody";
 }
 
 std::string		GetRequest::getMethod( void ) const{

@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:07:10 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/16 00:07:38 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/18 17:43:09 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,6 +60,7 @@ class Response {
 		void								_handleRange( void );
 		std::string							_autoIndex( const std::string& dirName );
 		void								_openFile(std::string &fileName, int param);
+		void								_getFileName(std::string &resource);
 
 
 	public :
