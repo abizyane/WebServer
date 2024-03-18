@@ -6,32 +6,58 @@
 /*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/13 09:51:28 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/06 05:56:43 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/03/18 21:41:29 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 
 #include "utils.hpp"
+#include <stack>
 
+/*
+	""						=> "/"
+	"//"					=> "/"
+	"//home/../blog/"		=> "/blog"
+	"/home/"				=> "/home"
+	"./home"				=> "/home"
+	"../home/"				=> "/home"
+	"/home/../../../blog/"	=> "/blog"
+*/
 
-std::string    normPath( std::string path )
-{
-    std::string result;
-    bool previousSlash = false;
-    std::string::iterator   it = path.begin();
+std::string normPath(const std::string& path) {
+	std::string result;
+	std::stack<std::string> s;
+	s.push("/");
 
-    for (; it != path.end(); it++) {
-        if (*it == '/') {
-            if (!previousSlash) {
-                result += *it;
-            }
-            previousSlash = true;
-            continue ;
-        }
-        result += *it;
-        previousSlash = false;
-    }
-    return result;
+	for (size_t i = 0; i < path.size(); ++i) {
+		if (path[i] == '/') {
+			if ((!s.empty() && s.top() == "/") || i + 1 == path.size())
+				continue;
+			else
+				s.push("/");
+		} else if (path[i] == '.') {
+			if (i + 1 < path.size() && path[i + 1] == '.') {
+				if (s.size() > 1) // Avoid popping the root "/"
+					s.pop();
+				i++;
+			}
+		} else {
+			std::string dir;
+			while (i < path.size() && path[i] != '/') {
+				dir += path[i];
+				i++;
+			}
+			s.push(dir);
+			--i;
+		}
+	}
+
+	while (!s.empty()) {
+		result = s.top() + result;
+		s.pop();
+	}
+
+	return result;
 }
 
 unsigned long   getTime( void )
