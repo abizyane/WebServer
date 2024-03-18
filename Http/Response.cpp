@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/16 00:47:09 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/18 02:46:44 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -159,13 +159,9 @@ void	Response::_writeFile(std::string resource){
 			fileName = resource + "/" + _request->getHeaders()["Content-Disposition"].substr(_request->getHeaders()["Content-Disposition"].find("filename=") + 10);
 		else
 			fileName = resource + "/" + timestamp + "." + _request->getHeaders()["Content-Type"].substr(_request->getHeaders()["Content-Type"].find("/") + 1);
-		_file.open(normPath(fileName).c_str(),std::ios::out | std::ios::trunc | std::ios::binary | std::ios::in);
-		if (_file.is_open()){
-			_file.write(_request->getBody().data(), _request->getBody().size());
-			_file.close();
-		}
-		else
-			throw Response::ResponseException(HTTP_INTERNAL_SERVER_ERROR);
+		_openFile(fileName, 1);
+		_file.write(_request->getBody().data(), _request->getBody().size());
+		_file.close();
 		_headers["Content-Length"] = to_str(_request->getBody().size());
 		if (_request->getHeaders()["Content-Type"] != "")
 			_headers["Content-Type"] = _request->getHeaders()["Content-Type"];

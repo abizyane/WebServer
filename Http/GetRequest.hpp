@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 21:59:15 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/14 23:06:25 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/18 02:56:57 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,8 @@ class	GetRequest : public IRequest{
 		bool								_hasBody;
 		size_t								_bodyIndex;
 		bool								_isChunked;
+		size_t								_chunkLen;
+		bool								_gotChunkLen;
 		size_t								_contentLength;
 		ProcessRequest&						_parse;
 
