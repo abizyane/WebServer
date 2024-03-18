@@ -6,7 +6,7 @@
 /*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/13 09:53:10 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/06 06:23:42 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/03/18 21:45:14 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@
 
 
 
-std::string     normPath( std::string path );
+std::string		normPath(const std::string& path);
 unsigned long   getTime( void );
 std::string     slog(const char* format, ...);
 std::string     strTime( void );
