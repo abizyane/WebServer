@@ -51,6 +51,6 @@ webserv
 *.mp4
 *.js
 *.php
-*.conf
+*/*.conf
 .DS_Store
 .idea
