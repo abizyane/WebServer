@@ -32,6 +32,8 @@
 *.app
 Makefile
 main.cpp
+main
+webserv
 
 # local files
 .vscode
