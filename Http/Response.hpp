@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:07:10 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/18 17:43:09 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/18 22:52:15 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,8 +20,6 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include <ctime>
-
-std::string	autoIndex( const std::string& dirName );
 
 typedef enum {
 	ERROR,
@@ -41,7 +39,7 @@ class Response {
 		bool								_good;
 		e_statusCode						_status;
 		e_state								_state;
-		size_t								_bodyIndex;
+		ssize_t								_bodyIndex;
 		// bool								_hasBody;
 
 		std::map<std::string, std::string>  _headers;
