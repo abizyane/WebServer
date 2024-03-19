@@ -36,8 +36,10 @@ main
 webserv
 
 # local files
-.vscode
 brew-nginx.sh
+main
+webserv
+.vscode
 .DS_Store
 .vscode
 *.py
@@ -51,3 +53,4 @@ brew-nginx.sh
 *.php
 *.conf
 .DS_Store
+.idea
