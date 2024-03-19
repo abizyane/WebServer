@@ -6,7 +6,7 @@
 /*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/08 02:35:06 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/18 01:13:50 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/03/19 03:35:37 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,13 +113,10 @@ void	CoreServer::_manageClients( Server* server )
 			_purgeClient(server, it);
 			continue;
 		}
-		// _selector.setWrite(client->fileno());
-		// if (_selector.isWriteable(client->fileno())) {
-		// }
-		// if (currTime() - client->lastActive()  >= TIMEOUT) {
-		// 	_purgeClient(server, it);
-		// 	continue;
-		// }
+		if (currTime() - client->lastActive()  >= TIMEOUT) {
+			_purgeClient(server, it);
+			continue;
+		}
 		++it;
 	}
 }

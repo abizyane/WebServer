@@ -12,27 +12,24 @@ class	Selector
 		fd_set			writefds;
 		fd_set			rfds;
 		fd_set			wfds;
-		struct timeval	timeout;
 	public:
 
 		enum {
 			WR_SET = 1 << 0, RD_SET = 1 << 1
 		};
 
-		Selector( int time_sec = 1) {
+		Selector( void ) {
 			FD_ZERO(&readfds);
 			FD_ZERO(&writefds);
 			FD_ZERO(&rfds);
 			FD_ZERO(&wfds);
-			timeout.tv_sec = time_sec;
-			timeout.tv_usec = 0;
 		}
 		~Selector( void ) {};
 
 		inline bool select( int nfds ) {
 			rfds = readfds;
 			wfds = writefds;
-			int ret = ::select(nfds, &rfds, &wfds, NULL, &timeout);
+			int ret = ::select(nfds, &rfds, &wfds, NULL, NULL);
 			if (ret == -1)
 				perror("select");
 			return ret > 0;
