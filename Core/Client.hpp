@@ -2,13 +2,12 @@
 
 #include "Selector.hpp"
 #include "../Http/ProcessRequest.hpp"
-#include "../CGI/Cgi.hpp"
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <cstring>
 
-
+#define TIMEOUT 10
 
 class	Client
 {
@@ -19,7 +18,11 @@ class	Client
 		int				fd[2];
 		ProcessRequest	_processor;
 		ssize_t			_bytesSent;
-		Cgi				*_cgi;
+		time_t			_lastactive;
+	
+		inline	void	_updateLastActive( void ) {
+			_lastactive = currTime();
+		}
 
 	public:
 		Client( Selector& _selector, int sock, sockaddr_in info );
@@ -44,10 +47,13 @@ class	Client
 
 		inline void	readRequest( char *buffer, int size ) {
 			_processor.parseLine(buffer, size);
-			_cgi = new Cgi(&_processor, NULL);
-			_cgi->init();
-			_cgi->execute( fd[0] );
+			_updateLastActive();
 		}
 
+		inline time_t	lastActive( void ) {
+			return _lastactive;
+		}
+		
+		
 		friend std::ostream&	operator<<( std::ostream& os, const Client& rhs );
 };

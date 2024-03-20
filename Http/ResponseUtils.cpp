@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/01 18:15:20 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/07 16:55:21 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/18 23:03:27 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,7 +102,43 @@ void	Response::initMaps(){
 		_mimeMap["json"] = "application/json";
 		_mimeMap["xml"] = "application/xml";
 		_mimeMap[""] = "application/octet-stream";
+		_mimeMap["cpp"] = "text/x-c";
+		_mimeMap["hpp"] = "text/x-c";
+		_mimeMap["java"] = "text/x-java-source";
+		_mimeMap["py"] = "text/x-python";
+		_mimeMap["sh"] = "text/x-shellscript";
+		_mimeMap["pl"] = "text/x-perl";
+		_mimeMap["rb"] = "text/x-ruby";
+		_mimeMap["cs"] = "text/x-csharp";
+		_mimeMap["go"] = "text/x-go";
+		_mimeMap["rs"] = "text/x-rust";
+		_mimeMap["swift"] = "text/x-swift";
+		_mimeMap["kt"] = "text/x-kotlin";
+		_mimeMap["ts"] = "text/x-typescript";
+		_mimeMap["php"] = "text/x-php";
+		_mimeMap["lua"] = "text/x-lua";
 
 		initialized = true;
 	}
+}
+
+std::string		getExtension(const std::string &fileName){
+	size_t		pos = fileName.find_last_of(".");
+	if (pos == std::string::npos || pos == 0)
+		return "";
+	return fileName.substr(pos + 1);
+}
+
+void	Response::_openFile(std::string &fileName, int param){
+	if (param == 0){
+		if (access(fileName.c_str(), F_OK) == -1)
+			throw ResponseException(HTTP_NOT_FOUND);
+		if (access(fileName.c_str(), R_OK) == -1)
+			throw ResponseException(HTTP_FORBIDDEN);
+		_file.open(fileName, std::ios::in | std::ios::binary | std::ios::out);	
+	}
+	else
+		_file.open(fileName,std::ios::in | std::ios::out | std::ios::binary | std::ios::trunc);
+	if (!_file.is_open())
+		throw ResponseException(HTTP_INTERNAL_SERVER_ERROR);
 }

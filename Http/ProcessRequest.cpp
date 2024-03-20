@@ -12,8 +12,9 @@
 
 #include "ProcessRequest.hpp"
 
-ProcessRequest::ProcessRequest(sockaddr_in info) :_info(info), _state(RequestLine), _status(HTTP_OK),
-	_request(NULL), _response(NULL), _good(false){
+ProcessRequest::ProcessRequest(sockaddr_in info, Selector& _selector) : \
+_info(info), _state(RequestLine), _status(HTTP_OK),
+	_request(NULL), _response(NULL), _good(false), _selector(_selector) {
 }
 
 IRequest*	ProcessRequest::getRequest( void ){
@@ -118,7 +119,7 @@ void	ProcessRequest::parseLine(char *buffer, int size){
 		_status = _request->parseBody(_requestBuffer);
 
 	if (_state == Error || _state == Done){
-		_response = new Response(*_request, *this, htons(_info.sin_port));
+		_response = new Response(*_request, *this, htons(_info.sin_port), _selector);
 		_good = true;
 	}
 }
@@ -161,14 +162,35 @@ void	ProcessRequest::_parseRequestLine(std::string &requestLine){
 	_state = Headers;
 }
 
-ProcessRequest::~ProcessRequest(){
-	delete _request;
-	delete _response;
+bool	ProcessRequest::sent( void ){
+	int	i = _response->sent();
+	switch (i){
+		case 0:
+			return false;
+		case 1:
+			return true;
+		default:
+			_resetProcessor();
+	}	
+	return false;
 }
 
-
-// ===== added .
+void	ProcessRequest::_resetProcessor( void ){
+	_state = RequestLine;
+	_status = HTTP_OK;
+	_requestBuffer.clear();
+	_good = false;
+	delete _request;
+	_request = NULL;
+	delete _response;
+	_response = NULL;
+}
 
 sockaddr_in		ProcessRequest::getInfo(){
 	return	_info;
+}
+
+ProcessRequest::~ProcessRequest(){
+	delete _request;
+	delete _response;
 }
