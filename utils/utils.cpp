@@ -3,33 +3,65 @@
 /*                                                        :::      ::::::::   */
 /*   utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/13 09:51:28 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/10 00:20:44 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/03/18 22:04:23 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+
 #include "utils.hpp"
+#include <stack>
 
-std::string    normPath( std::string path )
-{
-    std::string result;
-    bool previousSlash = false;
-    std::string::iterator   it = path.begin();
+/*
+	""						=> "/"
+	"//"					=> "/"
+	"//home/../blog/"		=> "/blog"
+	"/home/"				=> "/home"
+	"./home"				=> "/home"
+	"../home/"				=> "/home"
+	"/home/../../../blog/"	=> "/blog"
+*/
 
-    for (; it != path.end(); it++) {
-        if (*it == '/') {
-            if (!previousSlash) {
-                result += *it;
+std::string normPath(const std::string& path) {
+	std::string result;
+	std::stack<std::string> s;
+
+	s.push("/");
+	for (size_t i = 0; i < path.size(); ++i) {
+		if (path[i] == '/') {
+            if (s.top() == ".")
+                s.pop();
+			if ((!s.empty() && s.top() == "/") || i + 1 == path.size())
+				continue;
+			else
+				s.push("/");
+		} else if (path[i] == '.') {
+			if (i + 1 < path.size() && path[i + 1] == '.') {
+				if (s.size() > 1) // Avoid popping the root "/"
+					s.pop();
+				i++;
+			} else {
+                s.push(".");
             }
-            previousSlash = true;
-            continue ;
-        }
-        result += *it;
-        previousSlash = false;
-    }
-    return result;
+		} else {
+			std::string dir;
+			while (i < path.size() && path[i] != '/') {
+				dir += path[i];
+				i++;
+			}
+			s.push(dir);
+			--i;
+		}
+	}
+
+	while (!s.empty()) {
+		result = s.top() + result;
+		s.pop();
+	}
+
+	return result;
 }
 
 unsigned long   getTime( void )
@@ -60,6 +92,7 @@ std::string slog(const char* format, ...)
     return va_end(args), result;
 }
 
+
 std::string	strTime()
 {
     std::time_t currentTime;
@@ -71,6 +104,7 @@ std::string	strTime()
     std::strftime(buffer, sizeof(buffer), "[%Y-%m-%d-%H:%M:%S]", localTime);
     return std::string(buffer);
 }
+
 
 time_t  currTime( void ) 
 {

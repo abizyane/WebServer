@@ -6,7 +6,7 @@
 /*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:07:10 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/14 02:20:51 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/03/20 08:14:57 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,15 @@
 #include "../Configuration/MainConf.hpp"
 #include "../Configuration/LocationConf.hpp"
 #include "DefaultPages.hpp"
+#include <arpa/inet.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <sys/stat.h>
+#include <dirent.h>
+#include <fcntl.h>
+#include <ctime>
+
+ #include <unistd.h>
 
 typedef enum {
 	ERROR,
@@ -33,28 +41,46 @@ class Response {
         IRequest*							_request;
 		ProcessRequest*						_parse;
 		LocationConf*						_location;
+		ServerConf*							_server;
 		bool								_good;
 		e_statusCode						_status;
 		e_state								_state;
-		size_t								_bodyIndex;
+		ssize_t								_bodyIndex;
+		bool								_waitForCgi;
 
 		std::map<std::string, std::string>  _headers;
 		std::fstream						_file;
+		std::string							_responsefileName;
 		std::string							_response;
-		
+		Selector&							_selector;
+
+		// added ... CGI
+		std::string     					_query_string;
+		char**          					_cgi_argv;
+		pid_t           					_cgi_pid;
+		std::string							_file_path;
+
 		void								_buildResponse( void );
 		void								_processGetResponse( void );
 		void								_processPostResponse( void );
 		void								_processDeleteResponse( void );
 		void								_prepareResponse( void );
-		void								_readFile( void );
+		void								_readFile(std::string resourse);
+		void								_writeFile(std::string resource);
+		void								_deleteFile(std::string resource);
 		void								_handleRange( void );
+		std::string							_autoIndex( const std::string& dirName );
+		void								_openFile(std::string &fileName, int param);
+		void								_getFileName(std::string &resource);
+
 
 	public :
-		Response(IRequest& request, ProcessRequest& parse, int port);
+		Response(IRequest& request, ProcessRequest& parse, int port, Selector& _selector);
         static void							initMaps( void );
 		bool			good( void );
-		bool			sent( void );
+		int				sent( void );
+
+		IRequest*		getRequest( void );
 
 		class ResponseException : public std::exception {
 			private:
@@ -68,18 +94,13 @@ class Response {
 
 		std::string		GetResponse(size_t lastSent);
     
-		inline LocationConf* getLocation( void ) {
-			return _location;
-		};
-
+	// added ... CGI
+		void            initCGI();
+		int				executeCGI( int& fd );
+		void			setCGI_Arguments( void );
+        int             getCGI_Response( void );
+	
 		~Response();
-
 };
 
-		// std::string& 						GetResponse(void);
-		// size_t		 						GetLength(void);
-		// std::string& 						GetBody(void);
-		// std::string& 						GetContentType(void);
-		// e_statusCode 						GetStatusCode(void);
-		// std::map<std::string, std::string>& GetHeaders(void);
-		// std::string& 						GetHeader(const std::string& key);
+std::string		getExtension(const std::string &fileName);

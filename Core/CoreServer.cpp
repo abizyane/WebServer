@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CoreServer.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/08 02:35:06 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/11 03:00:17 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/03/19 03:35:37 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ int	CoreServer::_nfds( void ) {
 			ans = std::max(ans, _servers[i]->_clients[j]->fileno());
 			ans = std::max(ans, _servers[i]->_clients[j]->writefd());
 			ans = std::max(ans, _servers[i]->_clients[j]->readfd());
-		}
+		}   
 	}
 	return ans;
 }
@@ -51,7 +51,6 @@ void	CoreServer::_acceptNewClient( Server* server ) {
 	socklen_t	len = 0;
 	memset(&info, 0, sizeof(sockaddr_in));
 	int ans = accept(server->fileno(), (sockaddr*)&info, &len);
-	getpeername(ans, (sockaddr*)&info, &len);
 	info.sin_port = server->getInfo().sin_port;
 	if (ans == -1)
 		throw std::runtime_error("accept() faild");
@@ -77,6 +76,7 @@ void	CoreServer::init( void ) {
 			std::cout << strTime() << slog(" faild to setup server on [%s:%d]", HOST, *it) << std::endl;
 			sleep(1);
 		}
+
 	}
 }
 
@@ -100,26 +100,23 @@ void	CoreServer::_manageClients( Server* server )
 			int ret = ::recv(client->fileno(), buff, 1024, 0);
 			if (ret == -1) {
 				std::cout << strTime() << " recv() failed to read from client " << *client << std::endl; 
-			} else if (ret == 0) {
+			}
+
+			if (ret == 0) {
 				_purgeClient(server, it);
 				continue;
 			} else {
 				client->readRequest(buff, ret);
-				continue ;
 			}
 		}
 		if (client->sendResponse()) {
 			_purgeClient(server, it);
 			continue;
 		}
-		// _selector.setWrite(client->fileno());
-		// if (_selector.isWriteable(client->fileno())) {
-		// }
-		// if (currTime() - client->lastActive()  >= 550) {
-		// 	std::cout << strTime() << " client at " << *client << " timeout" << std::endl;
-		// 	_purgeClient(server, it);
-		// 	continue;
-		// }
+		if (currTime() - client->lastActive()  >= TIMEOUT) {
+			_purgeClient(server, it);
+			continue;
+		}
 		++it;
 	}
 }
@@ -139,7 +136,7 @@ void	CoreServer::run( void )
 		
 		for (size_t i = 0; i < _servers.size(); i++) {
 			Server* server = _servers[i];
-			if (_selector.isReadable(server->fileno()) &&  maxfds < 300) {
+			if (_selector.isReadable(server->fileno()) &&  maxfds < 1000) {
 				try {
 					_acceptNewClient(server);
 				} catch (std::exception & e) {

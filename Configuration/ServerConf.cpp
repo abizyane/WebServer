@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConf.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 12:06:59 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/08 02:58:16 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/03/13 00:05:09 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,6 +98,21 @@ void	ServerConf::getPorts( std::set<unsigned int>& ports )
 // 	return ( _locations->find(path) != _locations->end() );
 // }
 
+std::string		ServerConf::getErrPage( int code, const std::string& defaultPag )
+{
+	if (_errorPage == NULL)
+		return (defaultPag);
+	std::string ans;
+	std::map<int, std::string>::iterator it = _errorPage->find(code);
+	if (it != _errorPage->end()) {
+		std::string path = ((this->_root == NULL) ? "/" :normPath(*this->_root) + "/") + it->second;
+		std::ifstream	file(path.c_str(), std::ios::in | std::ios::binary);
+		if (file.is_open() && std::getline(file, ans, '\0'))
+			return ans;
+	}
+	return defaultPag;
+}
+
 void	ServerConf::passDirectiveToRoutes( void )
 {
 	if (_locations == NULL)
@@ -134,8 +149,10 @@ void	ServerConf::passDirectiveToRoutes( void )
 		if (this->_allowed != NULL) {
 			std::set<std::string>::iterator it = _allowed->begin();
 			std::set<std::string>::iterator ite = _allowed->end();
-			for (; it != ite; it++)
-				first->second->allowMethod(*it);
+			for (; it != ite; it++) {
+				if (first->second->hasDirective(*it) == false)
+					first->second->allowMethod(*it);
+			}
 		}
 		if (this->_index != NULL) {
 			std::vector<std::string>::iterator it = _index->begin();

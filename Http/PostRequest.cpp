@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   PostRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:03:16 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/09 13:31:29 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/20 07:57:04 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,9 @@ PostRequest::PostRequest(std::string &method, std::string &uri, ProcessRequest& 
 	_contentLength = 0;
 	_bodyIndex = 0;
 	_isChunked = false;
-	_fileName = ".requestbody";
+	_chunkLen = 0;
+	_gotChunkLen = false;
+	_fileName = "/tmp/.requestbody";	
 }
 
 std::string		PostRequest::getMethod( void ) const{
@@ -32,10 +34,15 @@ std::map<std::string, std::string>	PostRequest::getHeaders( void ) const{
 	return _headers;
 }
 
-std::string		PostRequest::getBody( void ){
-	std::string line;
-	_body >> line;
-	return line;
+std::vector<char>	PostRequest::getBody( void ) {
+	struct stat	s;
+	stat(_fileName.c_str(), &s);
+
+	std::vector<char> buffer(s.st_size);
+	_body.open(_fileName.c_str(), std::ios::in);
+	_body.read(buffer.data(), s.st_size);
+	_body.close();
+	return buffer;
 }
 
 ProcessRequest&	PostRequest::getParse( void ) const{
@@ -63,6 +70,8 @@ e_statusCode	PostRequest::parseHeader(std::string &line){
 	return HTTP_OK;
 }
 
+
+
 e_statusCode	PostRequest::checkHeaders(void){
 	if (_headers.find("Host") == _headers.end())//|| _headers.find("Content-Type") == _headers.end())
 		return (HTTP_BAD_REQUEST);
@@ -79,8 +88,8 @@ e_statusCode	PostRequest::checkHeaders(void){
 		_contentLength = strtoll(_headers["Content-Length"].c_str(), NULL, 10);
 	}
 	std::srand(std::time(0));
-	for (size_t i = 0; i < 20; i++)
-		_fileName.push_back(to_str(std::rand())[0]);
+	for (size_t i = 0; i < 5; i++)
+		_fileName += to_str(std::rand());
 	_body.open(_fileName.c_str(), std::ios::out | std::ios::in | std::ios::trunc);
 	if (!_body.is_open()){
 		_parse.setParseState(Error);
@@ -90,43 +99,65 @@ e_statusCode	PostRequest::checkHeaders(void){
 	return HTTP_OK;
 }
 
-e_statusCode	PostRequest::parseBody(std::string &line){
-	std::stringstream ss(line);
-	std::string	str;
-	size_t	i = 0;
+e_statusCode	PostRequest::parseBody(std::string &line) {
+	size_t	bytesToWrite = 0;
 	try{
 		if (!_isChunked){
-			str = ss.str();
-			for (; _bodyIndex + i < _contentLength && i < str.size(); i++);
-			_body.write(str.c_str(), i);
-			_bodyIndex += i;
-			if(_bodyIndex == _contentLength)
+			bytesToWrite = std::min(_contentLength, line.size());
+			if (bytesToWrite + _bodyIndex > _contentLength)
+				bytesToWrite = _contentLength - _bodyIndex;
+			_body.write(line.c_str(), bytesToWrite);
+			_bodyIndex += bytesToWrite;
+			line.erase(0, bytesToWrite);
+			if (_bodyIndex == _contentLength){
 				_parse.setParseState(Done);
+				_body.close();
+			}
 		}
-		else{
-			std::getline(ss, str, '\n');
-			size_t	chunkLen = strtoll(str.c_str(), NULL, 16);
-			str.clear();
-			str = ss.str();
-			for (; _bodyIndex + i < chunkLen && i < str.size(); i++);
-			_body.write(str.c_str(), i);
-			_bodyIndex += i;
-			if (chunkLen == 0)
-				_parse.setParseState(Done);
-			else if (_bodyIndex == chunkLen)
-				_bodyIndex = 0;
+		else {
+			while (line.size() > 0 && _parse.getParseState() != Done){
+				if (!_gotChunkLen) {
+					if (line.substr(0, 2) == "\r\n")
+				        line.erase(0, 2);
+				    size_t endOfChunkSize = line.find("\r\n");
+					if (endOfChunkSize == std::string::npos)
+						return HTTP_BAD_REQUEST;
+				    _chunkLen = strtoll(line.substr(0, endOfChunkSize).c_str(), NULL, 16);
+				    line.erase(0, endOfChunkSize + 2);
+					_gotChunkLen = true;		
+				}
+				if (_chunkLen == 0) {
+				    _parse.setParseState(Done);
+				    _body.close();
+				    break;
+				}
+				bytesToWrite = std::min(_chunkLen, line.size());
+				if (_bodyIndex + bytesToWrite > _chunkLen)
+					bytesToWrite = _chunkLen - _bodyIndex;
+				_body.write(line.c_str(), bytesToWrite);
+				_bodyIndex += bytesToWrite;
+				line.erase(0, bytesToWrite);
+				if (_bodyIndex >= _chunkLen) {
+					if (line.substr(0, 2) == "\r\n")
+				        line.erase(0, 2);
+				    _bodyIndex = 0;
+					_gotChunkLen = false;
+				}
+			}
 		}
 	}catch(const std::exception &){
 		_parse.setParseState(Error);
 		return HTTP_BAD_REQUEST;
 	}
-	line.clear();
 	return HTTP_OK;
 }
 
 PostRequest::~PostRequest( void ){
-	if (_body.is_open()){
+	if (_body.is_open())
 		_body.close();
-		std::remove(_fileName.c_str());
-	}
+	std::remove(_fileName.c_str());
+}
+
+std::string&						PostRequest::getFileName( void ) {
+	return _fileName;
 }

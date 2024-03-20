@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   LocationConf.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ZakariaElbouzkri <elbouzkri9@gmail.com>    +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 11:36:53 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/08 10:26:06 by ZakariaElbo      ###   ########.fr       */
+/*   Updated: 2024/03/14 00:10:19 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,11 +110,12 @@ std::string		LocationConf::getErrPage( int code, const std::string& defaultPag )
 	std::string ans;
 	std::map<int, std::string>::iterator it = _errorPage->find(code);
 	if (it != _errorPage->end()) {
-		std::ifstream	file(it->second.c_str());
+		std::string path = ((this->_root == NULL) ? "/" :normPath(*this->_root) + "/") + it->second;
+		std::ifstream	file(path.c_str(), std::ios::in | std::ios::binary);
 		if (file.is_open() && std::getline(file, ans, '\0'))
 			return ans;
 	}
-	return ans;
+	return defaultPag;
 }
 
 bool	LocationConf::methodIsAllowed( const std::string& method) const
@@ -171,8 +172,10 @@ void	LocationConf::passDirectiveToRoutes( void )
 		if (this->_allowed != NULL) {
 			std::set<std::string>::iterator it = _allowed->begin();
 			std::set<std::string>::iterator ite = _allowed->end();
-			for (; it != ite; it++)
-				first->second->allowMethod(*it);
+			for (; it != ite; it++) {
+				if (first->second->hasDirective(*it) == false)
+					first->second->allowMethod(*it);
+			}
 		}
 		if (this->_index != NULL) {
 			std::vector<std::string>::iterator it = _index->begin();
@@ -190,6 +193,19 @@ void	LocationConf::passDirectiveToRoutes( void )
 	}
 }
 
+bool	LocationConf::hasIndex( void ) const
+{
+	return _index != NULL;
+}
+
+std::pair<int, std::string>	LocationConf::getRedirectPage( void ) const 
+{
+	return *_redirect;
+}
+const std::vector<std::string>&	LocationConf::getIndex( void ) const
+{
+	return *_index;
+}
 
 LocationConf*	LocationConf::getUri( std::string uri ) const
 {
