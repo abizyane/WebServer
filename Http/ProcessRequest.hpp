@@ -22,6 +22,7 @@
 #include "GetRequest.hpp"
 #include "PostRequest.hpp"
 #include "DeleteRequest.hpp"
+#include "../Core/Selector.hpp"
 
 class Response;
 
@@ -43,11 +44,15 @@ class ProcessRequest {
 		Response*		_response;
 		bool			_good;
 		std::string		_responseBuffer;
+		Selector&		_selector;
+
+		int				_pid;
+
 		void			_parseRequestLine(std::string&	requestLine);
 		void			_resetProcessor( void );
 
 	public:
-		ProcessRequest(int port);
+		ProcessRequest(int port, Selector& _selector);
 
 		void			parseLine(char *buffer, int size);
 		bool			good( void );

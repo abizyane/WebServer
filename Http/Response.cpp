@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/18 23:08:05 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/20 01:55:40 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,10 +15,12 @@
 std::map<std::string, std::string> Response::_mimeMap;
 std::map<e_statusCode, std::string> Response::_statusMap;
 
-Response::Response(IRequest &request, ProcessRequest& parse, int port): _request(&request), _parse(&parse), _good(false), _state(RESPONSE){
+Response::Response(IRequest& request, ProcessRequest& parse, int port, Selector& selector): _request(&request), 
+	_parse(&parse), _good(false), _state(RESPONSE), _selector(selector) {
 	_bodyIndex = 0;
 	_responsefileName = "/tmp/.ResponseBody";
 	_status = _parse->getStatusCode();
+	_waitForCgi = false;
 	Response::initMaps();
 	if (_request != NULL) {
 		_server = MainConf::getConf()->getServerByHostPort(port, _request->getHeaders()["Host"]);
@@ -139,8 +141,13 @@ void	Response::_processGetResponse(){
 	}
 	HERE:
 	_handleRange();
-	// if (_location->hasCgi() && _location->isCgi(resource.substr(resource.find_last_of('.') + 1)))
+	// if (!_location->hasCgi())
+	// 	throw Response::ResponseException(HTTP_FORBIDDEN);
+	// else if (_location->isCgi(resource.substr(resource.find_last_of('.') + 1))){
+	// 	_waitForCgi = true;
 	// 	RUN CGI;
+	// else
+	// 	throw Response::ResponseException(HTTP_INTERNAL_SERVER_ERROR);
 }
 
 void	Response::_getFileName(std::string &resource) {
@@ -233,7 +240,8 @@ void	Response::_processPostResponse(){
 	}
 	// if (!_location->hasCgi())
 	// 	throw Response::ResponseException(HTTP_FORBIDDEN);
-	// else if (_location->isCgi(resource.substr(resource.find_last_of('.') + 1)))
+	// else if (_location->isCgi(resource.substr(resource.find_last_of('.') + 1))){
+	// 	_waitForCgi = true;
 	// 	RUN CGI;
 	// else
 	// 	throw Response::ResponseException(HTTP_INTERNAL_SERVER_ERROR);
@@ -344,8 +352,10 @@ void    Response::_prepareResponse(){
 	}
 	TRYAGAIN:
 	try {
-		_buildResponse();
-		_good = true;
+		if (!_waitForCgi){
+			_buildResponse();
+			_good = true;
+		}
 	}
 	catch (Response::ResponseException &e){
 		_status = e.getStatus();

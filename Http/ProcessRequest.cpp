@@ -12,8 +12,8 @@
 
 #include "ProcessRequest.hpp"
 
-ProcessRequest::ProcessRequest(int port) :_port(port), _state(RequestLine), _status(HTTP_OK),
-	_request(NULL), _response(NULL), _good(false){
+ProcessRequest::ProcessRequest(int port, Selector& _selector) :_port(port), _state(RequestLine), _status(HTTP_OK),
+	_request(NULL), _response(NULL), _good(false), _selector(_selector) {
 }
 
 IRequest*	ProcessRequest::getRequest( void ){
@@ -118,7 +118,7 @@ void	ProcessRequest::parseLine(char *buffer, int size){
 		_status = _request->parseBody(_requestBuffer);
 
 	if (_state == Error || _state == Done){
-		_response = new Response(*_request, *this, _port);
+		_response = new Response(*_request, *this, _port, _selector);
 		_good = true;
 	}
 }
