@@ -54,3 +54,5 @@ webserv
 */*.conf
 .DS_Store
 .idea
+*.conf
+./servIO
