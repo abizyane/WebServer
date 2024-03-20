@@ -6,7 +6,7 @@
 /*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/20 08:19:07 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/03/20 19:58:38 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -141,13 +141,16 @@ void	Response::_processGetResponse(){
 	}
 	HERE:
 	_handleRange();
-	// if (!_location->hasCgi())
-	// 	throw Response::ResponseException(HTTP_FORBIDDEN);
-	// else if (_location->isCgi(resource.substr(resource.find_last_of('.') + 1))){
-	// 	_waitForCgi = true;
-	// 	RUN CGI;
-	// else
-	// 	throw Response::ResponseException(HTTP_INTERNAL_SERVER_ERROR);
+	if (!_location->hasCgi())
+		throw Response::ResponseException(HTTP_FORBIDDEN);
+	else if (_location->isCgi(resource.substr(resource.find_last_of('.')))){
+		_waitForCgi = true;
+		setCGI_Arguments();
+		initCGI();
+		executeCGI(_parse->getCgiFd());
+	}
+	else
+		throw Response::ResponseException(HTTP_INTERNAL_SERVER_ERROR);
 }
 
 void	Response::_getFileName(std::string &resource) {
@@ -248,6 +251,7 @@ void	Response::_processPostResponse(){
 	}
 	else
 		throw Response::ResponseException(HTTP_INTERNAL_SERVER_ERROR);
+	std::cout << "entered\n";
 }
 
 void	Response::_deleteFile(std::string resource){
@@ -466,13 +470,13 @@ void    Response::setCGI_Arguments( void ) {
     std::string serverRoot = _location->getRoot();
     _file_path = serverRoot + requestURI;
     _query_string = "";
-    _cgi_argv = new char*[3];
+    _cgi_argv = new char*[2];
     if (requestURI.find('?') != std::string::npos) {
         _query_string = requestURI.substr(requestURI.find('?') + 1);
         _file_path = serverRoot + requestURI.substr(0, requestURI.find('?'));
     }
     _cgi_argv[0] = strdup(_file_path.c_str());
-    _cgi_argv[2] = NULL;
+    _cgi_argv[1] = NULL;
 }
 
 void    Response::initCGI() {
@@ -525,7 +529,7 @@ int    Response::executeCGI( int& fd ) {
     if (_cgi_pid == 0) {
         dup2(fd, 1);
         close(fd);
-        int fd1 = open(_request->getFileName().c_str(), O_RDONLY); // check if request has body
+        int fd1 = open(_request->getFileName().c_str(), O_RDONLY);
         if (fd1 == -1)
             exit(502);
         if (dup2(fd1, 0) == -1) {
@@ -548,11 +552,12 @@ int    Response::executeCGI( int& fd ) {
 int    Response::getCGI_Response( void ) {
     std::string     headers;
     std::string     body;
-    int             status;
-    int ret = waitpid(_cgi_pid, &status, WNOHANG);
-    if (ret != 0 && ret != -1) {
-        if (WEXITSTATUS(status) != 0)
-            return (502);
+    // int             status;
+    // int ret = waitpid(_cgi_pid, &status, WNOHANG);
+	// 	std::cout << "hellooo\n";
+    // if (ret != 0 && ret != -1) {
+    //     if (WEXITSTATUS(status) != 0)
+    //         return (502);
         std::cout << "entered2\n";
         std::ifstream cgiResponse(_responsefileName);
         if (!cgiResponse.is_open())
@@ -569,12 +574,13 @@ int    Response::getCGI_Response( void ) {
         headers = "HTTP/1.1 200 OK\r\n" + headers \
         + "Content-Lenght: " + to_str(body.size()) + "\r\n\r\n";
         body = headers + body;
-        std::ofstream outputFile(_responsefileName.c_str(), std::ios::out | std::ios::trunc);
-        if (!outputFile)
+        _file.open(_responsefileName.c_str(), std::ios::out | std::ios::trunc);
+        if (!_file.is_open())
             return (502);
-        outputFile << body;
-        outputFile.close();
+        _file.write(body.c_str(), body.size());
+		std::cout << "ended\n";
+        // _file.close();
         return 0;
-    }
-    return 1;
+    // }
+    // return 1;
 }

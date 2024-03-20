@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CoreServer.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/08 02:35:06 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/19 03:35:37 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/03/20 19:59:36 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,8 +39,7 @@ int	CoreServer::_nfds( void ) {
 		ans = std::max(ans, _servers[i]->fileno());
 		for (size_t	j = 0; j < _servers[i]->_clients.size(); j++) {
 			ans = std::max(ans, _servers[i]->_clients[j]->fileno());
-			ans = std::max(ans, _servers[i]->_clients[j]->writefd());
-			ans = std::max(ans, _servers[i]->_clients[j]->readfd());
+			ans = std::max(ans, _servers[i]->_clients[j]->getCcgiFd());
 		}   
 	}
 	return ans;
@@ -101,8 +100,7 @@ void	CoreServer::_manageClients( Server* server )
 			if (ret == -1) {
 				std::cout << strTime() << " recv() failed to read from client " << *client << std::endl; 
 			}
-
-			if (ret == 0) {
+			else if (ret == 0) {
 				_purgeClient(server, it);
 				continue;
 			} else {

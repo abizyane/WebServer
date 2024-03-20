@@ -46,6 +46,7 @@ class ProcessRequest {
 		bool			_good;
 		std::string		_responseBuffer;
 		Selector&		_selector;
+		int&			_cgifd;
 
 		int				_pid;
 
@@ -53,7 +54,7 @@ class ProcessRequest {
 		void			_resetProcessor( void );
 
 	public:
-		ProcessRequest(sockaddr_in info, Selector& _selector);
+		ProcessRequest(sockaddr_in info, Selector& _selector, int& cgifd);
 
 		void			parseLine(char *buffer, int size);
 		bool			good( void );
@@ -68,6 +69,7 @@ class ProcessRequest {
 		void			resetRequest( void );
 		bool			sent( void );
 		sockaddr_in		getInfo();
+		int&			getCgiFd();
 
 		~ProcessRequest();
 };
