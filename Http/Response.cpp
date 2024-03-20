@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ZakariaElbouzkri <elbouzkri9@gmail.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/20 01:55:40 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/03/20 18:09:05 by ZakariaElbo      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,7 +116,7 @@ void	Response::_processGetResponse(){
 	_readFile(resource);
 	if (_headers["Content-Type"] == "Dir"){
 		_headers.erase("Content-Type");
-		if (_request->getUri().back() != '/'){
+		if (*(_request->getUri().end() - 1) != '/') {
 			_headers["Location"] = _request->getUri() + "/";
 			throw Response::ResponseException(HTTP_MOVED_PERMANENTLY);
 		}
@@ -132,8 +132,8 @@ void	Response::_processGetResponse(){
 		}
 		if (!_location->dirListingEnabled())
 			throw Response::ResponseException(HTTP_FORBIDDEN);
-		if (resource.back() == '/')
-			resource.pop_back();
+		if (*(resource.end() - 1) == '/')
+			resource.erase(resource.size() - 1);
 		resource = _autoIndex(normPath(resource));
 		_headers.clear();
 		_readFile(resource);
@@ -212,7 +212,7 @@ void	Response::_processPostResponse(){
 	if (_status != HTTP_CREATED){
 		if (_headers["Content-Type"] == "Dir"){
 			_headers.erase("Content-Type");
-			if (_request->getUri().back() != '/'){
+			if (*(_request->getUri().end() - 1) != '/'){
 				_headers["Location"] = _request->getUri() + "/";
 				throw Response::ResponseException(HTTP_MOVED_PERMANENTLY);
 			}
