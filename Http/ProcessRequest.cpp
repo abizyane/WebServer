@@ -12,9 +12,9 @@
 
 #include "ProcessRequest.hpp"
 
-ProcessRequest::ProcessRequest(sockaddr_in info, Selector& _selector) : \
-_info(info), _state(RequestLine), _status(HTTP_OK),
-	_request(NULL), _response(NULL), _good(false), _selector(_selector) {
+ProcessRequest::ProcessRequest(sockaddr_in info, Selector& _selector, int& cgifd) : \
+_info(info), _state(RequestLine), _status(HTTP_OK), _request(NULL), _response(NULL), 
+_good(false), _selector(_selector), _cgifd(cgifd) {
 }
 
 IRequest*	ProcessRequest::getRequest( void ){
@@ -188,6 +188,10 @@ void	ProcessRequest::_resetProcessor( void ){
 
 sockaddr_in		ProcessRequest::getInfo(){
 	return	_info;
+}
+
+int&			ProcessRequest::getCgiFd() {
+	return	_cgifd;
 }
 
 ProcessRequest::~ProcessRequest(){
