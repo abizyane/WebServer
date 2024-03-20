@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:07:10 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/18 22:52:15 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/20 01:50:40 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,12 +40,13 @@ class Response {
 		e_statusCode						_status;
 		e_state								_state;
 		ssize_t								_bodyIndex;
-		// bool								_hasBody;
+		bool								_waitForCgi;
 
 		std::map<std::string, std::string>  _headers;
 		std::fstream						_file;
 		std::string							_responsefileName;
 		std::string							_response;
+		Selector&							_selector;
 		
 		void								_buildResponse( void );
 		void								_processGetResponse( void );
@@ -62,7 +63,7 @@ class Response {
 
 
 	public :
-		Response(IRequest& request, ProcessRequest& parse, int port);
+		Response(IRequest& request, ProcessRequest& parse, int port, Selector& _selector);
         static void							initMaps( void );
 		bool			good( void );
 		int				sent( void );
