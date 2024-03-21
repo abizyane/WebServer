@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   DeleteRequest.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:04:42 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/18 18:24:55 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/20 07:45:36 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -162,3 +162,6 @@ DeleteRequest::~DeleteRequest( void ){
 	std::remove(_fileName.c_str());
 }
 
+std::string&						DeleteRequest::getFileName( void ) {
+	return _fileName;
+}
