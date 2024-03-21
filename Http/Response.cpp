@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/21 01:37:33 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/21 21:05:22 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,7 +99,7 @@ void	Response::_readFile(std::string resource){
 	_openFile(resource, 0);
 	size_t size = static_cast<size_t>(fileStat.st_size);
 	_headers["Content-Length"] = to_str(size);
-	std::string ext = getExtension(_request->getUri());
+	std::string ext = getExtension(resource);
 	if (ext != "" && _mimeMap[ext] != "")
 		_headers["Content-Type"] = _mimeMap[ext];
 	else
