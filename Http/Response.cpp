@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ZakariaElbouzkri <elbouzkri9@gmail.com>    +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/20 19:25:15 by ZakariaElbo      ###   ########.fr       */
+/*   Updated: 2024/03/21 01:37:33 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -408,7 +408,7 @@ std::string	Response::_autoIndex( const std::string& dirName ){
 		htmlPage += "<h1>Error couldn't opreaden the directory : " + dirName  + "</h1>";
 	}
 	htmlPage += "</table></body></html>";
-	_responsefileName = dirName + "/.autoindex.html";
+	_responsefileName = "/tmp/.autoindex.html";
 	_file.open(_responsefileName.c_str(), std::ios::out | std::ios::trunc | std::ios::binary | std::ios::in);
 	_file << htmlPage;
 	_file.close();
