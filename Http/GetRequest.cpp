@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   GetRequest.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 21:58:16 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/18 22:12:36 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/20 07:55:55 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -162,4 +162,8 @@ GetRequest::~GetRequest( void ){
 	if (_body.is_open())
 		_body.close();
 	std::remove(_fileName.c_str());
+}
+
+std::string&						GetRequest::getFileName( void ) {
+	return _fileName;
 }

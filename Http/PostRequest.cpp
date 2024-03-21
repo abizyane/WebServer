@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   PostRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:03:16 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/18 18:24:15 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/20 07:57:04 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -156,4 +156,8 @@ PostRequest::~PostRequest( void ){
 	if (_body.is_open())
 		_body.close();
 	std::remove(_fileName.c_str());
+}
+
+std::string&						PostRequest::getFileName( void ) {
+	return _fileName;
 }

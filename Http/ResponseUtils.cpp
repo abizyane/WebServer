@@ -6,7 +6,7 @@
 /*   By: ZakariaElbouzkri <elbouzkri9@gmail.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/01 18:15:20 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/20 18:09:28 by ZakariaElbo      ###   ########.fr       */
+/*   Updated: 2024/03/18 23:03:27 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -135,10 +135,10 @@ void	Response::_openFile(std::string &fileName, int param){
 			throw ResponseException(HTTP_NOT_FOUND);
 		if (access(fileName.c_str(), R_OK) == -1)
 			throw ResponseException(HTTP_FORBIDDEN);
-		_file.open(fileName.c_str(), std::ios::in | std::ios::binary | std::ios::out);	
+		_file.open(fileName, std::ios::in | std::ios::binary | std::ios::out);	
 	}
 	else
-		_file.open(fileName.c_str(), std::ios::in | std::ios::out | std::ios::binary | std::ios::trunc);
+		_file.open(fileName,std::ios::in | std::ios::out | std::ios::binary | std::ios::trunc);
 	if (!_file.is_open())
 		throw ResponseException(HTTP_INTERNAL_SERVER_ERROR);
 }

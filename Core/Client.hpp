@@ -15,7 +15,7 @@ class	Client
 		Selector&		_selector;
 		int				sock;
 		sockaddr_in		info;
-		int				fd[2];
+		int				_cgifd;
 		ProcessRequest	_processor;
 		ssize_t			_bytesSent;
 		time_t			_lastactive;
@@ -33,12 +33,8 @@ class	Client
 			return sock;
 		}
 
-		inline int writefd( void ) const {
-			return fd[0];
-		}
-		
-		inline int readfd( void ) const {
-			return fd[1];
+		inline int getCcgiFd( void ) const {
+			return _cgifd;
 		}
 
 		inline	sockaddr_in infos( void ) const {
