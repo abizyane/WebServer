@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   PostRequest.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:03:23 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/20 07:56:43 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/03/21 22:35:49 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,9 +43,8 @@ class	PostRequest : public IRequest{
 		std::map<std::string, std::string>	getHeaders( void ) const;
 		std::vector<char>					getBody( void );
 		ProcessRequest&						getParse( void ) const;
+		void								setUri( std::string uri );
 
-		std::string&						getFileName( void );
-		
 		~PostRequest( void );
 };
 

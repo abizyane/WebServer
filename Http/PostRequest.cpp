@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   PostRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:03:16 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/20 07:57:04 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/03/21 22:35:20 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,10 @@ std::string		PostRequest::getMethod( void ) const{
 
 std::string		PostRequest::getUri( void ) const{
 	return _uri;
+}
+
+void	PostRequest::setUri( std::string uri ){
+	_uri = uri;
 }
 
 std::map<std::string, std::string>	PostRequest::getHeaders( void ) const{
@@ -156,8 +160,4 @@ PostRequest::~PostRequest( void ){
 	if (_body.is_open())
 		_body.close();
 	std::remove(_fileName.c_str());
-}
-
-std::string&						PostRequest::getFileName( void ) {
-	return _fileName;
 }

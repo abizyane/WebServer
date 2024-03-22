@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CoreServer.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: ZakariaElbouzkri <elbouzkri9@gmail.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/08 02:35:06 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/20 19:59:36 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/03/20 18:22:30 by ZakariaElbo      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,8 @@ int	CoreServer::_nfds( void ) {
 		ans = std::max(ans, _servers[i]->fileno());
 		for (size_t	j = 0; j < _servers[i]->_clients.size(); j++) {
 			ans = std::max(ans, _servers[i]->_clients[j]->fileno());
-			ans = std::max(ans, _servers[i]->_clients[j]->getCcgiFd());
+			ans = std::max(ans, _servers[i]->_clients[j]->writefd());
+			ans = std::max(ans, _servers[i]->_clients[j]->readfd());
 		}   
 	}
 	return ans;
