@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:04:42 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/22 00:59:36 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/22 01:26:03 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@ std::map<std::string, std::string>	DeleteRequest::getHeaders( void ) const{
 	return _headers;
 }
 
+
 std::vector<char>	DeleteRequest::getBody( void ) {
 	struct stat	s;
 	stat(_fileName.c_str(), &s);
@@ -51,7 +52,8 @@ std::vector<char>	DeleteRequest::getBody( void ) {
 
 ssize_t	DeleteRequest::getBodySize( void ) const{
 	struct stat	s;
-	stat(_fileName.c_str(), &s);
+	if (stat(_fileName.c_str(), &s) != 0)
+		return 0;
 	return s.st_size;
 }
 
