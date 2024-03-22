@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 15:57:05 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/21 22:38:01 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/22 00:59:49 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,6 +72,7 @@ class IRequest {
 		virtual void    							setUri(std::string uri) = 0;
 		virtual std::map<std::string, std::string>	getHeaders( void ) const = 0;
 		virtual std::vector<char>					getBody( void ) = 0;
+		virtual ssize_t	            				getBodySize( void ) const = 0;
 		virtual ProcessRequest&						getParse( void ) const = 0;
 
 		virtual ~IRequest(){};

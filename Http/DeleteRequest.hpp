@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:05:34 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/21 22:35:34 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/22 00:59:30 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,7 @@ class	DeleteRequest : public IRequest{
 		std::string							getUri( void ) const;
 		std::map<std::string, std::string>	getHeaders( void ) const;
 		std::vector<char>					getBody( void );
+		ssize_t								getBodySize( void ) const;
 		ProcessRequest&						getParse( void ) const;
 		void								setUri( std::string uri );
 

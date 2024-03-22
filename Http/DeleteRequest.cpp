@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:04:42 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/21 22:35:29 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/22 00:59:36 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,12 @@ std::vector<char>	DeleteRequest::getBody( void ) {
 	_body.read(buffer.data(), s.st_size);
 	_body.close();
 	return buffer;
+}
+
+ssize_t	DeleteRequest::getBodySize( void ) const{
+	struct stat	s;
+	stat(_fileName.c_str(), &s);
+	return s.st_size;
 }
 
 ProcessRequest&	DeleteRequest::getParse( void ) const{
