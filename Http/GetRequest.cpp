@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 21:58:16 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/21 22:34:39 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/22 00:58:55 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,12 @@ std::vector<char>	GetRequest::getBody( void ) {
 	_body.read(buffer.data(), s.st_size);
 	_body.close();
 	return buffer;
+}
+
+ssize_t	GetRequest::getBodySize( void ) const{
+	struct stat	s;
+	stat(_fileName.c_str(), &s);
+	return s.st_size;
 }
 
 ProcessRequest&	GetRequest::getParse( void ) const{
