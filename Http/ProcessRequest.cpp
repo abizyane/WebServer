@@ -12,8 +12,8 @@
 
 #include "ProcessRequest.hpp"
 
-ProcessRequest::ProcessRequest(int port, Selector& _selector) :_port(port), _state(RequestLine), _status(HTTP_OK),
-	_request(NULL), _response(NULL), _good(false), _selector(_selector) {
+ProcessRequest::ProcessRequest(int port, Selector& _selector, int &fd) :_port(port), _state(RequestLine), _status(HTTP_OK),
+	_request(NULL), _response(NULL), _cgi_fd(fd), _good(false), _selector(_selector) {
 }
 
 IRequest*	ProcessRequest::getRequest( void ){
@@ -174,6 +174,10 @@ bool	ProcessRequest::sent( void ){
 	return false;
 }
 
+const int&		ProcessRequest::getPort() const {
+	return _port;
+}
+
 void	ProcessRequest::_resetProcessor( void ){
 	_state = RequestLine;
 	_status = HTTP_OK;
@@ -183,6 +187,10 @@ void	ProcessRequest::_resetProcessor( void ){
 	_request = NULL;
 	delete _response;
 	_response = NULL;
+}
+
+int&			ProcessRequest::getCgiFd() {
+	return _cgi_fd;
 }
 
 ProcessRequest::~ProcessRequest(){

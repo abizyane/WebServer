@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/22 01:25:29 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/22 15:56:00 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -143,9 +143,11 @@ void	Response::_processGetResponse(){
 	}
 	HERE:
 	_handleRange();
-	// if (_location->hasCgi() && _location->isCgi(resource.substr(resource.find_last_of('.') + 1))){
+	// if (_location->hasCgi() && _location->isCgi(resource.substr(resource.find_last_of('.')))){
 	// 	_waitForCgi = true;
-	// 	RUN CGI;
+	// 	_initCGI();
+	// 	_setCGI_Arguments();
+	// 	_executeCGI(_parse->getCgiFd());
 	// }
 }
 
@@ -239,7 +241,9 @@ void	Response::_processPostResponse(){
 	}
 	// if (_location->hasCgi() && _location->isCgi(resource.substr(resource.find_last_of('.') + 1))){
 	// 	_waitForCgi = true;
-	// 	RUN CGI;
+	// 	_initCGI();
+	// 	_setCGI_Arguments();
+	// 	_executeCGI(_parse->getCgiFd());
 	// }
 }
 
@@ -262,7 +266,7 @@ void	Response::_processDeleteResponse(){
 
 void	Response::_handleRange(){
 	try {
-		if (_request->getHeaders()["Range"] != ""){
+		if (_request->getHeaders()["Range"] != "") {
 			std::string range = _request->getHeaders()["Range"];
 			ssize_t length = strtoll(_headers["Content-Length"].c_str(), NULL, 10);
 			ssize_t start = strtoll(range.substr(range.find("=") + 1, range.find("-")).c_str(), NULL, 10);
@@ -409,4 +413,140 @@ std::string	Response::_autoIndex( const std::string& dirName ){
 	_file << htmlPage;
 	_file.close();
 	return _responsefileName;
+}
+
+//  ========== For CGI ==========
+
+void    Response::_setCGI_Arguments( void ) {
+    std::string requestURI = _request->getUri();
+    std::string serverRoot = _location->getRoot();
+    _file_path = serverRoot + requestURI;
+    _query_string = "";
+    _cgi_argv = new char*[2];
+    if (requestURI.find('?') != std::string::npos) {
+        _query_string = requestURI.substr(requestURI.find('?') + 1);
+        _file_path = serverRoot + requestURI.substr(0, requestURI.find('?'));
+    }
+    _cgi_argv[0] = strdup(_file_path.c_str());
+    _cgi_argv[1] = NULL;
+}
+
+void    Response::_initCGI() {
+    std::string requestUri = _request->getUri();
+    std::string locationRoot = _location->getRoot();
+    std::map<std::string, std::string> headers = _request->getHeaders();
+
+    headers["SERVER_PROTOCOL"] = "HTTP/1.1";
+	headers["GATEWAY_INTERFACE"] = "CGI/1.1";
+	headers["SERVER_SOFTWARE"] = "webserv/1.0";
+    headers["REDIRECT_STATUS" ] = "0";
+    headers["HTTP_COOKIE"] = headers["Cookie"];
+    headers["HTTP_USER_AGENT"] = headers["User-Agent"];
+    headers["HTTP_HOST"] = headers["Host"];
+    headers["SERVER_PORT"] = to_str(_parse->getPort());
+    headers["PATH_INFO"] = _file_path;
+    headers["PATH_TRANSLATED"] = _file_path;
+    headers["SCRIPT_NAME"] = _file_path;
+    headers["REQUEST_URI"] = _file_path;
+    headers["DOCUMENT_ROOT"] = locationRoot;
+    headers["HTTP_CONNECTION"] = headers["Connection"];
+    headers["HTTP_ACCEPT"] = headers["Accept"];
+    headers["HTTP_USER-AGENT"] = headers["User-Agent"];
+    headers["HTTP_COOKIE"] = headers["Cookie"];
+    headers["CONTENT_TYPE"] = headers["Content-Type"];
+    headers["REQUEST_METHOD"] = _request->getMethod();
+    headers["QUERY_STRING"] = _query_string;
+    // ---------------
+    std::map<std::string, std::string>::iterator it = headers.begin();
+    while (it != headers.end())
+    {
+        std::string key = it->first;
+        if (std::islower(key[1]))
+            key = formKey(key);
+        setenv(key.c_str(), it->second.c_str(), 1);
+        it++;
+    }
+}
+
+int    Response::_executeCGI( int& fd ) {
+    fd = open(_responsefileName.c_str(), O_CREAT | O_RDWR | O_APPEND, 0666);
+    if (fd == -1) {
+		_status = HTTP_INTERNAL_SERVER_ERROR;
+		return 1;
+	}
+	_cgi_pid = fork();
+	if (_cgi_pid == -1) {
+		_status = HTTP_INTERNAL_SERVER_ERROR;
+		return 1;
+	}
+    if (_cgi_pid == 0) {
+        dup2(fd, 1);
+        close(fd);
+        int fd1 = open(_request->getFileName().c_str(), O_RDONLY, 0666);
+		if (fd1 > 0) {
+	        dup2(fd1, 0);
+        	close(fd1);
+		}
+        extern char** environ;
+        execve(_cgi_argv[0], _cgi_argv, environ);
+        exit(502);
+    }
+	close(fd);
+    fcntl(fd, F_SETFL, O_NONBLOCK);
+    _selector.set(fd, Selector::RD_SET);
+	wait(NULL);
+	_getCGI_Response();
+	return 0;
+}
+
+void 		Response::_parseCgiHeaders( std::string headers) {
+	std::cout << headers;
+}
+
+int    Response::_getCGI_Response( void ) {
+    std::string     headers;
+    std::string     body;
+    int             status;
+    int ret = waitpid(_cgi_pid, &status, WNOHANG);
+    if (ret == -1) {
+		if (WIFSIGNALED(status)) {
+			_status =  HTTP_INTERNAL_SERVER_ERROR;
+			goto End;
+		} else if (WEXITSTATUS(status) != 0) {
+			_status = HTTP_BAD_GATEWAY;
+			goto End;
+		}
+        std::ifstream cgiResponse(_responsefileName);
+        if (!cgiResponse.is_open()) {
+			_status = HTTP_FORBIDDEN;
+			goto End;
+		}
+		std::stringstream buffer;
+        buffer << cgiResponse.rdbuf();
+        cgiResponse.close();
+        std::string allfile = buffer.str();
+        size_t pos = allfile.find("\r\n\r\n");
+        if (pos != std::string::npos) {
+            headers = allfile.substr(0, pos + 2);
+            body = allfile.substr(pos + 4);
+			_file.open(_responsefileName.c_str(), std::ios_base::in | std::ios_base::out);
+    		if (!_file.is_open()) {
+    		    _status = HTTP_INTERNAL_SERVER_ERROR;
+    		    goto End;
+    		}
+    		_file.clear();
+			_file.write(body.c_str(), body.size());
+			_file.close();
+			std::stringstream ss;
+			ss << _file.rdbuf() << std::endl;
+			std::cout << "file content : " << ss.str();
+			_printfile();
+        }
+		goto End;
+    } else {
+		return 1;
+	}
+	End:
+		_buildResponse();
+    return 0;
 }

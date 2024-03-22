@@ -3,19 +3,19 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/08 02:39:26 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/19 21:42:52 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/03/22 02:14:06 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Client.hpp"
 
 Client::Client( Selector& _selector, int sock, sockaddr_in info ) : _selector(_selector), sock(sock), info(info), 
-	_processor(htons(info.sin_port), _selector) {
+	_processor(htons(info.sin_port), _selector, _cgi_fd) {
 	_selector.set(sock, Selector::WR_SET | Selector::RD_SET);
-	fd[0] = fd[1] = -1;
+	_cgi_fd = -1;
 	_updateLastActive();
 	_bytesSent = 0;
 }
@@ -23,8 +23,7 @@ Client::Client( Selector& _selector, int sock, sockaddr_in info ) : _selector(_s
 Client::~Client( void ) {
 	_selector.unset(sock, Selector::WR_SET | Selector::RD_SET);
 	close(sock);
-	close(fd[1]);
-	close(fd[0]);
+	close(_cgi_fd);
 }
 
 
@@ -40,7 +39,6 @@ bool		Client::sendResponse( void ) {
 	}
 	return false;
 }
-
 
 std::ostream&	operator<<( std::ostream& os, const Client& rhs ) {
 	char ip_address[INET_ADDRSTRLEN];
