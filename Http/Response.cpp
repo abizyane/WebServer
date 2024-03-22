@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/22 01:00:53 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/22 01:05:17 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -320,7 +320,7 @@ void    Response::_prepareResponse(){
 		if (_status == HTTP_OK){
 			if (!_location)
 				throw Response::ResponseException(HTTP_NOT_FOUND);
-			if (_request->getBodySize() / 1048576.0f > _location->getClientBodySize())
+			if (_request->getMethod() == "POST" && _request->getBodySize() / 1048576.0f > _location->getClientBodySize())
 				throw Response::ResponseException(HTTP_REQUEST_ENTITY_TOO_LARGE);
 			else if (_location->hasRedirect()){
 				_headers["Location"] = _location->getRedirectPage().second;
