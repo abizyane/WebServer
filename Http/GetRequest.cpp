@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 21:58:16 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/22 00:58:55 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/22 01:26:35 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,8 @@ std::vector<char>	GetRequest::getBody( void ) {
 
 ssize_t	GetRequest::getBodySize( void ) const{
 	struct stat	s;
-	stat(_fileName.c_str(), &s);
+	if (stat(_fileName.c_str(), &s) != 0)
+		return 0;
 	return s.st_size;
 }
 
