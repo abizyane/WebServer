@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:03:16 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/18 18:24:15 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/22 01:26:23 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,10 @@ std::string		PostRequest::getUri( void ) const{
 	return _uri;
 }
 
+void	PostRequest::setUri( std::string uri ){
+	_uri = uri;
+}
+
 std::map<std::string, std::string>	PostRequest::getHeaders( void ) const{
 	return _headers;
 }
@@ -43,6 +47,13 @@ std::vector<char>	PostRequest::getBody( void ) {
 	_body.read(buffer.data(), s.st_size);
 	_body.close();
 	return buffer;
+}
+
+ssize_t	PostRequest::getBodySize( void ) const{
+	struct stat	s;
+	if (stat(_fileName.c_str(), &s) != 0)
+		return 0;
+	return s.st_size;
 }
 
 ProcessRequest&	PostRequest::getParse( void ) const{

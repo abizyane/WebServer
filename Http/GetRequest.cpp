@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 21:58:16 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/18 22:12:36 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/22 01:26:35 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,10 @@ std::string		GetRequest::getUri( void ) const{
 	return _uri;
 }
 
+void	GetRequest::setUri( std::string uri ){
+	_uri = uri;
+}
+
 std::map<std::string, std::string>	GetRequest::getHeaders( void ) const{
 	return _headers;
 }
@@ -45,6 +49,13 @@ std::vector<char>	GetRequest::getBody( void ) {
 	_body.read(buffer.data(), s.st_size);
 	_body.close();
 	return buffer;
+}
+
+ssize_t	GetRequest::getBodySize( void ) const{
+	struct stat	s;
+	if (stat(_fileName.c_str(), &s) != 0)
+		return 0;
+	return s.st_size;
 }
 
 ProcessRequest&	GetRequest::getParse( void ) const{

@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:04:42 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/18 18:24:55 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/22 01:26:03 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,9 +30,14 @@ std::string		DeleteRequest::getUri( void ) const{
 	return _uri;
 }
 
+void	DeleteRequest::setUri( std::string uri ){
+	_uri = uri;
+}
+
 std::map<std::string, std::string>	DeleteRequest::getHeaders( void ) const{
 	return _headers;
 }
+
 
 std::vector<char>	DeleteRequest::getBody( void ) {
 	struct stat	s;
@@ -43,6 +48,13 @@ std::vector<char>	DeleteRequest::getBody( void ) {
 	_body.read(buffer.data(), s.st_size);
 	_body.close();
 	return buffer;
+}
+
+ssize_t	DeleteRequest::getBodySize( void ) const{
+	struct stat	s;
+	if (stat(_fileName.c_str(), &s) != 0)
+		return 0;
+	return s.st_size;
 }
 
 ProcessRequest&	DeleteRequest::getParse( void ) const{

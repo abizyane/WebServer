@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 21:59:15 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/18 22:12:37 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/22 01:26:38 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,9 @@ class	GetRequest : public IRequest{
 		std::string							getUri( void ) const;
 		std::map<std::string, std::string>	getHeaders( void ) const;
 		std::vector<char>					getBody( void );
+		ssize_t								getBodySize( void ) const;
 		ProcessRequest&						getParse( void ) const;
+		void								setUri( std::string uri );
 
 		~GetRequest( void );
 };

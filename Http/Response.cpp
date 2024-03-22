@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/21 21:05:22 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/22 01:25:29 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,6 +87,7 @@ void	Response::_buildResponse(){
 	for (std::map<std::string, std::string>::iterator it = _headers.begin(); it != _headers.end(); it++)
 		_response += it->first + ": " + it->second + "\r\n";
 	_response += "\r\n";
+	_good = true;
 }
 
 void	Response::_readFile(std::string resource){
@@ -126,6 +127,7 @@ void	Response::_processGetResponse(){
 				std::string	tmp = _location->getRoot() + "/" + normPath(indexes[i]);
 				if (!access(tmp.c_str(), F_OK)){
 					_readFile(tmp);
+					_request->setUri(tmp);
 					goto HERE;
 				}
 			}
@@ -141,13 +143,10 @@ void	Response::_processGetResponse(){
 	}
 	HERE:
 	_handleRange();
-	// if (!_location->hasCgi())
-	// 	throw Response::ResponseException(HTTP_FORBIDDEN);
-	// else if (_location->isCgi(resource.substr(resource.find_last_of('.') + 1))){
+	// if (_location->hasCgi() && _location->isCgi(resource.substr(resource.find_last_of('.') + 1))){
 	// 	_waitForCgi = true;
 	// 	RUN CGI;
-	// else
-	// 	throw Response::ResponseException(HTTP_INTERNAL_SERVER_ERROR);
+	// }
 }
 
 void	Response::_getFileName(std::string &resource) {
@@ -183,7 +182,6 @@ void	Response::_writeFile(std::string resource){
 		_openFile(resource, 1);
 		_file.write(_request->getBody().data(), _request->getBody().size());
 		_file.close();
-		
 		_headers["Content-Length"] = to_str(_request->getBody().size());
 		if (_request->getHeaders()["Content-Type"] != "")
 			_headers["Content-Type"] = _request->getHeaders()["Content-Type"];
@@ -220,9 +218,10 @@ void	Response::_processPostResponse(){
 				throw Response::ResponseException(HTTP_FORBIDDEN);
 			std::vector<std::string>	indexes = _location->getIndex();
 			for (size_t i = 0; i < indexes.size(); i++){
-				std::string	tmp = _location->getRoot() + "/" + normPath(indexes[i]);
+				std::string	tmp = normPath(_location->getRoot() + "/" + normPath(indexes[i]));
 				if (!access(tmp.c_str(), F_OK)){
 					_readFile(tmp);
+					_request->setUri(tmp);
 					break;
 				}
 			}
@@ -238,13 +237,10 @@ void	Response::_processPostResponse(){
 		_headers["Content-Type"] = "text/plain";
 		_file.open(_responsefileName.c_str(), std::ios::in | std::ios::out | std::ios::binary);
 	}
-	// if (!_location->hasCgi())
-	// 	throw Response::ResponseException(HTTP_FORBIDDEN);
-	// else if (_location->isCgi(resource.substr(resource.find_last_of('.') + 1))){
+	// if (_location->hasCgi() && _location->isCgi(resource.substr(resource.find_last_of('.') + 1))){
 	// 	_waitForCgi = true;
 	// 	RUN CGI;
-	// else
-	// 	throw Response::ResponseException(HTTP_INTERNAL_SERVER_ERROR);
+	// }
 }
 
 void	Response::_deleteFile(std::string resource){
@@ -324,8 +320,8 @@ void    Response::_prepareResponse(){
 		if (_status == HTTP_OK){
 			if (!_location)
 				throw Response::ResponseException(HTTP_NOT_FOUND);
-			// if (_request->getBody().size() > _location->getClientBodySize() * 1024)
-			// 	throw Response::ResponseException(HTTP_REQUEST_ENTITY_TOO_LARGE);
+			if (_request->getBodySize() / 1048576.0f > _location->getClientBodySize())
+				throw Response::ResponseException(HTTP_REQUEST_ENTITY_TOO_LARGE);
 			else if (_location->hasRedirect()){
 				_headers["Location"] = _location->getRedirectPage().second;
 				throw Response::ResponseException(static_cast<e_statusCode>(_location->getRedirectPage().first));	
@@ -352,10 +348,8 @@ void    Response::_prepareResponse(){
 	}
 	TRYAGAIN:
 	try {
-		if (!_waitForCgi){
+		if (!_waitForCgi)
 			_buildResponse();
-			_good = true;
-		}
 	}
 	catch (Response::ResponseException &e){
 		_status = e.getStatus();
@@ -408,6 +402,8 @@ std::string	Response::_autoIndex( const std::string& dirName ){
 		htmlPage += "<h1>Error couldn't opreaden the directory : " + dirName  + "</h1>";
 	}
 	htmlPage += "</table></body></html>";
+	if (_responsefileName != "/tmp/.ResponseBody")
+		std::remove(_responsefileName.c_str());
 	_responsefileName = "/tmp/.autoindex.html";
 	_file.open(_responsefileName.c_str(), std::ios::out | std::ios::trunc | std::ios::binary | std::ios::in);
 	_file << htmlPage;
