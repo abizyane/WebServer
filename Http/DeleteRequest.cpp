@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   DeleteRequest.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:04:42 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/20 07:45:36 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/03/21 22:35:29 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,10 @@ std::string		DeleteRequest::getMethod( void ) const{
 
 std::string		DeleteRequest::getUri( void ) const{
 	return _uri;
+}
+
+void	DeleteRequest::setUri( std::string uri ){
+	_uri = uri;
 }
 
 std::map<std::string, std::string>	DeleteRequest::getHeaders( void ) const{
@@ -162,6 +166,3 @@ DeleteRequest::~DeleteRequest( void ){
 	std::remove(_fileName.c_str());
 }
 
-std::string&						DeleteRequest::getFileName( void ) {
-	return _fileName;
-}

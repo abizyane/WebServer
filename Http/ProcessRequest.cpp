@@ -12,9 +12,8 @@
 
 #include "ProcessRequest.hpp"
 
-ProcessRequest::ProcessRequest(sockaddr_in info, Selector& _selector, int& cgifd) : \
-_info(info), _state(RequestLine), _status(HTTP_OK), _request(NULL), _response(NULL), 
-_good(false), _selector(_selector), _cgifd(cgifd) {
+ProcessRequest::ProcessRequest(int port, Selector& _selector) :_port(port), _state(RequestLine), _status(HTTP_OK),
+	_request(NULL), _response(NULL), _good(false), _selector(_selector) {
 }
 
 IRequest*	ProcessRequest::getRequest( void ){
@@ -119,7 +118,7 @@ void	ProcessRequest::parseLine(char *buffer, int size){
 		_status = _request->parseBody(_requestBuffer);
 
 	if (_state == Error || _state == Done){
-		_response = new Response(*_request, *this, htons(_info.sin_port), _selector);
+		_response = new Response(*_request, *this, _port, _selector);
 		_good = true;
 	}
 }
@@ -184,14 +183,6 @@ void	ProcessRequest::_resetProcessor( void ){
 	_request = NULL;
 	delete _response;
 	_response = NULL;
-}
-
-sockaddr_in		ProcessRequest::getInfo(){
-	return	_info;
-}
-
-int&			ProcessRequest::getCgiFd() {
-	return	_cgifd;
 }
 
 ProcessRequest::~ProcessRequest(){

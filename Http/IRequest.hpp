@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   IRequest.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 15:57:05 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/20 07:44:09 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/03/21 22:38:01 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,10 +69,10 @@ class IRequest {
 		virtual e_statusCode						parseBody(std::string&		line) = 0;
 		virtual std::string							getMethod( void ) const = 0;
 		virtual std::string							getUri( void ) const = 0;
+		virtual void    							setUri(std::string uri) = 0;
 		virtual std::map<std::string, std::string>	getHeaders( void ) const = 0;
 		virtual std::vector<char>					getBody( void ) = 0;
 		virtual ProcessRequest&						getParse( void ) const = 0;
-        virtual std::string&						getFileName( void ) = 0;
 
 		virtual ~IRequest(){};
 };

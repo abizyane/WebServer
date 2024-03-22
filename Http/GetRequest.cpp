@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   GetRequest.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 21:58:16 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/20 07:55:55 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/03/21 22:34:39 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,10 @@ std::string		GetRequest::getMethod( void ) const{
 
 std::string		GetRequest::getUri( void ) const{
 	return _uri;
+}
+
+void	GetRequest::setUri( std::string uri ){
+	_uri = uri;
 }
 
 std::map<std::string, std::string>	GetRequest::getHeaders( void ) const{
@@ -162,8 +166,4 @@ GetRequest::~GetRequest( void ){
 	if (_body.is_open())
 		_body.close();
 	std::remove(_fileName.c_str());
-}
-
-std::string&						GetRequest::getFileName( void ) {
-	return _fileName;
 }

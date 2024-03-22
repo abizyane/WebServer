@@ -17,7 +17,6 @@
 #include <map>
 #include <utility>
 #include <sstream>
-#include <netinet/in.h>
 #include <algorithm>
 #include "IRequest.hpp"
 #include "GetRequest.hpp"
@@ -38,7 +37,7 @@ typedef enum {
 class ProcessRequest {
 	private:
 		std::string 	_requestBuffer;
-		sockaddr_in		_info;
+		int				_port;
 		e_parseState	_state;
 		e_statusCode	_status;
 		IRequest*		_request;
@@ -46,7 +45,6 @@ class ProcessRequest {
 		bool			_good;
 		std::string		_responseBuffer;
 		Selector&		_selector;
-		int&			_cgifd;
 
 		int				_pid;
 
@@ -54,7 +52,7 @@ class ProcessRequest {
 		void			_resetProcessor( void );
 
 	public:
-		ProcessRequest(sockaddr_in info, Selector& _selector, int& cgifd);
+		ProcessRequest(int port, Selector& _selector);
 
 		void			parseLine(char *buffer, int size);
 		bool			good( void );
@@ -68,8 +66,6 @@ class ProcessRequest {
 		void			setGood(bool good);
 		void			resetRequest( void );
 		bool			sent( void );
-		sockaddr_in		getInfo();
-		int&			getCgiFd();
 
 		~ProcessRequest();
 };
