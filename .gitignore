@@ -42,7 +42,6 @@ webserv
 .vscode
 .DS_Store
 .vscode
-*.py
 *.jpg
 *.jpeg
 *.ico

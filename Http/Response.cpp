@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/24 17:15:08 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/03/24 22:27:20 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,12 +19,17 @@ Response::Response(IRequest& request, ProcessRequest& parse, int port, Selector&
 	_parse(&parse), _good(false), _state(RESPONSE), _selector(selector) {
 	_bodyIndex = 0;
 	_responsefileName = "/tmp/.ResponseBody";
+	_responsefileName += to_str(rand() % 100000);
 	_status = _parse->getStatusCode();
 	_waitForCgi = false;
 	Response::initMaps();
 	if (_request != NULL) {
 		_server = MainConf::getConf()->getServerByHostPort(port, _request->getHeaders()["Host"]);
 		if (_server != NULL)
+			if (_request->getUri().find("?") != std::string::npos){
+				_query = _request->getUri().substr(_request->getUri().find("?") + 1);
+				_request->setUri(_request->getUri().substr(0, _request->getUri().find("?")));
+			}
 			_location = _server->getUri(_request->getUri());
 	}
 	else{
@@ -66,8 +71,6 @@ void	Response::_buildResponse(){
 			_file.close();
 		_headers.clear();
 		std::srand(time(0));
-		for (int i = 0; i < 5; i++)
-			_responsefileName += to_str(rand() % 10);
 		_openFile(_responsefileName, 1);
 		std::string errPage;
 		if (_location)
@@ -140,12 +143,15 @@ void	Response::_processGetResponse(){
 		resource = _autoIndex(normPath(resource));
 		_headers.clear();
 		_readFile(resource);
+		_responsefileName = resource;
 		return;
 	}
 	HERE:
 	_handleRange();
-	if (_location->hasCgi() && _location->isCgi(resource.substr(resource.find_last_of('.')))){
+	if (_location->hasCgi() && resource.find_last_of('.') != std::string::npos && _location->isCgi(resource.substr(resource.find_last_of('.')))){
 		_waitForCgi = true;
+		_headers.clear();
+		_request->setUri(_request->getUri() + "?" + _query);
 		_setCGI_Arguments();
 		_initCGI();
 		_executeCGI(_parse->getCgiFd());
@@ -223,7 +229,7 @@ void	Response::_processPostResponse(){
 			for (size_t i = 0; i < indexes.size(); i++){
 				std::string	tmp = normPath(_location->getRoot() + "/" + normPath(indexes[i]));
 				if (!access(tmp.c_str(), F_OK)){
-					_readFile(tmp);
+					// _readFile(tmp);
 					_request->setUri(tmp);
 					break;
 				}
@@ -231,21 +237,21 @@ void	Response::_processPostResponse(){
 		}
 	}
 	else {
-		for (int i = 0; i < 5; i++)
-			_responsefileName += to_str(rand() % 10);
 		_openFile(_responsefileName, 1);
 		_file.write("File uploaded successfully", 24);
 		_file.close();
 		_headers["Content-Length"] = "24";
 		_headers["Content-Type"] = "text/plain";
-		_file.open(_responsefileName.c_str(), std::ios::in | std::ios::out | std::ios::binary);
+		_openFile(_responsefileName, 0);
 	}
-	// if (_location->hasCgi() && _location->isCgi(resource.substr(resource.find_last_of('.') + 1))){
-	// 	_waitForCgi = true;
-	// 	_initCGI();
-	// 	_setCGI_Arguments();
-	// 	_executeCGI(_parse->getCgiFd());
-	// }
+	if (_location->hasCgi() && resource.find_last_of('.') != std::string::npos && _location->isCgi(resource.substr(resource.find_last_of('.')))){
+		_waitForCgi = true;
+		_headers.clear();
+		_request->setUri(_request->getUri() + "?" + _query);
+		_setCGI_Arguments();
+		_initCGI();
+		_executeCGI(_parse->getCgiFd());
+	}
 }
 
 void	Response::_deleteFile(std::string resource){
@@ -286,6 +292,31 @@ void	Response::_handleRange(){
 	catch (std::exception &){
 		throw Response::ResponseException(HTTP_REQUESTED_RANGE_NOT_SATISFIABLE);
 	}
+}
+
+void	Response::_handleCookies(){
+	std::string	cookie = _request->getHeaders()["Cookie"];
+	std::map<std::string, std::string>	_cookies;
+	
+	if (cookie != ""){
+		std::vector<std::string>	cookies = _splitHeaderValue("Cookie");
+		for (size_t i = 0; i < cookies.size(); i++){
+			std::string		key = cookies[i].substr(0, cookies[i].find("="));
+			std::string		value = cookies[i].substr(cookies[i].find("=") + 1);
+			_cookies[key] = value;
+		}
+	}
+
+// if (!cookieHeader.empty()) {
+//     std::vector<std::string> cookiePairs = split(cookieHeader, ';');
+//     for (const auto& pair : cookiePairs) {
+//         std::vector<std::string> nameValue = split(pair, '=');
+//         if (nameValue.size() == 2) {
+//             cookies[nameValue[0]] = nameValue[1];
+//         }
+//     }
+// }
+
 }
 
 std::string    Response::GetResponse(size_t lastSent){
@@ -409,10 +440,8 @@ std::string	Response::_autoIndex( const std::string& dirName ){
 		htmlPage += "<h1>Error couldn't opreaden the directory : " + dirName  + "</h1>";
 	}
 	htmlPage += "</table></body></html>";
-	if (_responsefileName != "/tmp/.ResponseBody")
-		std::remove(_responsefileName.c_str());
-	_responsefileName = "/tmp/.autoindex.html";
-	_file.open(_responsefileName.c_str(), std::ios::out | std::ios::trunc | std::ios::binary | std::ios::in);
+	_responsefileName += ".html";
+	_openFile(_responsefileName, 1);
 	_file << htmlPage;
 	_file.close();
 	return _responsefileName;
@@ -430,7 +459,7 @@ void    Response::_setCGI_Arguments( void ) {
         _query_string = requestURI.substr(requestURI.find('?') + 1);
         _file_path = serverRoot + requestURI.substr(0, requestURI.find('?'));
     }
-    _cgi_argv[0] = strdup(_file_path.c_str());
+    _cgi_argv[0] = strdup(normPath(_file_path).c_str());
     _cgi_argv[1] = NULL;
 }
 
@@ -472,7 +501,6 @@ void    Response::_initCGI() {
 }
 
 int    Response::_executeCGI( int& fd ) {
-	std::cout << _cgi_argv[0] << " ---- " << _responsefileName << std::endl;
     fd = open(_responsefileName.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0666);
     if (fd == -1) {
 		_status = HTTP_INTERNAL_SERVER_ERROR;
@@ -492,13 +520,15 @@ int    Response::_executeCGI( int& fd ) {
         	close(fd1);
 		}
         extern char** environ;
-        if (execve(_cgi_argv[0], _cgi_argv, environ) == -1)
-        	exit(502);
-		exit(0);
+		
+        execve(_cgi_argv[0], _cgi_argv, environ);
+		std::cerr << _cgi_argv[0] << " " <<  strerror(errno) << std::endl;
+		exit(502);
     }
     fcntl(fd, F_SETFL, O_NONBLOCK);
     _selector.set(fd, Selector::RD_SET);
-	_printfile();
+	// wait(NULL);
+	// _getCGI_Response();
 	return 0;
 }
 
@@ -551,17 +581,15 @@ int Response::_getCGI_Response(void) {
     int status;
     int ret = waitpid(_cgi_pid, &status, WNOHANG);
     if (ret == _cgi_pid) {
-        if (!WIFEXITED(status) || WIFSIGNALED(status) || WEXITSTATUS(status)) {
+        if ((WIFEXITED(status) && WEXITSTATUS(status) != 0) || WIFSIGNALED(status)) {
             _status = HTTP_INTERNAL_SERVER_ERROR;
             goto Here;
         }
-
         std::ifstream cgiResponse(_responsefileName);
         if (!cgiResponse.is_open()) {
             _status = HTTP_FORBIDDEN;
             goto Here;
         }
-
         try {
             std::stringstream buffer;
             buffer << cgiResponse.rdbuf();
@@ -574,6 +602,7 @@ int Response::_getCGI_Response(void) {
                 body = allfile.substr(pos + 4);
                 _parseCgiHeaders(headers);
 				_file.close();
+				std::remove(_responsefileName.c_str());
 				_file.open(_responsefileName.c_str(), std::ios::in | std::ios::out | std::ios::trunc);
                 if (!_file.is_open()) {
                     _status = HTTP_INTERNAL_SERVER_ERROR;
