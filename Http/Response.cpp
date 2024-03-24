@@ -6,7 +6,7 @@
 /*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/24 06:03:57 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/03/24 17:15:08 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -472,6 +472,7 @@ void    Response::_initCGI() {
 }
 
 int    Response::_executeCGI( int& fd ) {
+	std::cout << _cgi_argv[0] << " ---- " << _responsefileName << std::endl;
     fd = open(_responsefileName.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0666);
     if (fd == -1) {
 		_status = HTTP_INTERNAL_SERVER_ERROR;
@@ -491,13 +492,13 @@ int    Response::_executeCGI( int& fd ) {
         	close(fd1);
 		}
         extern char** environ;
-        execve(_cgi_argv[0], _cgi_argv, environ);
-        exit(502);
+        if (execve(_cgi_argv[0], _cgi_argv, environ) == -1)
+        	exit(502);
+		exit(0);
     }
     fcntl(fd, F_SETFL, O_NONBLOCK);
     _selector.set(fd, Selector::RD_SET);
-	// wait(NULL);
-	// _getCGI_Response();
+	_printfile();
 	return 0;
 }
 
@@ -550,7 +551,7 @@ int Response::_getCGI_Response(void) {
     int status;
     int ret = waitpid(_cgi_pid, &status, WNOHANG);
     if (ret == _cgi_pid) {
-        if (!WIFEXITED(status) || WIFSIGNALED(status)) {
+        if (!WIFEXITED(status) || WIFSIGNALED(status) || WEXITSTATUS(status)) {
             _status = HTTP_INTERNAL_SERVER_ERROR;
             goto Here;
         }
