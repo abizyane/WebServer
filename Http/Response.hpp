@@ -6,7 +6,7 @@
 /*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:07:10 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/22 15:12:33 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/03/24 00:39:01 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,7 +70,6 @@ class Response {
 		void    							_initCGI();
 		int    								_executeCGI( int& fd );
 		void								_parseCgiHeaders( std::string headers );
-		int    								_getCGI_Response( void );
 		void _printfile() {
 			    std::ifstream infile(_responsefileName);
     			if (!infile.is_open()) {
@@ -107,6 +106,7 @@ class Response {
 		};
 
 		std::string		GetResponse(size_t lastSent);
+		int    			_getCGI_Response( void );
 
 		~Response();
 };

@@ -6,7 +6,7 @@
 /*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/08 02:39:26 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/22 02:14:06 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/03/24 01:31:48 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,8 +22,10 @@ Client::Client( Selector& _selector, int sock, sockaddr_in info ) : _selector(_s
 
 Client::~Client( void ) {
 	_selector.unset(sock, Selector::WR_SET | Selector::RD_SET);
+	_selector.unset(_cgi_fd, Selector::RD_SET);
 	close(sock);
 	close(_cgi_fd);
+	_cgi_fd = -1;
 }
 
 

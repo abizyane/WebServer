@@ -6,7 +6,7 @@
 /*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/22 15:56:00 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/03/24 01:56:09 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,6 +88,7 @@ void	Response::_buildResponse(){
 		_response += it->first + ": " + it->second + "\r\n";
 	_response += "\r\n";
 	_good = true;
+	_parse->setGood(true);
 }
 
 void	Response::_readFile(std::string resource){
@@ -143,12 +144,12 @@ void	Response::_processGetResponse(){
 	}
 	HERE:
 	_handleRange();
-	// if (_location->hasCgi() && _location->isCgi(resource.substr(resource.find_last_of('.')))){
-	// 	_waitForCgi = true;
-	// 	_initCGI();
-	// 	_setCGI_Arguments();
-	// 	_executeCGI(_parse->getCgiFd());
-	// }
+	if (_location->hasCgi() && _location->isCgi(resource.substr(resource.find_last_of('.')))){
+		_waitForCgi = true;
+		_setCGI_Arguments();
+		_initCGI();
+		_executeCGI(_parse->getCgiFd());
+	}
 }
 
 void	Response::_getFileName(std::string &resource) {
@@ -469,7 +470,7 @@ void    Response::_initCGI() {
 }
 
 int    Response::_executeCGI( int& fd ) {
-    fd = open(_responsefileName.c_str(), O_CREAT | O_RDWR | O_APPEND, 0666);
+    fd = open(_responsefileName.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0666);
     if (fd == -1) {
 		_status = HTTP_INTERNAL_SERVER_ERROR;
 		return 1;
@@ -481,7 +482,7 @@ int    Response::_executeCGI( int& fd ) {
 	}
     if (_cgi_pid == 0) {
         dup2(fd, 1);
-        close(fd);
+		close(fd);
         int fd1 = open(_request->getFileName().c_str(), O_RDONLY, 0666);
 		if (fd1 > 0) {
 	        dup2(fd1, 0);
@@ -491,16 +492,55 @@ int    Response::_executeCGI( int& fd ) {
         execve(_cgi_argv[0], _cgi_argv, environ);
         exit(502);
     }
-	close(fd);
     fcntl(fd, F_SETFL, O_NONBLOCK);
     _selector.set(fd, Selector::RD_SET);
-	wait(NULL);
-	_getCGI_Response();
+	// wait(NULL);
+	// _getCGI_Response();
 	return 0;
 }
 
+static std::string trim(std::string &s) {
+	int index_begin = 0;
+	int index_end = s.size() - 1;
+	int found = 0;
+	while (index_begin < index_end && found < 2) {
+		if (isspace(s[index_begin]) || s[index_begin] == '\n') {
+    	    index_begin++;
+    	} else if (isspace(s[index_end]) || s[index_end] == '\n') {
+    	    index_end--;
+    	} else {
+    	    break;
+    	}
+	}
+	s = s.substr(index_begin, index_end - index_begin + 1);
+	return s;
+}
+
+void splitString(const std::string& str, std::vector<std::string>& container, char delimiter = '\r') {
+    std::istringstream iss(str);
+    std::string item;
+
+    while (std::getline(iss, item, delimiter)) {
+        container.push_back(trim(item));
+    }
+}
+
 void 		Response::_parseCgiHeaders( std::string headers) {
-	std::cout << headers;
+	
+	size_t position = headers.find("\r\n");
+	std::string responseLine = headers.substr(0, position);
+	_status = static_cast<e_statusCode> (atoi((responseLine.substr(responseLine.find(" ")).c_str())));
+	headers.erase(0, position + 1);
+	trim(headers);
+	std::vector<std::string> headers_lines;
+	splitString(headers, headers_lines);
+	std::vector<std::string>::iterator it = headers_lines.begin();
+	while (it != headers_lines.end()) {
+		std::string key = it->substr(0, it->find_first_of(':'));
+		std::string value = it->substr(it->find(": ") + 2);
+		_headers[key] = value;
+		it++;
+	}
 }
 
 int    Response::_getCGI_Response( void ) {
@@ -508,12 +548,10 @@ int    Response::_getCGI_Response( void ) {
     std::string     body;
     int             status;
     int ret = waitpid(_cgi_pid, &status, WNOHANG);
-    if (ret == -1) {
-		if (WIFSIGNALED(status)) {
-			_status =  HTTP_INTERNAL_SERVER_ERROR;
-			goto End;
-		} else if (WEXITSTATUS(status) != 0) {
-			_status = HTTP_BAD_GATEWAY;
+
+	if (ret == _cgi_pid) {
+		if (!WIFEXITED(status) || WIFSIGNALED(status))  {
+			_status = HTTP_INTERNAL_SERVER_ERROR;
 			goto End;
 		}
         std::ifstream cgiResponse(_responsefileName);
@@ -525,28 +563,33 @@ int    Response::_getCGI_Response( void ) {
         buffer << cgiResponse.rdbuf();
         cgiResponse.close();
         std::string allfile = buffer.str();
-        size_t pos = allfile.find("\r\n\r\n");
-        if (pos != std::string::npos) {
-            headers = allfile.substr(0, pos + 2);
-            body = allfile.substr(pos + 4);
-			_file.open(_responsefileName.c_str(), std::ios_base::in | std::ios_base::out);
-    		if (!_file.is_open()) {
-    		    _status = HTTP_INTERNAL_SERVER_ERROR;
-    		    goto End;
-    		}
-    		_file.clear();
-			_file.write(body.c_str(), body.size());
-			_file.close();
-			std::stringstream ss;
-			ss << _file.rdbuf() << std::endl;
-			std::cout << "file content : " << ss.str();
-			_printfile();
-        }
-		goto End;
+		try {
+       		size_t pos = allfile.find("\r\n\r\n");
+       		if (pos != std::string::npos) {
+       		    headers = allfile.substr(0, pos);
+       		    body = allfile.substr(pos + 4);
+				_parseCgiHeaders(headers);
+				_file.close();
+				_file.open(_responsefileName.c_str(), \
+				std::ios_base::out | std::ios_base::trunc);
+    			if (!_file.is_open()) {
+    			    _status = HTTP_INTERNAL_SERVER_ERROR;
+    			    goto End;
+    			}
+				_file.write(body.c_str(), body.size());
+				_file.close();
+				_file.open(_responsefileName.c_str(), std::ios_base::in);
+       	 }
+		}
+		catch (const std::exception &){
+			_status = HTTP_INTERNAL_SERVER_ERROR;
+		}
     } else {
 		return 1;
 	}
 	End:
-		_buildResponse();
+	_buildResponse();
+	_selector.unset(_parse->getCgiFd(), Selector::RD_SET);
+	_parse->getCgiFd() = -1;
     return 0;
 }

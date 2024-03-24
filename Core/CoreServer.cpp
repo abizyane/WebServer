@@ -6,7 +6,7 @@
 /*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/08 02:35:06 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/22 02:45:04 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/03/24 01:33:54 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,7 +108,7 @@ void	CoreServer::_manageClients( Server* server )
 			}
 		}
 		if (_selector.isReadable(client->getCgiFd())) {
-			
+			client->sendCgiRespo();
 		}
 		if (client->sendResponse()) {
 			_purgeClient(server, it);

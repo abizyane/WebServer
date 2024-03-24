@@ -42,7 +42,7 @@ class ProcessRequest {
 		e_statusCode	_status;
 		IRequest*		_request;
 		Response*		_response;
-		int				_cgi_fd;
+		int&			_cgi_fd;
 		bool			_good;
 		std::string		_responseBuffer;
 		Selector&		_selector;
@@ -69,6 +69,7 @@ class ProcessRequest {
 		int&			getCgiFd();
 		bool			sent( void );
 		const int&		getPort() const;
+		void			getCgiResponse();
 
 		~ProcessRequest();
 };

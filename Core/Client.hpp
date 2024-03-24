@@ -50,6 +50,9 @@ class	Client
 			return _lastactive;
 		}
 		
+		inline void		sendCgiRespo() {
+			_processor.getCgiResponse();
+		}
 		
 		friend std::ostream&	operator<<( std::ostream& os, const Client& rhs );
 };

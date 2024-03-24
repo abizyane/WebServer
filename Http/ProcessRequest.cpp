@@ -117,10 +117,9 @@ void	ProcessRequest::parseLine(char *buffer, int size){
 	if (_state == Body)
 		_status = _request->parseBody(_requestBuffer);
 
-	if (_state == Error || _state == Done){
+	if (_state == Error || _state == Done)
 		_response = new Response(*_request, *this, _port, _selector);
-		_good = true;
-	}
+
 }
 
 void	ProcessRequest::_parseRequestLine(std::string &requestLine){
@@ -191,6 +190,10 @@ void	ProcessRequest::_resetProcessor( void ){
 
 int&			ProcessRequest::getCgiFd() {
 	return _cgi_fd;
+}
+
+void			ProcessRequest::getCgiResponse() {
+	_response->_getCGI_Response();
 }
 
 ProcessRequest::~ProcessRequest(){
