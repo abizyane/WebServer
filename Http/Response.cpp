@@ -6,7 +6,7 @@
 /*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/24 01:56:09 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/03/24 06:03:57 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,7 +127,7 @@ void	Response::_processGetResponse(){
 			for (size_t i = 0; i < indexes.size(); i++){
 				std::string	tmp = _location->getRoot() + "/" + normPath(indexes[i]);
 				if (!access(tmp.c_str(), F_OK)){
-					_readFile(tmp);
+					// _readFile(tmp);
 					_request->setUri(tmp);
 					goto HERE;
 				}
@@ -304,6 +304,8 @@ std::string    Response::GetResponse(size_t lastSent){
 			if (_response.size() == 0 && _bodyIndex < index && !_file.eof()){
 				std::vector<char> buffer(index - _bodyIndex);
 				_file.read(buffer.data(), index - _bodyIndex);
+				_selector.unset(_parse->getCgiFd(), Selector::RD_SET);
+				_parse->getCgiFd() = -1;
 				std::streamsize readed = _file.gcount();
 				_response.assign(buffer.data(), readed);
 			}
@@ -526,10 +528,9 @@ void splitString(const std::string& str, std::vector<std::string>& container, ch
 }
 
 void 		Response::_parseCgiHeaders( std::string headers) {
-	
 	size_t position = headers.find("\r\n");
 	std::string responseLine = headers.substr(0, position);
-	_status = static_cast<e_statusCode> (atoi((responseLine.substr(responseLine.find(" ")).c_str())));
+	_status = static_cast<e_statusCode> (atoi((responseLine.substr(responseLine.find(" "), responseLine.find_last_of(' ')).c_str())));
 	headers.erase(0, position + 1);
 	trim(headers);
 	std::vector<std::string> headers_lines;
@@ -543,53 +544,52 @@ void 		Response::_parseCgiHeaders( std::string headers) {
 	}
 }
 
-int    Response::_getCGI_Response( void ) {
-    std::string     headers;
-    std::string     body;
-    int             status;
+int Response::_getCGI_Response(void) {
+    std::string headers;
+    std::string body;
+    int status;
     int ret = waitpid(_cgi_pid, &status, WNOHANG);
+    if (ret == _cgi_pid) {
+        if (!WIFEXITED(status) || WIFSIGNALED(status)) {
+            _status = HTTP_INTERNAL_SERVER_ERROR;
+            goto Here;
+        }
 
-	if (ret == _cgi_pid) {
-		if (!WIFEXITED(status) || WIFSIGNALED(status))  {
-			_status = HTTP_INTERNAL_SERVER_ERROR;
-			goto End;
-		}
         std::ifstream cgiResponse(_responsefileName);
         if (!cgiResponse.is_open()) {
-			_status = HTTP_FORBIDDEN;
-			goto End;
-		}
-		std::stringstream buffer;
-        buffer << cgiResponse.rdbuf();
-        cgiResponse.close();
-        std::string allfile = buffer.str();
-		try {
-       		size_t pos = allfile.find("\r\n\r\n");
-       		if (pos != std::string::npos) {
-       		    headers = allfile.substr(0, pos);
-       		    body = allfile.substr(pos + 4);
-				_parseCgiHeaders(headers);
+            _status = HTTP_FORBIDDEN;
+            goto Here;
+        }
+
+        try {
+            std::stringstream buffer;
+            buffer << cgiResponse.rdbuf();
+            cgiResponse.close();
+            std::string allfile = buffer.str();
+
+            size_t pos = allfile.find("\r\n\r\n");
+            if (pos != std::string::npos) {
+                headers = allfile.substr(0, pos);
+                body = allfile.substr(pos + 4);
+                _parseCgiHeaders(headers);
 				_file.close();
-				_file.open(_responsefileName.c_str(), \
-				std::ios_base::out | std::ios_base::trunc);
-    			if (!_file.is_open()) {
-    			    _status = HTTP_INTERNAL_SERVER_ERROR;
-    			    goto End;
-    			}
+				_file.open(_responsefileName.c_str(), std::ios::in | std::ios::out | std::ios::trunc);
+                if (!_file.is_open()) {
+                    _status = HTTP_INTERNAL_SERVER_ERROR;
+                    goto Here;
+                }
 				_file.write(body.c_str(), body.size());
 				_file.close();
-				_file.open(_responsefileName.c_str(), std::ios_base::in);
-       	 }
-		}
-		catch (const std::exception &){
-			_status = HTTP_INTERNAL_SERVER_ERROR;
-		}
+				_file.open(_responsefileName.c_str(), std::ios::in | std::ios::out);
+            }
+        } catch (const std::exception &) {
+            _status = HTTP_INTERNAL_SERVER_ERROR;
+            goto Here;
+        }
     } else {
-		return 1;
-	}
-	End:
+        return 1;
+    }
+	Here:
 	_buildResponse();
-	_selector.unset(_parse->getCgiFd(), Selector::RD_SET);
-	_parse->getCgiFd() = -1;
     return 0;
 }

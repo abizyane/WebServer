@@ -6,7 +6,7 @@
 /*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/08 02:35:06 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/24 01:33:54 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/03/24 04:51:37 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,6 +111,7 @@ void	CoreServer::_manageClients( Server* server )
 			client->sendCgiRespo();
 		}
 		if (client->sendResponse()) {
+			std::cout << "1\n";
 			_purgeClient(server, it);
 			continue;
 		}

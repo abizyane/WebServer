@@ -6,7 +6,7 @@
 /*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/08 02:39:26 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/24 01:31:48 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/03/24 05:17:45 by nakebli          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,6 @@ Client::~Client( void ) {
 	close(_cgi_fd);
 	_cgi_fd = -1;
 }
-
 
 bool		Client::sendResponse( void ) {
 	if (_processor.good()){
