@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:07:10 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/24 23:19:12 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/25 16:46:02 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,6 +60,7 @@ class Response {
 		void								_processGetResponse( void );
 		void								_processPostResponse( void );
 		void								_processDeleteResponse( void );
+		void								_processPutResponse( void );
 		void								_prepareResponse( void );
 		void								_readFile(std::string resourse);
 		void								_writeFile(std::string resource);
@@ -68,7 +69,6 @@ class Response {
 		std::string							_autoIndex( const std::string& dirName );
 		void								_openFile(std::string &fileName, int param);
 		void								_handleCookies( void );
-		std::vector<std::string>			_splitHeaderValue(std::string header);
 		
 		void								_getFileName(std::string &resource);
 		void    							_setCGI_Arguments( void );
@@ -117,3 +117,4 @@ class Response {
 };
 
 std::string		getExtension(const std::string &fileName);
+std::vector<std::string>			splitHeaderValue(std::string header);

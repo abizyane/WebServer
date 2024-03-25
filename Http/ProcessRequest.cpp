@@ -62,7 +62,7 @@ static int		checkMethod(std::string& method){
 	for (; i < 11; i++)
 		if (str[i] == method)
 			break;
-	if (i < 3)
+	if (i < 4)
 		return i;
 	if (i < 11)
 		return 501;
@@ -142,6 +142,9 @@ void	ProcessRequest::_parseRequestLine(std::string &requestLine){
 				break;
 			case 2:
 				_request = new DeleteRequest(method, uri, *this);
+				break;
+			case 3:
+				_request = new PutRequest(method, uri, *this);
 				break;
 			default:
 				_state = Error;

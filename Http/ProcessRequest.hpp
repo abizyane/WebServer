@@ -22,6 +22,7 @@
 #include "GetRequest.hpp"
 #include "PostRequest.hpp"
 #include "DeleteRequest.hpp"
+#include "PutRequest.hpp"
 #include "../Core/Selector.hpp"
 
 class Response;

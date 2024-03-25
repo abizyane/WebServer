@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/25 02:15:55 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/25 18:34:28 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@ Response::Response(IRequest& request, ProcessRequest& parse, int port, Selector&
 	_parse(&parse), _good(false), _state(RESPONSE), _selector(selector) {
 	_bodyIndex = 0;
 	_responsefileName = "/tmp/.ResponseBody";
+	std::srand(std::time(0));
 	_responsefileName += to_str(rand() % 100000);
 	_status = _parse->getStatusCode();
 	_waitForCgi = false;
@@ -105,27 +106,7 @@ void	Response::_buildResponse(){
 	_response += "\r\n";
 	_good = true;
 	_parse->setGood(true);
-}
-
-void	Response::_readFile(std::string resource){
-	struct stat fileStat;
-	stat(resource.c_str(), &fileStat);
-	if (S_ISDIR(fileStat.st_mode)){
-		_headers["Content-Type"] = "Dir";
-		return;
-	}
-	_openFile(resource, 0);
-	size_t size = static_cast<size_t>(fileStat.st_size);
-	_headers["Content-Length"] = to_str(size);
-	std::string ext = getExtension(resource);
-	if (ext != "" && _mimeMap[ext] != "")
-		_headers["Content-Type"] = _mimeMap[ext];
-	else
-		_headers["Content-Type"] = "octet-stream";
-	char dt[30];
-	strftime(dt, 30, "%a, %d %b %Y %H:%M:%S %Z", gmtime(&fileStat.st_mtime));
-	_headers["Last-Modified"] = std::string(dt);
-}
+}	
 
 void	Response::_processGetResponse(){
 	if (!_location->methodIsAllowed(_request->getMethod()))
@@ -143,7 +124,6 @@ void	Response::_processGetResponse(){
 			for (size_t i = 0; i < indexes.size(); i++){
 				std::string	tmp = _location->getRoot() + "/" + normPath(indexes[i]);
 				if (!access(tmp.c_str(), F_OK)){
-					// _readFile(tmp);
 					_request->setUri(tmp);
 					goto HERE;
 				}
@@ -172,32 +152,54 @@ void	Response::_processGetResponse(){
 	}
 }
 
-void	Response::_getFileName(std::string &resource) {
-	std::time_t currentTime = std::time(0);
-    char timestamp[100];
-	std::strftime(timestamp, sizeof(timestamp), "%Y-%m-%d%H:%M:%S", std::localtime(&currentTime));
-	std::string	extension = getExtension(_request->getUri());
-	if (extension == "" || _mimeMap[extension] == "" ){
-		extension = _request->getHeaders()["Content-Type"];
-		if (extension != "")
-			for (std::map<std::string, std::string>::iterator it = _mimeMap.begin(); it != _mimeMap.end(); it++)
-				if (it->second == extension){
-					extension = it->first;
+void	Response::_processPostResponse(){
+	if (!_location->methodIsAllowed(_request->getMethod()))
+		throw Response::ResponseException(HTTP_METHOD_NOT_ALLOWED);
+	std::string resource = normPath(_location->getRoot() + normPath(_request->getUri()));
+	struct stat st;
+	if (_location->hasUpload()){
+		stat(resource.c_str(), &st);
+		if (S_ISDIR(st.st_mode)){
+			if (*(_request->getUri().end() - 1) != '/'){
+				_headers["Location"] = _request->getUri() + "/";
+				throw Response::ResponseException(HTTP_MOVED_PERMANENTLY);
+			}
+			if (!_location->hasIndex())
+				throw Response::ResponseException(HTTP_FORBIDDEN);
+			std::vector<std::string>	indexes = _location->getIndex();
+			for (size_t i = 0; i < indexes.size(); i++){
+				std::string	tmp = normPath(_location->getRoot() + "/" + normPath(indexes[i]));
+				if (!access(tmp.c_str(), F_OK)){
+					_request->setUri(tmp);
+					resource = tmp;
 					break;
 				}
+			}
+		}
 	}
-	resource += "/" + std::string(timestamp);
-	if (extension != "")
-		resource += "." + extension;
-	resource = normPath(resource);
-	if (extension != "" && _mimeMap[extension] == "") // TODO: this is not working very well
-		throw Response::ResponseException(HTTP_UNSUPPORTED_MEDIA_TYPE);
-	return;
+	if (_location->hasCgi() && resource.find_last_of('.') != std::string::npos && _location->isCgi(resource.substr(resource.find_last_of('.')))){
+		_waitForCgi = true;
+		_headers.clear();
+		_request->setUri(_request->getUri() + "?" + _query);
+		_setCGI_Arguments();
+		_initCGI();
+		_executeCGI(_parse->getCgiFd());
+	}
+	else
+		throw Response::ResponseException(HTTP_NOT_IMPLEMENTED);
 }
 
-void	Response::_writeFile(std::string resource){
+void	Response::_processPutResponse(){
+	if (!_location->methodIsAllowed(_request->getMethod()))
+		throw Response::ResponseException(HTTP_METHOD_NOT_ALLOWED);
+	std::string resource = _location->getRoot() + normPath(_location->getUploadStore()) + normPath(_request->getUri());
 	struct stat st;
-	std::string fileName;
+	stat(resource.c_str(), &st);
+	
+	if (S_ISDIR(st.st_mode) && (*(_request->getUri().end() - 1) != '/')){
+			_headers["Location"] = _request->getUri() + "/";
+			throw Response::ResponseException(HTTP_MOVED_PERMANENTLY);
+	}
 	if (_location->hasUpload()){
 		if (resource != "" && stat(resource.c_str(), &st) == -1)
 				mkdir(resource.c_str(), 0777);
@@ -216,41 +218,6 @@ void	Response::_writeFile(std::string resource){
 		strftime(dt, 30, "%a, %d %b %Y %H:%M:%S %Z", gmtime(&st.st_mtime));
 		_headers["Last-Modified"] = std::string(dt);
 		_status = HTTP_CREATED;
-		return ;
-	}
-	_openFile(resource, 0);
-	stat(resource.c_str(), &st);
-	if (S_ISDIR(st.st_mode))
-		_headers["Content-Type"] = "Dir";
-}
-
-
-void	Response::_processPostResponse(){
-	if (!_location->methodIsAllowed(_request->getMethod()))
-		throw Response::ResponseException(HTTP_METHOD_NOT_ALLOWED);
-	std::string resource = _location->getRoot() + normPath(_location->getUploadStore()) + normPath(_request->getUri());
-	_writeFile(resource);
-	if (_status != HTTP_CREATED){
-		if (_headers["Content-Type"] == "Dir"){
-			_headers.erase("Content-Type");
-			if (*(_request->getUri().end() - 1) != '/'){
-				_headers["Location"] = _request->getUri() + "/";
-				throw Response::ResponseException(HTTP_MOVED_PERMANENTLY);
-			}
-			if (!_location->hasIndex())
-				throw Response::ResponseException(HTTP_FORBIDDEN);
-			std::vector<std::string>	indexes = _location->getIndex();
-			for (size_t i = 0; i < indexes.size(); i++){
-				std::string	tmp = normPath(_location->getRoot() + "/" + normPath(indexes[i]));
-				if (!access(tmp.c_str(), F_OK)){
-					// _readFile(tmp);
-					_request->setUri(tmp);
-					break;
-				}
-			}
-		}
-	}
-	else {
 		_openFile(_responsefileName, 1);
 		_file.write("File uploaded successfully", 24);
 		_file.close();
@@ -258,7 +225,34 @@ void	Response::_processPostResponse(){
 		_headers["Content-Type"] = "text/plain";
 		_openFile(_responsefileName, 0);
 	}
-	_handleCookies();
+	else
+		throw Response::ResponseException(HTTP_NOT_ACCEPTABLE);
+}
+
+void	Response::_processDeleteResponse(){
+	if (!_location->methodIsAllowed(_request->getMethod()))
+		throw Response::ResponseException(HTTP_METHOD_NOT_ALLOWED);
+	std::string resource = normPath(_location->getRoot() + normPath(_request->getUri()));
+	_readFile(resource);
+	_status = HTTP_NO_CONTENT;
+	if (_headers["Content-Type"] == "Dir"){
+		_headers.erase("Content-Type");
+		if (*(_request->getUri().end() - 1) != '/')
+			throw Response::ResponseException(HTTP_CONFLICT);
+		if (_location->hasIndex()){
+			std::vector<std::string>	indexes = _location->getIndex();
+			for (size_t i = 0; i < indexes.size(); i++){
+				std::string	tmp = _location->getRoot() + "/" + normPath(indexes[i]);
+				if (!access(tmp.c_str(), F_OK)){
+					_request->setUri(tmp);
+					resource = tmp;
+					break;
+				}
+			}
+		}
+		else
+			throw Response::ResponseException(HTTP_FORBIDDEN);
+	}
 	if (_location->hasCgi() && resource.find_last_of('.') != std::string::npos && _location->isCgi(resource.substr(resource.find_last_of('.')))){
 		_waitForCgi = true;
 		_headers.clear();
@@ -267,94 +261,16 @@ void	Response::_processPostResponse(){
 		_initCGI();
 		_executeCGI(_parse->getCgiFd());
 	}
-}
-
-void	Response::_deleteFile(std::string resource){
-	struct stat st;
-	if (stat(resource.c_str(), &st) == -1)
-		throw Response::ResponseException(HTTP_NOT_FOUND);
-
-	if (remove(resource.c_str()) != 0)
-		throw Response::ResponseException(HTTP_INTERNAL_SERVER_ERROR);
-	else if (!(st.st_mode & S_IRWXU))
-		throw Response::ResponseException(HTTP_FORBIDDEN);
-	_status = HTTP_NO_CONTENT;
-}
-
-void	Response::_processDeleteResponse(){
-	_processGetResponse();
-	_status = HTTP_NO_CONTENT;
-}
-
-void	Response::_handleRange(){
-	try {
-		if (_request->getHeaders()["Range"] != "") {
-			std::string range = _request->getHeaders()["Range"];
-			ssize_t length = strtoll(_headers["Content-Length"].c_str(), NULL, 10);
-			ssize_t start = strtoll(range.substr(range.find("=") + 1, range.find("-")).c_str(), NULL, 10);
-			range.erase(0, range.find("-") + 1);
-			ssize_t end = length - 1;
-			if (start >= end)
-				end = length - start;
-			if (range != "")
-				end = strtoll(range.c_str(), NULL, 10);
-			_file.seekg(start, std::ios::beg);
-			if (end > length || start > length || start > end || start < 0 || end < 0)
-				throw Response::ResponseException(HTTP_REQUESTED_RANGE_NOT_SATISFIABLE);
-			_headers["Content-Range"] = "bytes " + to_str(start) + "-" + to_str(end) + "/" + _headers["Content-Length"];
-			_headers["Content-Length"] = to_str(end - start + 1);
-			_status = HTTP_PARTIAL_CONTENT;
-		}
-	}
-	catch (std::exception &){
-		throw Response::ResponseException(HTTP_REQUESTED_RANGE_NOT_SATISFIABLE);
-	}
-}
-
-void	Response::_handleCookies(){
-	std::string	cookie = _request->getHeaders()["Cookie"];
-	if (cookie != ""){
-		std::vector<std::pair<std::string, std::string> >	cookies;
-		std::vector<std::string>	tmp;
-		size_t		pos = cookie.find_first_of("; ");
-		if (pos != std::string::npos)
-			while (pos != std::string::npos){
-				tmp.push_back(cookie.substr(0, pos));
-				cookie.erase(0, pos + 2);
-				pos = cookie.find_first_of("; ");
-				if (pos == std::string::npos && cookie != "")
-					tmp.push_back(cookie);
-			}
-		else
-			tmp.push_back(cookie);
-		for (size_t i = 0; i < tmp.size(); i++){
-			size_t			index = tmp[i].find("=");
-			std::string		key;
-			if (index != std::string::npos){
-				key = tmp[i].substr(0, index);
-				tmp[i].erase(0, index + 1);
-			}
-			else{
-				key = tmp[i];
-				tmp[i] = "";
-			}
-			cookies.push_back(std::make_pair(key, tmp[i]));
-		}
-		std::vector<std::pair<std::string, std::string> > c;
-		bool	f = false;
-		for (size_t i = 0; i < cookies.size(); i++){
-			if (f && cookies[i].second != "")
-				_cookies.push_back(c);
-			if (cookies[i].second != ""){
-				c.push_back(cookies[i]);
-				f = true;
-			}
-			if (cookies[i].second == "")
-				c.push_back(cookies[i]);
-			if (i == cookies.size() - 1)
-				_cookies.push_back(c);
-		}
-	}
+	else
+		throw Response::ResponseException(HTTP_NOT_IMPLEMENTED);
+	// if (_status == HTTP_OK){
+	// 	_openFile(_responsefileName, 1);
+	// 	_file.write("The File Path is in the request uri, the client backend can do whatever he want with it", 88);
+	// 	_file.close();
+	// 	_headers["Content-Length"] = "24";
+	// 	_headers["Content-Type"] = "text/plain";
+	// 	_openFile(_responsefileName, 0);	
+	// }
 }
 
 std::string    Response::GetResponse(size_t lastSent){
@@ -368,10 +284,8 @@ std::string    Response::GetResponse(size_t lastSent){
 			break;
 		case BODY:
 			index = strtoll(_headers["Content-Length"].c_str(), NULL, 10);
-			if (index == 0){ // there is still a segv when 
-				_state = DONE;
-				break;
-			}
+			if (index == 0)
+				goto X;
 			_response.erase(0, lastSent);
 			_bodyIndex += lastSent;
 			if (_response.size() == 0 && _bodyIndex < index && !_file.eof()){
@@ -385,6 +299,7 @@ std::string    Response::GetResponse(size_t lastSent){
 			if (_response.size() > 0 && _bodyIndex < index)
 				response = _response.substr(0, index - _bodyIndex);
 			else{
+				X:
 				_state = DONE;
 				std::remove(_responsefileName.c_str());
 			}
@@ -406,8 +321,8 @@ void    Response::_prepareResponse(){
 				_headers["Location"] = _location->getRedirectPage().second;
 				throw Response::ResponseException(static_cast<e_statusCode>(_location->getRedirectPage().first));	
 			}
-			std::string  methods[3] = {"GET", "POST", "DELETE"};
-			for (int i = 0; i < 3; i++)
+			std::string  methods[4] = {"GET", "POST", "DELETE", "PUT"};
+			for (int i = 0; i < 4; i++)
 				if (_request->getMethod() == methods[i])
 					switch (i){
 						case 0:
@@ -418,6 +333,9 @@ void    Response::_prepareResponse(){
 							break;
 						case 2:
 							_processDeleteResponse();
+							break;
+						case 3:
+							_processPutResponse();
 						default:
 							break;
 					}
@@ -425,6 +343,9 @@ void    Response::_prepareResponse(){
 	}
 	catch (Response::ResponseException &e){
 		_status = e.getStatus();
+	}
+	catch (std::exception &e){
+		_status = HTTP_INTERNAL_SERVER_ERROR;
 	}
 	TRYAGAIN:
 	try {
@@ -441,250 +362,4 @@ void    Response::_prepareResponse(){
 Response::~Response(){
 	if (_file.is_open())
 		_file.close();
-}
-
-std::string	Response::_autoIndex( const std::string& dirName ){
-	std::string	htmlPage;
-
-	htmlPage += "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">";
-	htmlPage += "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css\" integrity=\"sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\" />\n";
-	htmlPage += "<title>read" + dirName + "</title><style> .fa-file { color: #85c3ec; padding-right: 15px;}a {text-decoration: none; color: #094f7e;} ";
-	htmlPage += "i { color: #bea307; padding-right: 10px; } table { border-collapse: collapse; } th, td { padding: 10px 20px ; text-align: left; } ";
-	htmlPage += "th { background-color: #ffffff; }		\n";
-	htmlPage += "tr:nth-child(even) { background-color: #f8f7f7; } tr:hover { background-color: #ddd; }	td {cursor: pointer;} </style> </head> ";
-	DIR*		dir;
-	if ((dir = opendir(dirName.c_str())) != NULL) {
-		htmlPage += "<body><h1>Index of [ " + dirName + " ]: </h1><hr><h2 style=\"padding: 10px;\"><a href=\"../\"><i class=\"fa-solid fa-backward\"></i> parent dir ... </a> </h2><table><tr><th>Name</th><th>Last Modified</th><th>Size</th></tr>";
-
-		// htmlPage += "<body><h1>Index of [ " + dirName + " ]: </h1><hr><h2 style=\"padding: 10px;\"><i class=\"fa-solid fa-folder\"></i> parent dir: <a href=\"" + dirName + "/..\"> ..... </a> </h2><table><tr><th>Name</th><th>Last Modified</th><th>Size</th></tr>";
-		struct dirent*	ent;
-		while ((ent = readdir(dir)) != NULL) {
-			std::string	fileName = ent->d_name;
-			if (fileName == "." || fileName == "..")
-				continue;
-			std::string	filePath = dirName + "/" + fileName;
-			struct stat statbuff;
-			if (stat(filePath.c_str(), &statbuff) != -1) {
-				char buffer[30];
-				strftime(buffer, 30, "%a, %d %b %Y %H:%M:%S %Z", gmtime(&statbuff.st_mtime));
-				std::string	lastModified = buffer;
-				std::string	fileSize = to_str(statbuff.st_size);
-				if (S_ISDIR(statbuff.st_mode)) {
-					htmlPage += "<tr><td><a href=\"" + fileName + " \"><i class=\"fa-solid fa-folder\"></i> " + fileName + "</a></td>";
-				} else {
-					htmlPage += "<tr><td><a href=\"" + fileName + " \"><i class=\"fa-solid fa-file\"></i> " + fileName + "</a></td>";
-				}
-				htmlPage += "<td>" + lastModified + "</td><td>" + fileSize + "</td></tr>";
-			}
-		}
-		closedir(dir);
-	} else {
-		htmlPage += "<h1>Error couldn't opreaden the directory : " + dirName  + "</h1>";
-	}
-	htmlPage += "</table></body></html>";
-	_responsefileName += ".html";
-	_openFile(_responsefileName, 1);
-	_file << htmlPage;
-	_file.close();
-	return _responsefileName;
-}
-
-//  ========== For CGI ==========
-
-void    Response::_setCGI_Arguments( void ) {
-    std::string requestURI = _request->getUri();
-    std::string serverRoot = _location->getRoot();
-    _file_path = serverRoot + requestURI;
-    _query_string = "";
-    _cgi_argv = new char*[2];
-    if (requestURI.find('?') != std::string::npos) {
-        _query_string = requestURI.substr(requestURI.find('?') + 1);
-        _file_path = serverRoot + requestURI.substr(0, requestURI.find('?'));
-    }
-    _cgi_argv[0] = strdup(normPath(_file_path).c_str());
-    _cgi_argv[1] = NULL;
-}
-
-void    Response::_initCGI() {
-    std::string requestUri = _request->getUri();
-    std::string locationRoot = _location->getRoot();
-    std::map<std::string, std::string> headers = _request->getHeaders();
-
-	headers["SERVER_PROTOCOL"] = "HTTP/1.1";
-	headers["GATEWAY_INTERFACE"] = "CGI/1.1";
-	headers["SERVER_SOFTWARE"] = "webserv/1.0";
-    headers["REDIRECT_STATUS" ] = "0";
-    headers["HTTP_COOKIE"] = headers["Cookie"];
-    headers["HTTP_USER_AGENT"] = headers["User-Agent"];
-    headers["HTTP_HOST"] = headers["Host"];
-    headers["SERVER_PORT"] = to_str(_parse->getPort());
-    headers["PATH_INFO"] = _file_path;
-    headers["PATH_TRANSLATED"] = _file_path;
-    headers["SCRIPT_NAME"] = _file_path;
-    headers["REQUEST_URI"] = _file_path;
-    headers["DOCUMENT_ROOT"] = locationRoot;
-    headers["HTTP_CONNECTION"] = headers["Connection"];
-    headers["HTTP_ACCEPT"] = headers["Accept"];
-    headers["HTTP_USER-AGENT"] = headers["User-Agent"];
-    headers["HTTP_COOKIE"] = headers["Cookie"];
-    headers["CONTENT_TYPE"] = headers["Content-Type"];
-    headers["REQUEST_METHOD"] = _request->getMethod();
-    headers["QUERY_STRING"] = _query_string;
-    // ---------------
-    std::map<std::string, std::string>::iterator it = headers.begin();
-    while (it != headers.end())
-    {
-        std::string key = it->first;
-        if (std::islower(key[1]))
-            key = formKey(key);
-        setenv(key.c_str(), it->second.c_str(), 1);
-        it++;
-    }
-}
-
-int    Response::_executeCGI( int& fd ) {
-    fd = open(_responsefileName.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0666);
-    if (fd == -1) {
-		_status = HTTP_INTERNAL_SERVER_ERROR;
-		return 1;
-	}
-	_cgi_pid = fork();
-	if (_cgi_pid == -1) {
-		_status = HTTP_INTERNAL_SERVER_ERROR;
-		return 1;
-	}
-    if (_cgi_pid == 0) {
-        dup2(fd, 1);
-		close(fd);
-        int fd1 = open(_request->getFileName().c_str(), O_RDONLY, 0666);
-		if (fd1 > 0) {
-	        dup2(fd1, 0);
-        	close(fd1);
-		}
-        extern char** environ;
-		
-        execve(_cgi_argv[0], _cgi_argv, environ);
-		std::cerr << _cgi_argv[0] << " " <<  strerror(errno) << std::endl;
-		exit(502);
-    }
-    fcntl(fd, F_SETFL, O_NONBLOCK);
-    _selector.set(fd, Selector::RD_SET);
-	// wait(NULL);
-	// _getCGI_Response();
-	return 0;
-}
-
-static std::string trim(std::string &s) {
-	int index_begin = 0;
-	int index_end = s.size() - 1;
-	int found = 0;
-	while (index_begin < index_end && found < 2) {
-		if (isspace(s[index_begin]) || s[index_begin] == '\n') {
-    	    index_begin++;
-    	} else if (isspace(s[index_end]) || s[index_end] == '\n') {
-    	    index_end--;
-    	} else {
-    	    break;
-    	}
-	}
-	s = s.substr(index_begin, index_end - index_begin + 1);
-	return s;
-}
-
-void splitString(const std::string& str, std::vector<std::string>& container, char delimiter = '\r') {
-    std::istringstream iss(str);
-    std::string item;
-
-    while (std::getline(iss, item, delimiter)) {
-        container.push_back(trim(item));
-    }
-}
-
-void 		Response::_parseCgiHeaders( std::string headers) {
-	size_t position = headers.find("\r\n");
-	if (headers.empty() || position == std::string::npos){
-		_status = HTTP_INTERNAL_SERVER_ERROR;
-		return;
-	}
-	std::string responseLine = headers.substr(0, position);
-	size_t pos = responseLine.find(" ");
-	int code = atoi(responseLine.substr(pos, 4).c_str());
-	if (code < 100 || code > 599)
-		_status = HTTP_INTERNAL_SERVER_ERROR;
-	else
-		_status = static_cast<e_statusCode> (code);
-	headers.erase(0, position + 2);
-	while (headers.size() > 0){
-		position = headers.find("\r\n");
-		if (position == std::string::npos || position == 0)
-			break;
-		std::string header = headers.substr(0, position);
-		headers.erase(0, position + 2);
-		position = header.find(": ");
-		std::string key = header.substr(0, position);
-		std::string value = header.substr(position + 2);
-		_headers[key] = value;
-	}
-	if (_headers["Content-Type"] != "text/html")
-		_headers["Content-Type"] = "text/html";
-	
-	// trim(headers);
-	// std::vector<std::string> headers_lines;
-	// splitString(headers, headers_lines);
-	// std::vector<std::string>::iterator it = headers_lines.begin();
-	// while (it != headers_lines.end()) {
-	// 	std::string key = it->substr(0, it->find_first_of(':'));
-	// 	std::string value = it->substr(it->find(": ") + 2);
-	// 	_headers[key] = value;
-	// 	it++;
-	// }
-}
-
-int Response::_getCGI_Response(void) {
-    std::string headers;
-    std::string body;
-    int status;
-    int ret = waitpid(_cgi_pid, &status, WNOHANG);
-    if (ret == _cgi_pid) {
-        if ((WIFEXITED(status) && WEXITSTATUS(status) != 0) || WIFSIGNALED(status)) {
-            _status = HTTP_INTERNAL_SERVER_ERROR;
-            goto Here;
-        }
-        std::ifstream cgiResponse(_responsefileName);
-        if (!cgiResponse.is_open()) {
-            _status = HTTP_FORBIDDEN;
-            goto Here;
-        }
-        try {
-            std::stringstream buffer;
-            buffer << cgiResponse.rdbuf();
-            cgiResponse.close();
-            std::string allfile = buffer.str();
-
-            size_t pos = allfile.find("\r\n\r\n");
-            if (pos != std::string::npos) {
-                headers = allfile.substr(0, pos + 2);
-                body = allfile.substr(pos + 4);
-                _parseCgiHeaders(headers);
-				_file.close();
-				std::remove(_responsefileName.c_str());
-				_file.open(_responsefileName.c_str(), std::ios::in | std::ios::out | std::ios::trunc);
-                if (!_file.is_open()) {
-                    _status = HTTP_INTERNAL_SERVER_ERROR;
-                    goto Here;
-                }
-				_file.write(body.c_str(), body.size());
-				_file.close();
-				_file.open(_responsefileName.c_str(), std::ios::in | std::ios::out);
-            }
-        } catch (const std::exception &) {
-            _status = HTTP_INTERNAL_SERVER_ERROR;
-            goto Here;
-        }
-    } else {
-        return 1;
-    }
-	Here:
-	_buildResponse();
-    return 0;
 }

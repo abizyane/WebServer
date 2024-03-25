@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/01 18:15:20 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/24 22:21:48 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/25 02:48:35 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -144,18 +144,17 @@ void	Response::_openFile(std::string &fileName, int param){
 		throw ResponseException(HTTP_INTERNAL_SERVER_ERROR);
 }
 
-std::vector<std::string>	Response::_splitHeaderValue(std::string header){
-	std::string	value = _headers[header];
-	size_t		pos = value.find_first_of(", ");
+std::vector<std::string>	splitHeaderValue(std::string header){
+	size_t		pos = header.find_first_of(", ");
 	
 	std::vector<std::string>	values;
 	if (pos != std::string::npos)
 		while (pos != std::string::npos){
-			values.push_back(value.substr(0, pos));
-			value.erase(0, pos + 2);
-			pos = value.find_first_of(", ");
+			values.push_back(header.substr(0, pos));
+			header.erase(0, pos + 2);
+			pos = header.find_first_of(", ");
 		}
 	else
-		values.push_back(value);
+		values.push_back(header);
 	return values;
 }

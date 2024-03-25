@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   DeleteRequest.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:04:42 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/22 02:03:41 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/03/25 16:39:00 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,9 +17,11 @@ DeleteRequest::DeleteRequest(std::string &method, std::string &uri, ProcessReque
 	_hasBody = false;
 	_isChunked = false;
 	_contentLength = 0;
-	_fileName = "/tmp/.requestbody";
 	_gotChunkLen = false;
 	_chunkLen = 0;
+	_fileName = "/tmp/.requestbody";
+	std::srand(std::time(0));
+	_fileName += std::to_string(std::rand() % 100000);
 }
 
 std::string		DeleteRequest::getMethod( void ) const{
@@ -98,9 +100,6 @@ e_statusCode	DeleteRequest::checkHeaders(void){
 				return HTTP_BAD_REQUEST;
 			_contentLength = strtoll(_headers["Content-Length"].c_str(), NULL, 10);
 		}
-		std::srand(std::time(0));
-		for (size_t i = 0; i < 5; i++)
-			_fileName += to_str(std::rand());
 		_body.open(_fileName.c_str(), std::ios::out | std::ios::in | std::ios::trunc);
 		if (!_body.is_open()){
 			_parse.setParseState(Error);
