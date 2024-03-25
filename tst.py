@@ -22,7 +22,7 @@ page += "</h1>"
 content_length = len(page.encode('utf-8'))
 
 # Print the headers
-print("200 Ok HTTP/1.1", end='\r\n')
+print("HTTP/1.1 200 Ok", end='\r\n')
 print("Content-Type: text/html", end='\r\n')
 print(f"Content-Length: {content_length}", end='')
 print(end='\r\n\r\n')

@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/25 00:40:20 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/25 02:15:55 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,7 +90,7 @@ void	Response::_buildResponse(){
 	for (std::map<std::string, std::string>::iterator it = _headers.begin(); it != _headers.end(); it++)
 		_response += it->first + ": " + it->second + "\r\n";
 	
-	if (_cookies.size() > 0)
+	if (_cookies.size() > 0 && _waitForCgi == false)
 		for (size_t i = 0; i < _cookies.size(); i++){
 			_response += "Set-Cookie: ";
 			for (size_t j = 0; j < _cookies[i].size(); j++){
@@ -368,6 +368,10 @@ std::string    Response::GetResponse(size_t lastSent){
 			break;
 		case BODY:
 			index = strtoll(_headers["Content-Length"].c_str(), NULL, 10);
+			if (index == 0){ // there is still a segv when 
+				_state = DONE;
+				break;
+			}
 			_response.erase(0, lastSent);
 			_bodyIndex += lastSent;
 			if (_response.size() == 0 && _bodyIndex < index && !_file.eof()){
@@ -506,7 +510,7 @@ void    Response::_initCGI() {
     std::string locationRoot = _location->getRoot();
     std::map<std::string, std::string> headers = _request->getHeaders();
 
-    headers["SERVER_PROTOCOL"] = "HTTP/1.1";
+	headers["SERVER_PROTOCOL"] = "HTTP/1.1";
 	headers["GATEWAY_INTERFACE"] = "CGI/1.1";
 	headers["SERVER_SOFTWARE"] = "webserv/1.0";
     headers["REDIRECT_STATUS" ] = "0";
@@ -598,19 +602,42 @@ void splitString(const std::string& str, std::vector<std::string>& container, ch
 
 void 		Response::_parseCgiHeaders( std::string headers) {
 	size_t position = headers.find("\r\n");
-	std::string responseLine = headers.substr(0, position);
-	_status = static_cast<e_statusCode> (atoi((responseLine.substr(responseLine.find(" "), responseLine.find_last_of(' ')).c_str())));
-	headers.erase(0, position + 1);
-	trim(headers);
-	std::vector<std::string> headers_lines;
-	splitString(headers, headers_lines);
-	std::vector<std::string>::iterator it = headers_lines.begin();
-	while (it != headers_lines.end()) {
-		std::string key = it->substr(0, it->find_first_of(':'));
-		std::string value = it->substr(it->find(": ") + 2);
-		_headers[key] = value;
-		it++;
+	if (headers.empty() || position == std::string::npos){
+		_status = HTTP_INTERNAL_SERVER_ERROR;
+		return;
 	}
+	std::string responseLine = headers.substr(0, position);
+	size_t pos = responseLine.find(" ");
+	int code = atoi(responseLine.substr(pos, 4).c_str());
+	if (code < 100 || code > 599)
+		_status = HTTP_INTERNAL_SERVER_ERROR;
+	else
+		_status = static_cast<e_statusCode> (code);
+	headers.erase(0, position + 2);
+	while (headers.size() > 0){
+		position = headers.find("\r\n");
+		if (position == std::string::npos || position == 0)
+			break;
+		std::string header = headers.substr(0, position);
+		headers.erase(0, position + 2);
+		position = header.find(": ");
+		std::string key = header.substr(0, position);
+		std::string value = header.substr(position + 2);
+		_headers[key] = value;
+	}
+	if (_headers["Content-Type"] != "text/html")
+		_headers["Content-Type"] = "text/html";
+	
+	// trim(headers);
+	// std::vector<std::string> headers_lines;
+	// splitString(headers, headers_lines);
+	// std::vector<std::string>::iterator it = headers_lines.begin();
+	// while (it != headers_lines.end()) {
+	// 	std::string key = it->substr(0, it->find_first_of(':'));
+	// 	std::string value = it->substr(it->find(": ") + 2);
+	// 	_headers[key] = value;
+	// 	it++;
+	// }
 }
 
 int Response::_getCGI_Response(void) {
@@ -636,7 +663,7 @@ int Response::_getCGI_Response(void) {
 
             size_t pos = allfile.find("\r\n\r\n");
             if (pos != std::string::npos) {
-                headers = allfile.substr(0, pos);
+                headers = allfile.substr(0, pos + 2);
                 body = allfile.substr(pos + 4);
                 _parseCgiHeaders(headers);
 				_file.close();
