@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/25 18:34:28 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/25 22:20:45 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,7 @@ Response::Response(IRequest& request, ProcessRequest& parse, int port, Selector&
 				_query = _request->getUri().substr(_request->getUri().find("?") + 1);
 				_request->setUri(_request->getUri().substr(0, _request->getUri().find("?")));
 			}
+			_request->setUri(decodeURI(_request->getUri()));
 			_location = _server->getUri(_request->getUri());
 	}
 	else{
@@ -263,14 +264,6 @@ void	Response::_processDeleteResponse(){
 	}
 	else
 		throw Response::ResponseException(HTTP_NOT_IMPLEMENTED);
-	// if (_status == HTTP_OK){
-	// 	_openFile(_responsefileName, 1);
-	// 	_file.write("The File Path is in the request uri, the client backend can do whatever he want with it", 88);
-	// 	_file.close();
-	// 	_headers["Content-Length"] = "24";
-	// 	_headers["Content-Type"] = "text/plain";
-	// 	_openFile(_responsefileName, 0);	
-	// }
 }
 
 std::string    Response::GetResponse(size_t lastSent){

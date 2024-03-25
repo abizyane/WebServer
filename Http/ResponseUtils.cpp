@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/01 18:15:20 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/25 02:48:35 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/25 22:08:02 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -157,4 +157,23 @@ std::vector<std::string>	splitHeaderValue(std::string header){
 	else
 		values.push_back(header);
 	return values;
+}
+
+std::string		decodeURI(std::string uri){
+	std::string	decoded;
+	size_t		pos = 0;
+	while (pos < uri.length()){
+		if (uri[pos] == '%'){
+			if (pos + 2 >= uri.length())
+				throw Response::ResponseException(HTTP_BAD_REQUEST);
+			decoded += static_cast<char>(strtoll(uri.substr(pos + 1, 2).c_str(), NULL, 16));
+			pos += 2;
+		}
+		else if (uri[pos] == '+')
+			decoded += ' ';
+		else
+			decoded += uri[pos];
+		pos++;
+	}
+	return decoded;
 }

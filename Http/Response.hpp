@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:07:10 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/25 16:46:02 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/25 22:21:26 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -118,3 +118,4 @@ class Response {
 
 std::string		getExtension(const std::string &fileName);
 std::vector<std::string>			splitHeaderValue(std::string header);
+std::string							decodeURI(std::string uri);

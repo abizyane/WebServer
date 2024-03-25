@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/25 16:14:26 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/25 16:39:43 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/25 18:40:19 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,8 +82,6 @@ e_statusCode	PutRequest::parseHeader(std::string &line){
 	}
 	return HTTP_OK;
 }
-
-
 
 e_statusCode	PutRequest::checkHeaders(void){
 	if (_headers.find("Host") == _headers.end())//|| _headers.find("Content-Type") == _headers.end())
