@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/24 22:27:20 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/25 00:40:20 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,6 +89,19 @@ void	Response::_buildResponse(){
 	_headers["Date"] = std::string(dt);
 	for (std::map<std::string, std::string>::iterator it = _headers.begin(); it != _headers.end(); it++)
 		_response += it->first + ": " + it->second + "\r\n";
+	
+	if (_cookies.size() > 0)
+		for (size_t i = 0; i < _cookies.size(); i++){
+			_response += "Set-Cookie: ";
+			for (size_t j = 0; j < _cookies[i].size(); j++){
+				if (_cookies[i][j].second == "")
+					_response += _cookies[i][j].first + "; ";
+				else
+					_response += _cookies[i][j].first + "=" + _cookies[i][j].second + "; ";
+			}
+			_response.erase(_response.size() - 2);
+			_response += "\r\n";
+		}
 	_response += "\r\n";
 	_good = true;
 	_parse->setGood(true);
@@ -148,6 +161,7 @@ void	Response::_processGetResponse(){
 	}
 	HERE:
 	_handleRange();
+	_handleCookies();
 	if (_location->hasCgi() && resource.find_last_of('.') != std::string::npos && _location->isCgi(resource.substr(resource.find_last_of('.')))){
 		_waitForCgi = true;
 		_headers.clear();
@@ -244,6 +258,7 @@ void	Response::_processPostResponse(){
 		_headers["Content-Type"] = "text/plain";
 		_openFile(_responsefileName, 0);
 	}
+	_handleCookies();
 	if (_location->hasCgi() && resource.find_last_of('.') != std::string::npos && _location->isCgi(resource.substr(resource.find_last_of('.')))){
 		_waitForCgi = true;
 		_headers.clear();
@@ -279,6 +294,8 @@ void	Response::_handleRange(){
 			ssize_t start = strtoll(range.substr(range.find("=") + 1, range.find("-")).c_str(), NULL, 10);
 			range.erase(0, range.find("-") + 1);
 			ssize_t end = length - 1;
+			if (start >= end)
+				end = length - start;
 			if (range != "")
 				end = strtoll(range.c_str(), NULL, 10);
 			_file.seekg(start, std::ios::beg);
@@ -296,27 +313,48 @@ void	Response::_handleRange(){
 
 void	Response::_handleCookies(){
 	std::string	cookie = _request->getHeaders()["Cookie"];
-	std::map<std::string, std::string>	_cookies;
-	
 	if (cookie != ""){
-		std::vector<std::string>	cookies = _splitHeaderValue("Cookie");
+		std::vector<std::pair<std::string, std::string> >	cookies;
+		std::vector<std::string>	tmp;
+		size_t		pos = cookie.find_first_of("; ");
+		if (pos != std::string::npos)
+			while (pos != std::string::npos){
+				tmp.push_back(cookie.substr(0, pos));
+				cookie.erase(0, pos + 2);
+				pos = cookie.find_first_of("; ");
+				if (pos == std::string::npos && cookie != "")
+					tmp.push_back(cookie);
+			}
+		else
+			tmp.push_back(cookie);
+		for (size_t i = 0; i < tmp.size(); i++){
+			size_t			index = tmp[i].find("=");
+			std::string		key;
+			if (index != std::string::npos){
+				key = tmp[i].substr(0, index);
+				tmp[i].erase(0, index + 1);
+			}
+			else{
+				key = tmp[i];
+				tmp[i] = "";
+			}
+			cookies.push_back(std::make_pair(key, tmp[i]));
+		}
+		std::vector<std::pair<std::string, std::string> > c;
+		bool	f = false;
 		for (size_t i = 0; i < cookies.size(); i++){
-			std::string		key = cookies[i].substr(0, cookies[i].find("="));
-			std::string		value = cookies[i].substr(cookies[i].find("=") + 1);
-			_cookies[key] = value;
+			if (f && cookies[i].second != "")
+				_cookies.push_back(c);
+			if (cookies[i].second != ""){
+				c.push_back(cookies[i]);
+				f = true;
+			}
+			if (cookies[i].second == "")
+				c.push_back(cookies[i]);
+			if (i == cookies.size() - 1)
+				_cookies.push_back(c);
 		}
 	}
-
-// if (!cookieHeader.empty()) {
-//     std::vector<std::string> cookiePairs = split(cookieHeader, ';');
-//     for (const auto& pair : cookiePairs) {
-//         std::vector<std::string> nameValue = split(pair, '=');
-//         if (nameValue.size() == 2) {
-//             cookies[nameValue[0]] = nameValue[1];
-//         }
-//     }
-// }
-
 }
 
 std::string    Response::GetResponse(size_t lastSent){

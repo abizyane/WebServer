@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:07:10 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/24 22:23:56 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/24 23:19:12 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,7 @@ class Response {
 		ssize_t								_bodyIndex;
 		bool								_waitForCgi;
 		std::string							_query;
+		std::vector<std::vector<std::pair<std::string, std::string> > >	_cookies;
 
 		std::map<std::string, std::string>  _headers;
 		std::fstream						_file;
