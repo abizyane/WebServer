@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/26 18:13:57 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/26 21:42:31 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,12 +32,19 @@ Response::Response(IRequest& request, ProcessRequest& parse, int port, Selector&
 				_request->setUri(_request->getUri().substr(0, _request->getUri().find("?")));
 			}
 			_request->setUri(decodeURI(_request->getUri()));
-			_location = _server->getUri(_request->getUri());
+			std::pair<std::string, LocationConf*>	ans = _server->getUri(_request->getUri());
+			_location = ans.second;
+			if (!_location){
+				_status = HTTP_NOT_FOUND;
+				goto X;
+			}
+			_request->setUri(ans.first);
 	}
 	else{
 		_server = MainConf::getConf()->getServerByHostPort(port, "");
 		_location = NULL;
 	}
+	X:
 	_prepareResponse();
 }
 
@@ -113,19 +120,20 @@ void	Response::_processGetResponse(){
 	if (!_location->methodIsAllowed(_request->getMethod()))
 		throw Response::ResponseException(HTTP_METHOD_NOT_ALLOWED);
 	std::string resource = normPath(_location->getRoot() + normPath(_request->getUri()));
+	if (_location->hasRedirect()){
+		_headers["Location"] = _location->getRedirectPage().second;
+		throw Response::ResponseException(static_cast<e_statusCode>(_location->getRedirectPage().first));
+	}
 	_readFile(resource);
 	if (_headers["Content-Type"] == "Dir"){
 		_headers.erase("Content-Type");
-		if (*(_request->getUri().end() - 1) != '/') {
-			_headers["Location"] = _request->getUri() + "/";
-			throw Response::ResponseException(HTTP_MOVED_PERMANENTLY);
-		}
 		if (_location->hasIndex()){
 			std::vector<std::string>	indexes = _location->getIndex();
 			for (size_t i = 0; i < indexes.size(); i++){
-				std::string	tmp = _location->getRoot() + "/" + normPath(indexes[i]);
+				std::string	tmp = _location->getRoot() + normPath(indexes[i]);
 				if (!access(tmp.c_str(), F_OK)){
-					_request->setUri(tmp);
+					_request->setUri(normPath(indexes[i]));
+					resource = tmp;
 					goto HERE;
 				}
 			}
@@ -140,6 +148,7 @@ void	Response::_processGetResponse(){
 		_responsefileName = resource;
 		return;
 	}
+	
 	HERE:
 	_handleRange();
 	_handleCookies();
@@ -157,20 +166,22 @@ void	Response::_processPostResponse(){
 	if (!_location->methodIsAllowed(_request->getMethod()))
 		throw Response::ResponseException(HTTP_METHOD_NOT_ALLOWED);
 	std::string resource = normPath(_location->getRoot() + normPath(_request->getUri()));
-	struct stat st;
-	if (!stat(resource.c_str(), &st) && S_ISDIR(st.st_mode) && (*(_request->getUri().end() - 1) != '/')){
-		_headers["Location"] = _request->getUri() + "/";
-		throw Response::ResponseException(HTTP_MOVED_PERMANENTLY);
+	if (_location->hasRedirect()){
+		_headers["Location"] = _location->getRedirectPage().second;
+		throw Response::ResponseException(static_cast<e_statusCode>(_location->getRedirectPage().first));
 	}
-	if (!_location->hasIndex())
-		throw Response::ResponseException(HTTP_FORBIDDEN);
-	std::vector<std::string>	indexes = _location->getIndex();
-	for (size_t i = 0; i < indexes.size(); i++){
-		std::string	tmp = normPath(_location->getRoot() + "/" + normPath(indexes[i]));
-		if (!access(tmp.c_str(), F_OK)){
-			_request->setUri(tmp);
-			resource = tmp;
-			break;
+	struct stat st;
+	if (stat(resource.c_str(), &st) == 0 && S_ISDIR(st.st_mode)){
+		if (!_location->hasIndex())
+			throw Response::ResponseException(HTTP_FORBIDDEN);
+		std::vector<std::string>	indexes = _location->getIndex();
+		for (size_t i = 0; i < indexes.size(); i++){
+			std::string	tmp = _location->getRoot() + normPath(indexes[i]);
+			if (!access(tmp.c_str(), F_OK)){
+				_request->setUri(normPath(indexes[i]));
+				resource = tmp;
+				break;
+			}
 		}
 	}
 	_handleCookies();
@@ -194,9 +205,9 @@ void	Response::_processPutResponse(){
 	if (stat(resource.c_str(), &st) == -1)
 		mkdir(resource.c_str(), 0777);
 	resource += normPath(_request->getUri());
-	if (!stat((_location->getRoot() + normPath(_request->getUri())).c_str(), &st) && S_ISDIR(st.st_mode) && (*(_request->getUri().end() - 1) != '/')){
-			_headers["Location"] = _request->getUri() + "/";
-			throw Response::ResponseException(HTTP_MOVED_PERMANENTLY);
+	if (_location->hasRedirect()){
+		_headers["Location"] = _location->getRedirectPage().second;
+		throw Response::ResponseException(static_cast<e_statusCode>(_location->getRedirectPage().first));
 	}
 	if (_location->hasUpload()){
 		_getFileName(resource);
@@ -230,6 +241,10 @@ void	Response::_processDeleteResponse(){
 	if (!_location->methodIsAllowed(_request->getMethod()))
 		throw Response::ResponseException(HTTP_METHOD_NOT_ALLOWED);
 	std::string resource = normPath(_location->getRoot() + normPath(_request->getUri()));
+	if (_location->hasRedirect()){
+		_headers["Location"] = _location->getRedirectPage().second;
+		throw Response::ResponseException(static_cast<e_statusCode>(_location->getRedirectPage().first));
+	}
 	_readFile(resource);
 	_status = HTTP_NO_CONTENT;
 	if (_headers["Content-Type"] == "Dir"){
@@ -239,9 +254,9 @@ void	Response::_processDeleteResponse(){
 		if (_location->hasIndex()){
 			std::vector<std::string>	indexes = _location->getIndex();
 			for (size_t i = 0; i < indexes.size(); i++){
-				std::string	tmp = _location->getRoot() + "/" + normPath(indexes[i]);
+				std::string	tmp = _location->getRoot() + normPath(indexes[i]);
 				if (!access(tmp.c_str(), F_OK)){
-					_request->setUri(tmp);
+					_request->setUri(normPath(indexes[i]));
 					resource = tmp;
 					break;
 				}

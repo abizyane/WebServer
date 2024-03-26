@@ -6,7 +6,7 @@
 /*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 11:35:28 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/02/20 11:12:58 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/03/26 20:42:22 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 #include <map>
 #include <vector>
 #include "../utils/utils.hpp"
+#include <algorithm>
 
 class	HTTP
 {

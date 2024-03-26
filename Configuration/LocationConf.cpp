@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   LocationConf.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 11:36:53 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/14 00:10:19 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/26 21:08:47 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -207,27 +207,31 @@ const std::vector<std::string>&	LocationConf::getIndex( void ) const
 	return *_index;
 }
 
-LocationConf*	LocationConf::getUri( std::string uri ) const
+std::pair<std::string, LocationConf*>	LocationConf::getUri( std::string uri ) const
 {
+	std::string	resultUri;
+
     uri = normPath(uri);
-	if (_locations == NULL)
-		return NULL;
+	if (_locations == NULL) {
+		return std::make_pair(to_str(""), (LocationConf*)NULL);
+	}
     while (uri != "") {
 		if (_locations->find(uri) != _locations->end())
-			return (*_locations)[uri];
+			return std::make_pair(resultUri, (*_locations)[uri]);
 
 		std::map<std::string, LocationConf*>::iterator it = _locations->begin();
 		std::map<std::string, LocationConf*>::iterator ite = _locations->end();
 
 		for (; it != ite; it++) {
-			LocationConf*	ans = it->second->getUri(uri);
-			if (ans != NULL) return ans;
+			std::pair<std::string, LocationConf*>	ans = it->second->getUri(uri);
+			if (ans.second != NULL) return ans;
 		}
 
         std::size_t pos = uri.find_last_of('/');
         if (pos != std::string::npos) {
+			resultUri = normPath(uri.substr(pos)) + normPath(resultUri);
             uri = uri.substr(0, pos + (pos == 0));
         }
     }
-    return NULL;
+	return std::make_pair(to_str(""), (LocationConf*)NULL);
 }

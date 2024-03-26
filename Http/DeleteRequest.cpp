@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   DeleteRequest.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:04:42 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/26 16:51:37 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/26 21:52:51 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,7 +90,7 @@ e_statusCode	DeleteRequest::checkHeaders(void){
 
 	if (_headers.find("Content-Length") != _headers.end() || _headers.find("Transfer-Encoding") != _headers.end()){
 		_hasBody = true;
-		if (_headers.find("Content-Length") == _headers.end() && _headers.find("Transfer-Encoding") != _headers.end()){
+		if (_headers.find("Transfer-Encoding") != _headers.end()){
 			if (_headers.find("Transfer-Encoding")->second != "chunked")
 				return HTTP_NOT_IMPLEMENTED;
 			_isChunked = true;

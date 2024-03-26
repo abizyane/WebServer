@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   LocationConf.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 11:35:24 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/11 12:13:53 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/26 21:01:25 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,7 @@ class	LocationConf : public HTTP
 		// return 301 facebook.com/home
 
 		void	passDirectiveToRoutes( void );
-		LocationConf*	getUri( std::string uri ) const;
+		std::pair<std::string, LocationConf*>	getUri( std::string uri ) const;
 };
 
 #endif
