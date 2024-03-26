@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/26 16:56:15 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/26 18:13:57 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -183,7 +183,7 @@ void	Response::_processPostResponse(){
 		_executeCGI(_parse->getCgiFd());
 	}
 	else
-		throw Response::ResponseException(HTTP_NOT_ACCEPTABLE);
+		throw Response::ResponseException(HTTP_UNPROCESSABLE_ENTITY);
 }
 
 void	Response::_processPutResponse(){
@@ -260,7 +260,7 @@ void	Response::_processDeleteResponse(){
 		_executeCGI(_parse->getCgiFd());
 	}
 	else
-		throw Response::ResponseException(HTTP_NOT_ACCEPTABLE);
+		throw Response::ResponseException(HTTP_UNPROCESSABLE_ENTITY);
 }
 
 std::string    Response::GetResponse(size_t lastSent){

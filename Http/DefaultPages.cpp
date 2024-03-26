@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/19 11:28:56 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/11 11:53:38 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/26 18:14:52 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,7 @@ std::map<int, std::string>  init_pages( void )
     _errorPages[HTTP_UNSUPPORTED_MEDIA_TYPE] = "<html><head><title>415 Unsupported Media Type</title></head><body bgcolor=\"white\"><center><h1>415 Unsupported Media Type</h1></center><hr><center>HTTP Error 415: Unsupported Media Type</center></body></html>";
     _errorPages[HTTP_REQUESTED_RANGE_NOT_SATISFIABLE] = "<html><head><title>416 Requested Range Not Satisfiable</title></head><body bgcolor=\"white\"><center><h1>416 Requested Range Not Satisfiable</h1></center><hr><center>HTTP Error 416: Requested Range Not Satisfiable</center></body></html>";
     _errorPages[HTTP_EXPECTATION_FAILED] = "<html><head><title>417 Expectation Failed</title></head><body bgcolor=\"white\"><center><h1>417 Expectation Failed</h1></center><hr><center>HTTP Error 417: Expectation Failed</center></body></html>";
+    _errorPages[HTTP_UNPROCESSABLE_ENTITY] = "<html><head><title>422 Unprocessable Entity</title></head><body bgcolor=\"white\"><center><h1>422 Unprocessable Entity</h1></center><hr><center>HTTP Error 422: Unprocessable Entity</center></body></html>";
     _errorPages[HTTP_INTERNAL_SERVER_ERROR] = "<html><head><title>500 Internal Server Error</title></head><body bgcolor=\"white\"><center><h1>500 Internal Server Error</h1></center><hr><center>HTTP Error 500: Internal Server Error</center></body></html>";
     _errorPages[HTTP_NOT_IMPLEMENTED] = "<html><head><title>501 Not Implemented</title></head><body bgcolor=\"white\"><center><h1>501 Not Implemented</h1></center><hr><center>HTTP Error 501: Not Implemented</center></body></html>";
     _errorPages[HTTP_BAD_GATEWAY] = "<html><head><title>502 Bad Gateway</title></head><body bgcolor=\"white\"><center><h1>502 Bad Gateway</h1></center><hr><center>HTTP Error 502: Bad Gateway</center></body></html>";

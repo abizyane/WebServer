@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   IRequest.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 15:57:05 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/22 02:05:14 by nakebli          ###   ########.fr       */
+/*   Updated: 2024/03/26 18:13:30 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,7 @@ typedef enum{
     HTTP_UNSUPPORTED_MEDIA_TYPE = 415,
     HTTP_REQUESTED_RANGE_NOT_SATISFIABLE = 416,
     HTTP_EXPECTATION_FAILED = 417,
+    HTTP_UNPROCESSABLE_ENTITY = 422,
     HTTP_INTERNAL_SERVER_ERROR = 500,
     HTTP_NOT_IMPLEMENTED = 501,
     HTTP_BAD_GATEWAY = 502,
