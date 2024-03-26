@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/08 02:39:26 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/26 02:15:41 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/03/26 14:27:25 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,6 @@ Client::~Client( void ) {
 bool		Client::sendResponse( void ) {
 	if (_processor.good()) {
 		std::string response = _processor.getResponse()->GetResponse(_bytesSent);
-		_bytesSent = 0;
 		_bytesSent = ::send(sock, response.c_str(), response.size(), 0);
 		if (_bytesSent == -1)
 			_bytesSent = 0;

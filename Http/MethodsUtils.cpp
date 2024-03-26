@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   MethodsUtils.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/25 18:29:39 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/26 07:43:57 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/03/26 14:25:02 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,17 +46,13 @@ void	Response::_getFileName(std::string &resource) {
 					break;
 				}
 	}
-	else{	
-		struct stat st;
-		stat(resource.c_str(), &st);
-		if (!S_ISDIR(st.st_mode))
-			return;
-	}
+	else
+		return;
 	resource += "/" + std::string(timestamp);
 	if (extension != "")
 		resource += "." + extension;
 	resource = normPath(resource);
-	if (extension != "" && _mimeMap[extension] == "") //
+	if (extension != "" && _mimeMap[extension] == "")
 		throw Response::ResponseException(HTTP_UNSUPPORTED_MEDIA_TYPE);
 	return;
 }
