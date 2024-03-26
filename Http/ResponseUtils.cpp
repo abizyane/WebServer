@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ResponseUtils.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/01 18:15:20 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/26 00:34:28 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/03/26 18:12:50 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,7 @@ void	Response::initMaps(){
 		_statusMap[HTTP_UNSUPPORTED_MEDIA_TYPE] = "415 Unsupported Media Type";
 		_statusMap[HTTP_REQUESTED_RANGE_NOT_SATISFIABLE] = "416 Requested Range Not Satisfiable";
 		_statusMap[HTTP_EXPECTATION_FAILED] = "417 Expectation Failed";
+		_statusMap[HTTP_UNPROCESSABLE_ENTITY] = "422 Unprocessable Entity";
 		_statusMap[HTTP_INTERNAL_SERVER_ERROR] = "500 Internal Server Error";
 		_statusMap[HTTP_NOT_IMPLEMENTED] = "501 Not Implemented";
 		_statusMap[HTTP_BAD_GATEWAY] = "502 Bad Gateway";
