@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/26 15:33:51 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/26 16:56:15 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -158,26 +158,22 @@ void	Response::_processPostResponse(){
 		throw Response::ResponseException(HTTP_METHOD_NOT_ALLOWED);
 	std::string resource = normPath(_location->getRoot() + normPath(_request->getUri()));
 	struct stat st;
-	if (_location->hasUpload()){
-		stat(resource.c_str(), &st);
-		if (S_ISDIR(st.st_mode)){
-			if (*(_request->getUri().end() - 1) != '/'){
-				_headers["Location"] = _request->getUri() + "/";
-				throw Response::ResponseException(HTTP_MOVED_PERMANENTLY);
-			}
-			if (!_location->hasIndex())
-				throw Response::ResponseException(HTTP_FORBIDDEN);
-			std::vector<std::string>	indexes = _location->getIndex();
-			for (size_t i = 0; i < indexes.size(); i++){
-				std::string	tmp = normPath(_location->getRoot() + "/" + normPath(indexes[i]));
-				if (!access(tmp.c_str(), F_OK)){
-					_request->setUri(tmp);
-					resource = tmp;
-					break;
-				}
-			}
+	if (!stat(resource.c_str(), &st) && S_ISDIR(st.st_mode) && (*(_request->getUri().end() - 1) != '/')){
+		_headers["Location"] = _request->getUri() + "/";
+		throw Response::ResponseException(HTTP_MOVED_PERMANENTLY);
+	}
+	if (!_location->hasIndex())
+		throw Response::ResponseException(HTTP_FORBIDDEN);
+	std::vector<std::string>	indexes = _location->getIndex();
+	for (size_t i = 0; i < indexes.size(); i++){
+		std::string	tmp = normPath(_location->getRoot() + "/" + normPath(indexes[i]));
+		if (!access(tmp.c_str(), F_OK)){
+			_request->setUri(tmp);
+			resource = tmp;
+			break;
 		}
 	}
+	_handleCookies();
 	if (_location->hasCgi() && resource.find_last_of('.') != std::string::npos && _location->isCgi(resource.substr(resource.find_last_of('.')))){
 		_waitForCgi = true;
 		_headers.clear();
@@ -187,7 +183,7 @@ void	Response::_processPostResponse(){
 		_executeCGI(_parse->getCgiFd());
 	}
 	else
-		throw Response::ResponseException(HTTP_NOT_IMPLEMENTED);
+		throw Response::ResponseException(HTTP_NOT_ACCEPTABLE);
 }
 
 void	Response::_processPutResponse(){
@@ -198,7 +194,7 @@ void	Response::_processPutResponse(){
 	if (stat(resource.c_str(), &st) == -1)
 		mkdir(resource.c_str(), 0777);
 	resource += normPath(_request->getUri());
-	if (!stat(resource.c_str(), &st) && S_ISDIR(st.st_mode) && (*(_request->getUri().end() - 1) != '/')){
+	if (!stat((_location->getRoot() + normPath(_request->getUri())).c_str(), &st) && S_ISDIR(st.st_mode) && (*(_request->getUri().end() - 1) != '/')){
 			_headers["Location"] = _request->getUri() + "/";
 			throw Response::ResponseException(HTTP_MOVED_PERMANENTLY);
 	}
@@ -226,7 +222,8 @@ void	Response::_processPutResponse(){
 		_openFile(_responsefileName, 0);
 	}
 	else
-		throw Response::ResponseException(HTTP_NOT_ACCEPTABLE);
+		throw Response::ResponseException(HTTP_FORBIDDEN);
+	_handleCookies();
 }
 
 void	Response::_processDeleteResponse(){
@@ -253,6 +250,7 @@ void	Response::_processDeleteResponse(){
 		else
 			throw Response::ResponseException(HTTP_FORBIDDEN);
 	}
+	_handleCookies();
 	if (_location->hasCgi() && resource.find_last_of('.') != std::string::npos && _location->isCgi(resource.substr(resource.find_last_of('.')))){
 		_waitForCgi = true;
 		_headers.clear();
@@ -262,7 +260,7 @@ void	Response::_processDeleteResponse(){
 		_executeCGI(_parse->getCgiFd());
 	}
 	else
-		throw Response::ResponseException(HTTP_NOT_IMPLEMENTED);
+		throw Response::ResponseException(HTTP_NOT_ACCEPTABLE);
 }
 
 std::string    Response::GetResponse(size_t lastSent){
@@ -299,7 +297,6 @@ std::string    Response::GetResponse(size_t lastSent){
 		default:
 			break;
     }
-	// std::cout << response << std::endl;
 	return response;
 }
 

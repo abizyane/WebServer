@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/25 16:14:26 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/25 16:39:43 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/26 16:50:56 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,11 +86,11 @@ e_statusCode	PutRequest::parseHeader(std::string &line){
 
 
 e_statusCode	PutRequest::checkHeaders(void){
-	if (_headers.find("Host") == _headers.end())//|| _headers.find("Content-Type") == _headers.end())
+	if (_headers.find("Host") == _headers.end())
 		return (HTTP_BAD_REQUEST);
 	if (_headers.find("Content-Length") == _headers.end() && _headers.find("Transfer-Encoding") == _headers.end())
-		return (HTTP_BAD_REQUEST);
-	if (_headers.find("Transfer-Encoding") != _headers.end()){
+		return (HTTP_LENGTH_REQUIRED);
+	if (_headers.find("Content-Length") == _headers.end() && _headers.find("Transfer-Encoding") != _headers.end()){
 		if (_headers.find("Transfer-Encoding")->second != "chunked")
 			return HTTP_NOT_IMPLEMENTED;
 		_isChunked = true;

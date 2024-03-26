@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:03:16 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/25 16:35:45 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/26 16:51:17 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,13 +82,11 @@ e_statusCode	PostRequest::parseHeader(std::string &line){
 	return HTTP_OK;
 }
 
-
-
 e_statusCode	PostRequest::checkHeaders(void){
-	if (_headers.find("Host") == _headers.end())//|| _headers.find("Content-Type") == _headers.end())
+	if (_headers.find("Host") == _headers.end())
 		return (HTTP_BAD_REQUEST);
 	if (_headers.find("Content-Length") == _headers.end() && _headers.find("Transfer-Encoding") == _headers.end())
-		return (HTTP_BAD_REQUEST);
+		return (HTTP_LENGTH_REQUIRED);
 	if (_headers.find("Content-Length") == _headers.end() && _headers.find("Transfer-Encoding") != _headers.end()){
 		std::vector<std::string> values = splitHeaderValue(_headers.find("Transfer-Encoding")->second);
 		while (values.size() > 0){
