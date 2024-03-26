@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   PutRequest.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/25 16:14:26 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/26 16:50:56 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/26 21:52:16 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,7 +90,7 @@ e_statusCode	PutRequest::checkHeaders(void){
 		return (HTTP_BAD_REQUEST);
 	if (_headers.find("Content-Length") == _headers.end() && _headers.find("Transfer-Encoding") == _headers.end())
 		return (HTTP_LENGTH_REQUIRED);
-	if (_headers.find("Content-Length") == _headers.end() && _headers.find("Transfer-Encoding") != _headers.end()){
+	if (_headers.find("Transfer-Encoding") != _headers.end()){
 		if (_headers.find("Transfer-Encoding")->second != "chunked")
 			return HTTP_NOT_IMPLEMENTED;
 		_isChunked = true;

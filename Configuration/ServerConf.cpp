@@ -3,14 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConf.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 12:06:59 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/13 00:05:09 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/26 21:08:19 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ServerConf.hpp"
+#include <algorithm>
 
 
 ServerConf::ServerConf( void ) : HTTP(), _hostNames(NULL), _ports(NULL), _locations(NULL)
@@ -164,27 +165,56 @@ void	ServerConf::passDirectiveToRoutes( void )
 	}
 }
 
-LocationConf*	ServerConf::getUri( std::string uri ) const
+// LocationConf*	ServerConf::getUri( std::string uri ) const
+// {
+//     uri = normPath(uri);
+// 	if (_locations == NULL)
+// 		return NULL;
+//     while (uri != "") {
+// 		if (_locations->find(uri) != _locations->end())
+// 			return (*_locations)[uri];
+
+// 		std::map<std::string, LocationConf*>::iterator it = _locations->begin();
+// 		std::map<std::string, LocationConf*>::iterator ite = _locations->end();
+
+// 		for (; it != ite; it++) {
+// 			LocationConf*	ans = it->second->getUri(uri);
+// 			if (ans != NULL) return ans;
+// 		}
+
+//         std::size_t pos = uri.find_last_of('/');
+//         if (pos != std::string::npos) {
+//             uri = uri.substr(0, pos + (pos == 0));
+//         }
+//     }
+//     return NULL;
+// }
+
+std::pair<std::string, LocationConf*>	ServerConf::getUri( std::string uri ) const
 {
+	std::string	resultUri;
+
     uri = normPath(uri);
-	if (_locations == NULL)
-		return NULL;
+	if (_locations == NULL) {
+		return std::make_pair(to_str(""), (LocationConf*)NULL);
+	}
     while (uri != "") {
 		if (_locations->find(uri) != _locations->end())
-			return (*_locations)[uri];
+			return std::make_pair(resultUri, (*_locations)[uri]);
 
 		std::map<std::string, LocationConf*>::iterator it = _locations->begin();
 		std::map<std::string, LocationConf*>::iterator ite = _locations->end();
 
 		for (; it != ite; it++) {
-			LocationConf*	ans = it->second->getUri(uri);
-			if (ans != NULL) return ans;
+			std::pair<std::string, LocationConf*>	ans = it->second->getUri(uri);
+			if (ans.second != NULL) return ans;
 		}
 
         std::size_t pos = uri.find_last_of('/');
         if (pos != std::string::npos) {
+			resultUri = normPath(uri.substr(pos)) + normPath(resultUri);
             uri = uri.substr(0, pos + (pos == 0));
         }
     }
-    return NULL;
+	return std::make_pair(to_str(""), (LocationConf*)NULL);
 }

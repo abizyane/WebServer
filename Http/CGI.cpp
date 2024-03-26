@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CGI.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/25 18:30:35 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/26 15:35:24 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/26 21:30:16 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,17 +14,34 @@
 #include "../utils/utils.hpp"
 
 
+// void    Response::_setCGI_Arguments( void ) {
+//     _file_path = _request->getUri();
+//     _query_string = "";
+//     _cgi_argv = new char*[2];
+//     if (_request->getUri().find('?') != std::string::npos) {
+//         _query_string = _request->getUri().substr(_request->getUri().find('?') + 1);
+//         _file_path = _request->getUri().substr(0, _request->getUri().find('?'));
+//     }
+//     _cgi_argv[0] = strdup(normPath(_file_path).c_str());
+//     _cgi_argv[1] = NULL;
+// }
+
+
 void    Response::_setCGI_Arguments( void ) {
-    _file_path = _request->getUri();
+    
+    std::string requestURI = _request->getUri();
+    std::string serverRoot = _location->getRoot();
+    _file_path = serverRoot + requestURI;
     _query_string = "";
     _cgi_argv = new char*[2];
-    if (_request->getUri().find('?') != std::string::npos) {
-        _query_string = _request->getUri().substr(_request->getUri().find('?') + 1);
-        _file_path = _request->getUri().substr(0, _request->getUri().find('?'));
+    if (requestURI.find('?') != std::string::npos) {
+        _query_string = requestURI.substr(requestURI.find('?') + 1);
+        _file_path = serverRoot + requestURI.substr(0, requestURI.find('?'));
     }
     _cgi_argv[0] = strdup(normPath(_file_path).c_str());
     _cgi_argv[1] = NULL;
 }
+
 
 void    Response::_initCGI() {
     std::string requestUri = _request->getUri();
@@ -86,12 +103,14 @@ int    Response::_executeCGI( int& fd ) {
 		
         execve(_cgi_argv[0], _cgi_argv, environ);
 		std::cerr << _cgi_argv[0] << " " <<  strerror(errno) << std::endl;
+        delete [] _cgi_argv;
 		exit(502);
     }
+    delete _cgi_argv[0];
+    delete _cgi_argv[1];
+    delete [] _cgi_argv;
     fcntl(fd, F_SETFL, O_NONBLOCK);
     _selector.set(fd, Selector::RD_SET);
-	// wait(NULL);
-	// _getCGI_Response();
 	return 0;
 }
 
@@ -155,5 +174,9 @@ void    Response::readCgiFile(void) {
     } catch (const std::exception &) {
         _status = HTTP_INTERNAL_SERVER_ERROR;
     }
+    int& fd = _parse->getCgiFd();
+    _selector.unset(fd, Selector::RD_SET);
+    close(fd);
+    fd = -1;
 	_buildResponse();
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConf.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 12:00:37 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/11 12:04:54 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/26 21:01:36 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ class	ServerConf : public HTTP
 		void	getPorts( std::set<unsigned int>& ports );
 		void	passDirectiveToRoutes( void );
 
-		LocationConf*	getUri( std::string uri ) const;
+		std::pair<std::string, LocationConf*>	getUri( std::string uri ) const;
 };
 
 #endif
