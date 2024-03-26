@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:08:48 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/26 00:50:32 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/03/26 15:33:51 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -193,17 +193,16 @@ void	Response::_processPostResponse(){
 void	Response::_processPutResponse(){
 	if (!_location->methodIsAllowed(_request->getMethod()))
 		throw Response::ResponseException(HTTP_METHOD_NOT_ALLOWED);
-	std::string resource = _location->getRoot() + normPath(_location->getUploadStore()) + normPath(_request->getUri());
+	std::string resource = _location->getRoot() + normPath(_location->getUploadStore());
 	struct stat st;
-	stat(resource.c_str(), &st);
-	
-	if (S_ISDIR(st.st_mode) && (*(_request->getUri().end() - 1) != '/')){
+	if (stat(resource.c_str(), &st) == -1)
+		mkdir(resource.c_str(), 0777);
+	resource += normPath(_request->getUri());
+	if (!stat(resource.c_str(), &st) && S_ISDIR(st.st_mode) && (*(_request->getUri().end() - 1) != '/')){
 			_headers["Location"] = _request->getUri() + "/";
 			throw Response::ResponseException(HTTP_MOVED_PERMANENTLY);
 	}
 	if (_location->hasUpload()){
-		if (resource != "" && stat(resource.c_str(), &st) == -1)
-				mkdir(resource.c_str(), 0777);
 		_getFileName(resource);
 		_openFile(resource, 1);
 		_file.write(_request->getBody().data(), _request->getBody().size());

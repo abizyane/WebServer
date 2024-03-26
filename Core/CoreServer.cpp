@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CoreServer.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/08 02:35:06 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/26 06:14:04 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/03/26 14:28:09 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,7 +109,7 @@ void	CoreServer::_manageClients( Server* server )
 		if (_selector.isReadable(client->getCgiFd())) {
 			client->sendCgiRespo();
 		}
-		if ((_selector.isWriteable(client->fileno()) && client->sendResponse()) && client->_processor.getParseState() == Error) {
+		if ((_selector.isWriteable(client->fileno()) && client->sendResponse()) || client->_processor.getParseState() == Error) {
 			_purgeClient(server, it);
 			continue;
 		}

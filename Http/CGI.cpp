@@ -3,25 +3,24 @@
 /*                                                        :::      ::::::::   */
 /*   CGI.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/25 18:30:35 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/26 01:24:00 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/03/26 15:35:24 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Response.hpp"
 #include "../utils/utils.hpp"
 
+
 void    Response::_setCGI_Arguments( void ) {
-    std::string requestURI = _request->getUri();
-    std::string serverRoot = _location->getRoot();
-    _file_path = serverRoot + requestURI;
+    _file_path = _request->getUri();
     _query_string = "";
     _cgi_argv = new char*[2];
-    if (requestURI.find('?') != std::string::npos) {
-        _query_string = requestURI.substr(requestURI.find('?') + 1);
-        _file_path = serverRoot + requestURI.substr(0, requestURI.find('?'));
+    if (_request->getUri().find('?') != std::string::npos) {
+        _query_string = _request->getUri().substr(_request->getUri().find('?') + 1);
+        _file_path = _request->getUri().substr(0, _request->getUri().find('?'));
     }
     _cgi_argv[0] = strdup(normPath(_file_path).c_str());
     _cgi_argv[1] = NULL;
