@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/25 18:29:39 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/26 14:25:02 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/26 15:48:55 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,8 @@ void	Response::_getFileName(std::string &resource) {
 				}
 	}
 	else
+		return;
+	if (stat(resource.c_str(), NULL) == -1)
 		return;
 	resource += "/" + std::string(timestamp);
 	if (extension != "")

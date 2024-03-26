@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   DeleteRequest.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:04:42 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/25 23:17:39 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/03/26 16:51:37 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,7 +76,7 @@ e_statusCode	DeleteRequest::parseHeader(std::string &line){
         std::string allowedChars("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-!#$%&'*+-.^_|~");
 		if (key.empty() || value.empty() || _headers.find(key) != _headers.end() ||
 			key.find_first_not_of(allowedChars) != std::string::npos)
-			return HTTP_BAD_REQUEST; //invalid header
+			return HTTP_BAD_REQUEST;
 		_headers[key] = value;
 	}catch(const std::exception &){
 		return HTTP_BAD_REQUEST;
@@ -90,7 +90,7 @@ e_statusCode	DeleteRequest::checkHeaders(void){
 
 	if (_headers.find("Content-Length") != _headers.end() || _headers.find("Transfer-Encoding") != _headers.end()){
 		_hasBody = true;
-		if (_headers.find("Transfer-Encoding") != _headers.end()){
+		if (_headers.find("Content-Length") == _headers.end() && _headers.find("Transfer-Encoding") != _headers.end()){
 			if (_headers.find("Transfer-Encoding")->second != "chunked")
 				return HTTP_NOT_IMPLEMENTED;
 			_isChunked = true;
@@ -113,7 +113,7 @@ e_statusCode	DeleteRequest::checkHeaders(void){
 	return HTTP_OK;
 }
 
-e_statusCode	DeleteRequest::parseBody(std::string &line){ // TODO: i think that we don't need this function
+e_statusCode	DeleteRequest::parseBody(std::string &line){
 	size_t	bytesToWrite = 0;
 	try{
 		if (!_isChunked){
