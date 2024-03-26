@@ -1,47 +1,46 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   DeleteRequest.cpp                                  :+:      :+:    :+:   */
+/*   PutRequest.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/02/12 22:04:42 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/25 23:17:39 by zel-bouz         ###   ########.fr       */
+/*   Created: 2024/03/25 16:14:26 by abizyane          #+#    #+#             */
+/*   Updated: 2024/03/25 16:39:43 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "DeleteRequest.hpp"
+#include "PutRequest.hpp"
 
-DeleteRequest::DeleteRequest(std::string &method, std::string &uri, ProcessRequest& parse)
-	: _method(method), _uri(uri), _version("HTTP/1.1"), _parse(parse){
-	_hasBody = false;
-	_isChunked = false;
+PutRequest::PutRequest(std::string &method, std::string &uri, ProcessRequest& parse)
+    : _method(method), _uri(uri), _version("HTTP/1.1"), _parse(parse){
 	_contentLength = 0;
-	_gotChunkLen = false;
+	_bodyIndex = 0;
+	_isChunked = false;
 	_chunkLen = 0;
+	_gotChunkLen = false;
 	_fileName = "/tmp/.requestbody";
-	std::srand(std::time(0));
-	_fileName += std::to_string(std::rand() % 100000);
+    std::srand(std::time(0));
+    _fileName += to_str(std::rand() % 100000);
 }
 
-std::string		DeleteRequest::getMethod( void ) const{
+std::string		PutRequest::getMethod( void ) const{
 	return _method;
 }
 
-std::string		DeleteRequest::getUri( void ) const{
+std::string		PutRequest::getUri( void ) const{
 	return _uri;
 }
 
-void	DeleteRequest::setUri( std::string uri ){
+void	PutRequest::setUri( std::string uri ){
 	_uri = uri;
 }
 
-std::map<std::string, std::string>	DeleteRequest::getHeaders( void ) const{
+std::map<std::string, std::string>	PutRequest::getHeaders( void ) const{
 	return _headers;
 }
 
-
-std::vector<char>	DeleteRequest::getBody( void ) {
+std::vector<char>	PutRequest::getBody( void ) {
 	struct stat	s;
 	stat(_fileName.c_str(), &s);
 
@@ -52,18 +51,18 @@ std::vector<char>	DeleteRequest::getBody( void ) {
 	return buffer;
 }
 
-ssize_t	DeleteRequest::getBodySize( void ) const{
+ssize_t	PutRequest::getBodySize( void ) const{
 	struct stat	s;
 	if (stat(_fileName.c_str(), &s) != 0)
 		return 0;
 	return s.st_size;
 }
 
-ProcessRequest&	DeleteRequest::getParse( void ) const{
+ProcessRequest&	PutRequest::getParse( void ) const{
 	return _parse;
 }
 
-e_statusCode	DeleteRequest::parseHeader(std::string &line){
+e_statusCode	PutRequest::parseHeader(std::string &line){
 	try{
 		if (line.find(":") == std::string::npos)
 			return HTTP_BAD_REQUEST;
@@ -76,7 +75,7 @@ e_statusCode	DeleteRequest::parseHeader(std::string &line){
         std::string allowedChars("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-!#$%&'*+-.^_|~");
 		if (key.empty() || value.empty() || _headers.find(key) != _headers.end() ||
 			key.find_first_not_of(allowedChars) != std::string::npos)
-			return HTTP_BAD_REQUEST; //invalid header
+			return HTTP_BAD_REQUEST;
 		_headers[key] = value;
 	}catch(const std::exception &){
 		return HTTP_BAD_REQUEST;
@@ -84,36 +83,33 @@ e_statusCode	DeleteRequest::parseHeader(std::string &line){
 	return HTTP_OK;
 }
 
-e_statusCode	DeleteRequest::checkHeaders(void){
-	if (_headers.find("Host") == _headers.end())
-		return (HTTP_BAD_REQUEST);
 
-	if (_headers.find("Content-Length") != _headers.end() || _headers.find("Transfer-Encoding") != _headers.end()){
-		_hasBody = true;
-		if (_headers.find("Transfer-Encoding") != _headers.end()){
-			if (_headers.find("Transfer-Encoding")->second != "chunked")
-				return HTTP_NOT_IMPLEMENTED;
-			_isChunked = true;
-		} 
-		if (!_isChunked){
-			if (_headers["Content-Length"].find_first_not_of("0123456789") != std::string::npos)
-				return HTTP_BAD_REQUEST;
-			_contentLength = strtoll(_headers["Content-Length"].c_str(), NULL, 10);
-		}
-		_body.open(_fileName.c_str(), std::ios::out | std::ios::in | std::ios::trunc);
-		if (!_body.is_open()){
-			_parse.setParseState(Error);
-			return HTTP_INTERNAL_SERVER_ERROR;
-		}
+
+e_statusCode	PutRequest::checkHeaders(void){
+	if (_headers.find("Host") == _headers.end())//|| _headers.find("Content-Type") == _headers.end())
+		return (HTTP_BAD_REQUEST);
+	if (_headers.find("Content-Length") == _headers.end() && _headers.find("Transfer-Encoding") == _headers.end())
+		return (HTTP_BAD_REQUEST);
+	if (_headers.find("Transfer-Encoding") != _headers.end()){
+		if (_headers.find("Transfer-Encoding")->second != "chunked")
+			return HTTP_NOT_IMPLEMENTED;
+		_isChunked = true;
 	}
-	else
-		_parse.setParseState(Done);
-	if (_hasBody)
-		_parse.setParseState(Body);
+	if (!_isChunked){
+		if (_headers["Content-Length"].find_first_not_of("0123456789") != std::string::npos)
+			return HTTP_BAD_REQUEST;
+		_contentLength = strtoll(_headers["Content-Length"].c_str(), NULL, 10);
+	}
+	_body.open(_fileName.c_str(), std::ios::out | std::ios::in | std::ios::trunc);
+	if (!_body.is_open()){
+		_parse.setParseState(Error);
+		return HTTP_INTERNAL_SERVER_ERROR;
+	}
+	_parse.setParseState(Body);
 	return HTTP_OK;
 }
 
-e_statusCode	DeleteRequest::parseBody(std::string &line){ // TODO: i think that we don't need this function
+e_statusCode	PutRequest::parseBody(std::string &line) {
 	size_t	bytesToWrite = 0;
 	try{
 		if (!_isChunked){
@@ -166,13 +162,12 @@ e_statusCode	DeleteRequest::parseBody(std::string &line){ // TODO: i think that 
 	return HTTP_OK;
 }
 
-std::string&                        DeleteRequest::getFileName( void ) {
+std::string&                        PutRequest::getFileName( void ) {
 	return _fileName;
 }
 
-DeleteRequest::~DeleteRequest( void ){
+PutRequest::~PutRequest( void ){
 	if (_body.is_open())
 		_body.close();
 	std::remove(_fileName.c_str());
 }
-

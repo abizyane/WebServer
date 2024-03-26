@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 22:03:16 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/22 01:26:23 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/25 16:35:45 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@ PostRequest::PostRequest(std::string &method, std::string &uri, ProcessRequest& 
 	_chunkLen = 0;
 	_gotChunkLen = false;
 	_fileName = "/tmp/.requestbody";	
+	_fileName += std::to_string(std::rand() % 100000);
 }
 
 std::string		PostRequest::getMethod( void ) const{
@@ -88,8 +89,14 @@ e_statusCode	PostRequest::checkHeaders(void){
 		return (HTTP_BAD_REQUEST);
 	if (_headers.find("Content-Length") == _headers.end() && _headers.find("Transfer-Encoding") == _headers.end())
 		return (HTTP_BAD_REQUEST);
-	if (_headers.find("Transfer-Encoding") != _headers.end()){
-		if (_headers.find("Transfer-Encoding")->second != "chunked")
+	if (_headers.find("Content-Length") == _headers.end() && _headers.find("Transfer-Encoding") != _headers.end()){
+		std::vector<std::string> values = splitHeaderValue(_headers.find("Transfer-Encoding")->second);
+		while (values.size() > 0){
+			if (values[0] == "chunked")
+				break;
+			values.erase(values.begin());
+		}
+		if (values.size() == 0)
 			return HTTP_NOT_IMPLEMENTED;
 		_isChunked = true;
 	}
@@ -98,9 +105,6 @@ e_statusCode	PostRequest::checkHeaders(void){
 			return HTTP_BAD_REQUEST;
 		_contentLength = strtoll(_headers["Content-Length"].c_str(), NULL, 10);
 	}
-	std::srand(std::time(0));
-	for (size_t i = 0; i < 5; i++)
-		_fileName += to_str(std::rand());
 	_body.open(_fileName.c_str(), std::ios::out | std::ios::in | std::ios::trunc);
 	if (!_body.is_open()){
 		_parse.setParseState(Error);
@@ -161,6 +165,10 @@ e_statusCode	PostRequest::parseBody(std::string &line) {
 		return HTTP_BAD_REQUEST;
 	}
 	return HTTP_OK;
+}
+
+std::string&                        PostRequest::getFileName( void ) {
+	return _fileName;
 }
 
 PostRequest::~PostRequest( void ){

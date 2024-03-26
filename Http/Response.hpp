@@ -6,7 +6,7 @@
 /*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/06 23:07:10 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/20 01:50:40 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/03/26 00:34:43 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 #include "../Configuration/LocationConf.hpp"
 #include "DefaultPages.hpp"
 #include <sys/stat.h>
+#include <fcntl.h>
 #include <dirent.h>
 #include <ctime>
 
@@ -41,26 +42,57 @@ class Response {
 		e_state								_state;
 		ssize_t								_bodyIndex;
 		bool								_waitForCgi;
+		std::string							_query;
+		std::vector<std::vector<std::pair<std::string, std::string> > >	_cookies;
 
 		std::map<std::string, std::string>  _headers;
 		std::fstream						_file;
 		std::string							_responsefileName;
 		std::string							_response;
 		Selector&							_selector;
-		
+		// ======== For CGI ========
+		std::string     					_query_string;
+		char**          					_cgi_argv;
+		pid_t           					_cgi_pid;
+		std::string							_file_path;
+
 		void								_buildResponse( void );
 		void								_processGetResponse( void );
 		void								_processPostResponse( void );
 		void								_processDeleteResponse( void );
+		void								_processPutResponse( void );
 		void								_prepareResponse( void );
 		void								_readFile(std::string resourse);
 		void								_writeFile(std::string resource);
 		void								_deleteFile(std::string resource);
+
+		void								_parseCgiResponse( std::string& output );
 		void								_handleRange( void );
 		std::string							_autoIndex( const std::string& dirName );
 		void								_openFile(std::string &fileName, int param);
+		int									_parseCgiStatus( const std::string& statusLine );
+		void								_handleCookies( void );
 		void								_getFileName(std::string &resource);
-
+		void    							_setCGI_Arguments( void );
+		void    							_initCGI();
+		int    								_executeCGI( int& fd );
+		// void								_parseCgiHeaders( std::string headers );
+		// void _printfile() {
+		// 	    std::ifstream infile(_responsefileName);
+    	// 		if (!infile.is_open()) {
+    	// 		    std::cerr << "Failed to open the file." << std::endl;
+    	// 		    return ;
+    	// 		}
+			
+    	// 		std::cout << "===========---=========\n";
+			
+    	// 		std::string line;
+    	// 		while (std::getline(infile, line)) {
+    	// 		    std::cout << line << std::endl;
+    	// 		}
+    	// 		std::cout << "===========||=========\n";
+    	// 		infile.close();
+		// }
 
 	public :
 		Response(IRequest& request, ProcessRequest& parse, int port, Selector& _selector);
@@ -81,8 +113,11 @@ class Response {
 		};
 
 		std::string		GetResponse(size_t lastSent);
-    
+		void			readCgiFile( void );
+
 		~Response();
 };
 
 std::string		getExtension(const std::string &fileName);
+std::vector<std::string>			splitHeaderValue(std::string header);
+std::string		decodeURI(std::string uri);

@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   PostRequest.hpp                                    :+:      :+:    :+:   */
+/*   PutRequest.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nakebli <nakebli@student.42.fr>            +#+  +:+       +#+        */
+/*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/02/12 22:03:23 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/22 02:02:23 by nakebli          ###   ########.fr       */
+/*   Created: 2024/03/25 16:14:43 by abizyane          #+#    #+#             */
+/*   Updated: 2024/03/25 18:35:27 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,11 +16,11 @@
 
 class ProcessRequest;
 
-class	PostRequest : public IRequest{
-	protected:
+class	PutRequest : public IRequest{
+	private:
 		std::string							_method;
-        std::string							_uri;
-        std::string							_version;
+		std::string							_uri;
+		std::string							_version;
 		std::map<std::string, std::string>	_headers;
 		std::fstream						_body;
 		std::string							_fileName;
@@ -32,7 +32,7 @@ class	PostRequest : public IRequest{
 		ProcessRequest&						_parse;
 
 	public:
-		PostRequest(std::string &method, std::string &uri, ProcessRequest& parse);
+		PutRequest(std::string &method, std::string &uri, ProcessRequest& parse);
 
 		e_statusCode						checkHeaders( void );
 		e_statusCode						parseBody(std::string &line);
@@ -47,7 +47,9 @@ class	PostRequest : public IRequest{
 		void								setUri( std::string uri );
 		std::string&                        getFileName( void );
 
-		~PostRequest( void );
+		~PutRequest( void );
 };
 
 #include "ProcessRequest.hpp"
+
+
