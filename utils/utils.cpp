@@ -6,7 +6,7 @@
 /*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/13 09:51:28 by zel-bouz          #+#    #+#             */
-/*   Updated: 2024/03/18 22:04:23 by zel-bouz         ###   ########.fr       */
+/*   Updated: 2024/03/25 21:24:02 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,21 @@
 	"../home/"				=> "/home"
 	"/home/../../../blog/"	=> "/blog"
 */
+
+
+std::string trim(const std::string& str) {
+    std::string trimmedStr;
+    std::string::size_type start = 0;
+    while (start < str.size() && std::isspace(str[start])) {
+        ++start;
+    }
+    std::string::size_type end = str.size();
+    while (end > start && std::isspace(str[end - 1])) {
+        --end;
+    }
+    trimmedStr = str.substr(start, end - start);
+    return trimmedStr;
+}
 
 std::string normPath(const std::string& path) {
 	std::string result;
@@ -110,4 +125,42 @@ time_t  currTime( void )
 {
     time_t ans = time(NULL);
     return ans;
+}
+
+//  ========== EXTERNAL FUNCTIONNS ==========
+
+
+std::string    getFileExtension(std::string request_uri) {
+    std::string extension = \
+    request_uri.substr(request_uri.find_last_of(".") + 1);
+    extension = extension.substr(0, extension.find('?'));
+    return extension;
+}
+
+std::string generateRandomFileName(int length) {
+    const std::string allowed_chars = \
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+    std::string file_name = "CGI_";
+    std::srand(std::time(0));
+
+    for (int i = 0; i < length; ++i) {
+        int index = std::rand() % allowed_chars.size();
+        file_name += allowed_chars[index];
+    }
+
+    return file_name;
+}
+
+std::string formKey(std::string key)
+{
+    std::string formedKey = key;
+    for (size_t i = 0; i < formedKey.size(); i++)
+    {
+        if (formedKey[i] == '-')
+            formedKey[i] = '_';
+        else
+            formedKey[i] = toupper(formedKey[i]);
+    }
+    return formedKey;
 }

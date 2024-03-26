@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ResponseUtils.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ZakariaElbouzkri <elbouzkri9@gmail.com>    +#+  +:+       +#+        */
+/*   By: zel-bouz <zel-bouz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/01 18:15:20 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/22 06:43:21 by ZakariaElbo      ###   ########.fr       */
+/*   Updated: 2024/03/26 00:34:28 by zel-bouz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,7 @@ void	Response::initMaps(){
 		_mimeMap["html"] = "text/html";
 		_mimeMap["htm"] = "text/html";
 		_mimeMap["css"] = "text/css";
+		_mimeMap["js"] = "text/javascript";
 		_mimeMap["js"] = "application/javascript";
 		_mimeMap["jpg"] = "image/jpeg";
 		_mimeMap["jpeg"] = "image/jpeg";
@@ -122,6 +123,25 @@ void	Response::initMaps(){
 	}
 }
 
+std::string		decodeURI(std::string uri){
+	std::string	decoded;
+	size_t		pos = 0;
+	while (pos < uri.length()){
+		if (uri[pos] == '%'){
+			if (pos + 2 >= uri.length())
+				throw Response::ResponseException(HTTP_BAD_REQUEST);
+			decoded += static_cast<char>(strtoll(uri.substr(pos + 1, 2).c_str(), NULL, 16));
+			pos += 2;
+		}
+		else if (uri[pos] == '+')
+			decoded += ' ';
+		else
+			decoded += uri[pos];
+		pos++;
+	}
+	return decoded;
+}
+
 std::string		getExtension(const std::string &fileName){
 	size_t		pos = fileName.find_last_of(".");
 	if (pos == std::string::npos || pos == 0)
@@ -141,4 +161,19 @@ void	Response::_openFile(std::string &fileName, int param){
 		_file.open(fileName.c_str(), std::ios::in | std::ios::out | std::ios::binary | std::ios::trunc);
 	if (!_file.is_open())
 		throw ResponseException(HTTP_INTERNAL_SERVER_ERROR);
+}
+
+std::vector<std::string>	splitHeaderValue(std::string header){
+	size_t		pos = header.find_first_of(", ");
+	
+	std::vector<std::string>	values;
+	if (pos != std::string::npos)
+		while (pos != std::string::npos){
+			values.push_back(header.substr(0, pos));
+			header.erase(0, pos + 2);
+			pos = header.find_first_of(", ");
+		}
+	else
+		values.push_back(header);
+	return values;
 }

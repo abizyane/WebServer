@@ -6,7 +6,7 @@
 /*   By: abizyane <abizyane@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/12 21:58:16 by abizyane          #+#    #+#             */
-/*   Updated: 2024/03/22 01:26:35 by abizyane         ###   ########.fr       */
+/*   Updated: 2024/03/25 16:27:53 by abizyane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,8 @@ GetRequest::GetRequest(std::string &method, std::string &uri, ProcessRequest& pa
 	_chunkLen = 0;
 	_gotChunkLen = false;
 	_fileName = "/tmp/.requestbody";
+	std::srand(std::time(0));
+	_fileName += std::to_string(std::rand() % 1000000);
 }
 
 std::string		GetRequest::getMethod( void ) const{
@@ -69,7 +71,13 @@ e_statusCode	GetRequest::checkHeaders(void){
 	if (_headers.find("Content-Length") != _headers.end() || _headers.find("Transfer-Encoding") != _headers.end()){
 		_hasBody = true;
 		if (_headers.find("Transfer-Encoding") != _headers.end()){
-			if (_headers.find("Transfer-Encoding")->second != "chunked")
+			std::vector<std::string> values = splitHeaderValue(_headers.find("Transfer-Encoding")->second);
+			while (values.size() > 0){
+				if (values[0] == "chunked")
+					break;
+				values.erase(values.begin());
+			}
+			if (values.size() == 0)
 				return HTTP_NOT_IMPLEMENTED;
 			_isChunked = true;
 		} 
@@ -78,9 +86,6 @@ e_statusCode	GetRequest::checkHeaders(void){
 				return HTTP_BAD_REQUEST;
 			_contentLength = strtoll(_headers["Content-Length"].c_str(), NULL, 10);
 		}
-		std::srand(std::time(0));
-		for (size_t i = 0; i < 5; i++)
-			_fileName += to_str(std::rand());
 		_body.open(_fileName.c_str(), std::ios::out | std::ios::in | std::ios::trunc);
 		if (!_body.is_open()){
 			_parse.setParseState(Error);
@@ -115,7 +120,7 @@ e_statusCode	GetRequest::parseHeader(std::string &line){
 	return HTTP_OK;
 }
 
-e_statusCode	GetRequest::parseBody(std::string &line){ // TODO: i think that we don't need this function
+e_statusCode	GetRequest::parseBody(std::string &line){
 	size_t	bytesToWrite = 0;
 	try{
 		if (!_isChunked){
@@ -168,6 +173,9 @@ e_statusCode	GetRequest::parseBody(std::string &line){ // TODO: i think that we 
 	return HTTP_OK;
 }
 
+std::string&                        GetRequest::getFileName( void ) {
+	return _fileName;
+}
 
 GetRequest::~GetRequest( void ){
 	if (_body.is_open())
